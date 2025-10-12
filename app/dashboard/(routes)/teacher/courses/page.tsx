@@ -51,7 +51,7 @@ const CoursesPage = async () => {
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">الكورسات الخاصة بك</h1>
                 <Link href="/dashboard/teacher/courses/create">
-                    <Button className="bg-[#211FC3] hover:bg-[#211FC3]/90 text-white">
+                    <Button className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white">
                         <PlusCircle className="h-4 w-4 mr-2" />
                         إنشاء كورس جديدة
                     </Button>

@@ -29,13 +29,82 @@ export default async function SearchPage({
     const resolvedParams = await searchParams;
     const title = typeof resolvedParams.title === 'string' ? resolvedParams.title : '';
 
-    const courses = await db.course.findMany({
+    // Get user information to filter courses based on their faculty and level
+    const user = await db.user.findUnique({
         where: {
-            isPublished: true,
-            title: {
-                contains: title,
-            }
+            id: session.user.id,
         },
+        select: {
+            faculty: true,
+            level: true,
+        }
+    });
+
+    // Build the where clause for course filtering
+    const whereClause: any = {
+        isPublished: true,
+        title: {
+            contains: title,
+        }
+    };
+
+    // Add faculty and level filtering if user has this information
+    if (user?.faculty || user?.level) {
+        whereClause.OR = [];
+        
+        // Add courses that match user's faculty and level
+        if (user.faculty && user.level) {
+            whereClause.OR.push({
+                AND: [
+                    { targetFaculty: user.faculty },
+                    { targetLevel: user.level }
+                ]
+            });
+        }
+        
+        // Add courses that match user's faculty only
+        if (user.faculty) {
+            whereClause.OR.push({
+                AND: [
+                    { targetFaculty: user.faculty },
+                    { targetLevel: null }
+                ]
+            });
+        }
+        
+        // Add courses that match user's level only
+        if (user.level) {
+            whereClause.OR.push({
+                AND: [
+                    { targetFaculty: null },
+                    { targetLevel: user.level }
+                ]
+            });
+        }
+        
+        // Add courses with no targeting (available to all)
+        whereClause.OR.push({
+            AND: [
+                { targetFaculty: null },
+                { targetLevel: null }
+            ]
+        });
+        
+        // Add courses with "جميع الكليات" or "جميع المستويات"
+        if (user.faculty) {
+            whereClause.OR.push({
+                targetFaculty: "جميع الكليات"
+            });
+        }
+        if (user.level) {
+            whereClause.OR.push({
+                targetLevel: "جميع المستويات"
+            });
+        }
+    }
+
+    const courses = await db.course.findMany({
+        where: whereClause,
         include: {
             chapters: {
                 where: {
@@ -150,6 +219,22 @@ export default async function SearchPage({
                                         {course.price === 0 ? "مجاني" : `${course.price} جنيه`}
                                     </div>
                                 </div>
+
+                                {/* Target Audience Badges */}
+                                {(course.targetFaculty || course.targetLevel) && (
+                                    <div className="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2">
+                                        {course.targetFaculty && (
+                                            <div className="bg-blue-500/90 backdrop-blur-sm text-white rounded-full px-2 py-1 text-xs font-medium">
+                                                {course.targetFaculty}
+                                            </div>
+                                        )}
+                                        {course.targetLevel && (
+                                            <div className="bg-purple-500/90 backdrop-blur-sm text-white rounded-full px-2 py-1 text-xs font-medium">
+                                                {course.targetLevel}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="p-6">
@@ -157,6 +242,22 @@ export default async function SearchPage({
                                     <h3 className="text-xl font-bold mb-3 line-clamp-2 min-h-[3rem] text-gray-900">
                                         {course.title}
                                     </h3>
+                                    
+                                    {/* Target Audience Info */}
+                                    {(course.targetFaculty || course.targetLevel) && (
+                                        <div className="mb-3 flex flex-wrap gap-2">
+                                            {course.targetFaculty && (
+                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    {course.targetFaculty}
+                                                </span>
+                                            )}
+                                            {course.targetLevel && (
+                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                    {course.targetLevel}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                     
                                     {/* Course Stats */}
                                     <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">

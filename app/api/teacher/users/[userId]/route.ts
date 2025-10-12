@@ -21,7 +21,7 @@ export async function PATCH(
             return new NextResponse("Forbidden", { status: 403 });
         }
 
-        const { fullName, phoneNumber, parentPhoneNumber, role } = await req.json();
+        const { fullName, phoneNumber, email, college, faculty, level, role } = await req.json();
 
         // Check if user exists (teachers can edit all users)
         const existingUser = await db.user.findUnique({
@@ -51,19 +51,19 @@ export async function PATCH(
             }
         }
 
-        // Check if parent phone number is already taken by another user
-        if (parentPhoneNumber && parentPhoneNumber !== existingUser.parentPhoneNumber) {
-            const parentPhoneExists = await db.user.findFirst({
+        // Check if email is already taken by another user
+        if (email && email !== existingUser.email) {
+            const emailExists = await db.user.findFirst({
                 where: {
-                    parentPhoneNumber: parentPhoneNumber,
+                    email: email,
                     id: {
                         not: params.userId
                     }
                 }
             });
 
-            if (parentPhoneExists) {
-                return new NextResponse("Parent phone number already exists", { status: 400 });
+            if (emailExists) {
+                return new NextResponse("Email already exists", { status: 400 });
             }
         }
 
@@ -83,7 +83,10 @@ export async function PATCH(
             data: {
                 ...(fullName && { fullName }),
                 ...(phoneNumber && { phoneNumber }),
-                ...(parentPhoneNumber && { parentPhoneNumber }),
+                ...(email && { email }),
+                ...(college && { college }),
+                ...(faculty && { faculty }),
+                ...(level && { level }),
                 ...(role && { role })
             }
         });

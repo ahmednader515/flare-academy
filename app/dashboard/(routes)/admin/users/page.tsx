@@ -43,7 +43,10 @@ interface User {
     id: string;
     fullName: string;
     phoneNumber: string;
-    parentPhoneNumber: string;
+    email: string;
+    college?: string;
+    faculty?: string;
+    level?: string;
     role: string;
     balance: number;
     createdAt: string;
@@ -58,7 +61,10 @@ interface User {
 interface EditUserData {
     fullName: string;
     phoneNumber: string;
-    parentPhoneNumber: string;
+    email: string;
+    college: string;
+    faculty: string;
+    level: string;
     role: string;
 }
 
@@ -70,7 +76,10 @@ const UsersPage = () => {
     const [editData, setEditData] = useState<EditUserData>({
         fullName: "",
         phoneNumber: "",
-        parentPhoneNumber: "",
+        email: "",
+        college: "",
+        faculty: "",
+        level: "",
         role: ""
     });
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -100,7 +109,10 @@ const UsersPage = () => {
         setEditData({
             fullName: user.fullName,
             phoneNumber: user.phoneNumber,
-            parentPhoneNumber: user.parentPhoneNumber,
+            email: user.email,
+            college: user.college || "",
+            faculty: user.faculty || "",
+            level: user.level || "",
             role: user.role
         });
         setIsEditDialogOpen(true);
@@ -200,7 +212,7 @@ const UsersPage = () => {
                                 <TableRow>
                                     <TableHead className="text-right">الاسم</TableHead>
                                     <TableHead className="text-right">رقم الهاتف</TableHead>
-                                    <TableHead className="text-right">رقم هاتف الوالد</TableHead>
+                                    <TableHead className="text-right">البريد الإلكتروني</TableHead>
                                     <TableHead className="text-right">الدور</TableHead>
                                     <TableHead className="text-right">تاريخ التسجيل</TableHead>
                                     <TableHead className="text-right">الإجراءات</TableHead>
@@ -213,7 +225,7 @@ const UsersPage = () => {
                                             {user.fullName}
                                         </TableCell>
                                         <TableCell>{user.phoneNumber}</TableCell>
-                                        <TableCell>{user.parentPhoneNumber}</TableCell>
+                                        <TableCell>{user.email}</TableCell>
                                         <TableCell>
                                             <Badge 
                                                 variant="secondary"
@@ -278,13 +290,14 @@ const UsersPage = () => {
                                                                 />
                                                             </div>
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="parentPhoneNumber" className="text-right">
-                                                                    رقم هاتف الوالد
+                                                                <Label htmlFor="email" className="text-right">
+                                                                    البريد الإلكتروني
                                                                 </Label>
                                                                 <Input
-                                                                    id="parentPhoneNumber"
-                                                                    value={editData.parentPhoneNumber}
-                                                                    onChange={(e) => setEditData({...editData, parentPhoneNumber: e.target.value})}
+                                                                    id="email"
+                                                                    type="email"
+                                                                    value={editData.email}
+                                                                    onChange={(e) => setEditData({...editData, email: e.target.value})}
                                                                     className="col-span-3"
                                                                 />
                                                             </div>
@@ -380,7 +393,7 @@ const UsersPage = () => {
                                 <TableRow>
                                     <TableHead className="text-right">الاسم</TableHead>
                                     <TableHead className="text-right">رقم الهاتف</TableHead>
-                                    <TableHead className="text-right">رقم هاتف الوالد</TableHead>
+                                    <TableHead className="text-right">البريد الإلكتروني</TableHead>
                                     <TableHead className="text-right">الدور</TableHead>
                                     <TableHead className="text-right">الرصيد</TableHead>
                                     <TableHead className="text-right">الكورسات المشتراة</TableHead>
@@ -395,7 +408,7 @@ const UsersPage = () => {
                                             {user.fullName}
                                         </TableCell>
                                         <TableCell>{user.phoneNumber}</TableCell>
-                                        <TableCell>{user.parentPhoneNumber}</TableCell>
+                                        <TableCell>{user.email}</TableCell>
                                         <TableCell>
                                             <Badge variant="secondary">
                                                 طالب
@@ -462,13 +475,14 @@ const UsersPage = () => {
                                                                 />
                                                             </div>
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="parentPhoneNumber" className="text-right">
-                                                                    رقم هاتف الوالد
+                                                                <Label htmlFor="email" className="text-right">
+                                                                    البريد الإلكتروني
                                                                 </Label>
                                                                 <Input
-                                                                    id="parentPhoneNumber"
-                                                                    value={editData.parentPhoneNumber}
-                                                                    onChange={(e) => setEditData({...editData, parentPhoneNumber: e.target.value})}
+                                                                    id="email"
+                                                                    type="email"
+                                                                    value={editData.email}
+                                                                    onChange={(e) => setEditData({...editData, email: e.target.value})}
                                                                     className="col-span-3"
                                                                 />
                                                             </div>

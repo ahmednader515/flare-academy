@@ -7,6 +7,8 @@ import { TitleForm } from "./_components/title-form";
 import { DescriptionForm } from "./_components/description-form";
 import { ImageForm } from "./_components/image-form";
 import { PriceForm } from "./_components/price-form";
+import { TargetFacultyForm } from "./_components/target-faculty-form";
+import { TargetLevelForm } from "./_components/target-level-form";
 import { CourseContentForm } from "./_components/course-content-form";
 import { Banner } from "@/components/banner";
 import { Actions } from "./_components/actions";
@@ -143,6 +145,14 @@ export default async function CourseIdPage({
                             courseId={course.id}
                         />
                         <PriceForm
+                            initialData={course}
+                            courseId={course.id}
+                        />
+                        <TargetFacultyForm
+                            initialData={course}
+                            courseId={course.id}
+                        />
+                        <TargetLevelForm
                             initialData={course}
                             courseId={course.id}
                         />

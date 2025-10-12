@@ -39,6 +39,8 @@ model Course {
   imageUrl String? @db.Text
   price Float?
   isPublished Boolean @default(false)
+  targetFaculty String?
+  targetLevel String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

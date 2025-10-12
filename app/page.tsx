@@ -19,6 +19,8 @@ type Course = {
   imageUrl?: string | null;
   price?: number | null;
   isPublished: boolean;
+  targetFaculty?: string | null;
+  targetLevel?: string | null;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -370,6 +372,23 @@ export default function HomePage() {
                       <h3 className="text-lg font-semibold mb-2 line-clamp-2">
                         {course.title}
                       </h3>
+                      
+                      {/* Target Audience Info */}
+                      {(course.targetFaculty || course.targetLevel) && (
+                        <div className="mb-3 flex flex-wrap gap-1">
+                          {course.targetFaculty && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {course.targetFaculty}
+                            </span>
+                          )}
+                          {course.targetLevel && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              {course.targetLevel}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                         <BookOpen className="h-4 w-4" />
                         <span>

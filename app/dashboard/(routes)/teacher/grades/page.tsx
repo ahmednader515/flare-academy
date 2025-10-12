@@ -173,7 +173,7 @@ const GradesPage = () => {
                 <Card>
                     <CardContent className="p-6">
                         <div className="flex items-center space-x-2">
-                            <Users className="h-8 w-8 text-blue-600" />
+                            <Users className="h-8 w-8 text-[#FF6B35]" />
                             <div>
                                 <p className="text-sm font-medium text-muted-foreground">إجمالي الطلاب</p>
                                 <p className="text-2xl font-bold">
@@ -363,7 +363,7 @@ const GradesPage = () => {
                                 <CardContent>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                         <div className="text-center">
-                                            <div className="text-2xl font-bold text-blue-600">
+                                            <div className="text-2xl font-bold text-[#FF6B35]">
                                                 {selectedResult.score}/{selectedResult.totalPoints}
                                             </div>
                                             <div className="text-sm text-muted-foreground">الدرجة</div>

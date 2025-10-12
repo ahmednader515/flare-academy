@@ -217,7 +217,7 @@ const AnalyticsPage = () => {
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-6 bg-blue-50 rounded-lg shadow-sm">
+        <Card className="p-6 bg-orange-50 rounded-lg shadow-sm">
           <h3 className="text-sm font-medium text-muted-foreground">إجمالي الإيرادات</h3>
           <p className="text-3xl font-bold">EGP {analytics.totalRevenue.toFixed(2)}</p>
         </Card>
@@ -270,7 +270,7 @@ const AnalyticsPage = () => {
                     <div className="flex items-center justify-center">
                       <div className="w-full bg-slate-200 rounded-full h-2.5 mr-2 max-w-[150px]">
                         <div
-                          className="bg-blue-600 h-2.5 rounded-full"
+                          className="bg-[#FF6B35] h-2.5 rounded-full"
                           style={{ width: `${course.completionRate}%` }}
                         ></div>
                       </div>

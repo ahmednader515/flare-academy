@@ -377,7 +377,7 @@ const CreateQuizPage = () => {
                             <p className="text-sm text-muted-foreground">
                                 اسحب الاختبار الجديد إلى الموقع المطلوب بين الفصول والاختبارات الموجودة
                             </p>
-                            <p className="text-sm text-blue-600">
+                            <p className="text-sm text-[#FF6B35]">
                                 الموقع المحدد: {selectedPosition}
                             </p>
                         </CardHeader>
@@ -402,23 +402,23 @@ const CreateQuizPage = () => {
                                                                 ref={provided.innerRef}
                                                                 {...provided.draggableProps}
                                                                 className={`p-3 border rounded-lg flex items-center justify-between ${
-                                                                    snapshot.isDragging ? "bg-blue-50" : "bg-white"
-                                                                } ${item.id === "new-quiz" ? "border-2 border-dashed border-blue-300 bg-blue-50" : ""}`}
+                                                                    snapshot.isDragging ? "bg-orange-50" : "bg-white"
+                                                                } ${item.id === "new-quiz" ? "border-2 border-dashed border-orange-300 bg-orange-50" : ""}`}
                                                             >
                                                                 <div className="flex items-center space-x-3">
                                                                     <div {...provided.dragHandleProps} className={item.id === "new-quiz" ? "cursor-grab active:cursor-grabbing" : ""}>
-                                                                        <GripVertical className={`h-4 w-4 ${item.id === "new-quiz" ? "text-blue-600" : "text-gray-300 cursor-not-allowed"}`} />
+                                                                        <GripVertical className={`h-4 w-4 ${item.id === "new-quiz" ? "text-[#FF6B35]" : "text-gray-300 cursor-not-allowed"}`} />
                                                                     </div>
                                                                     <div>
-                                                                        <div className={`font-medium ${item.id === "new-quiz" ? "text-blue-800" : ""}`}>
+                                                                        <div className={`font-medium ${item.id === "new-quiz" ? "text-orange-800" : ""}`}>
                                                                             {item.title}
                                                                         </div>
-                                                                        <div className={`text-sm ${item.id === "new-quiz" ? "text-blue-600" : "text-muted-foreground"}`}>
+                                                                        <div className={`text-sm ${item.id === "new-quiz" ? "text-[#FF6B35]" : "text-muted-foreground"}`}>
                                                                             {item.type === "chapter" ? "فصل" : "اختبار"}
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <Badge variant={item.id === "new-quiz" ? "outline" : (item.isPublished ? "default" : "secondary")} className={item.id === "new-quiz" ? "border-blue-300 text-blue-700" : ""}>
+                                                                <Badge variant={item.id === "new-quiz" ? "outline" : (item.isPublished ? "default" : "secondary")} className={item.id === "new-quiz" ? "border-orange-300 text-orange-700" : ""}>
                                                                     {item.id === "new-quiz" ? "جديد" : (item.isPublished ? "منشور" : "مسودة")}
                                                                 </Badge>
                                                             </div>
@@ -436,15 +436,15 @@ const CreateQuizPage = () => {
                                     <p className="text-muted-foreground mb-4">
                                         لا توجد فصول أو اختبارات في هذه الكورس. سيتم إضافة الاختبار في الموقع الأول.
                                     </p>
-                                    <div className="p-3 border-2 border-dashed border-blue-300 rounded-lg bg-blue-50">
+                                    <div className="p-3 border-2 border-dashed border-orange-300 rounded-lg bg-orange-50">
                                         <div className="flex items-center justify-center space-x-3">
                                             <div>
-                                                <div className="font-medium text-blue-800">
+                                                <div className="font-medium text-orange-800">
                                                     {quizTitle || "اختبار جديد"}
                                                 </div>
-                                                <div className="text-sm text-blue-600">اختبار</div>
+                                                <div className="text-sm text-[#FF6B35]">اختبار</div>
                                             </div>
-                                            <Badge variant="outline" className="border-blue-300 text-blue-700">
+                                            <Badge variant="outline" className="border-orange-300 text-orange-700">
                                                 جديد
                                             </Badge>
                                         </div>

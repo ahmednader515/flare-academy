@@ -12,7 +12,45 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Pencil, Globe } from "lucide-react";
+
+// Dropdown options for course targeting
+const facultyOptions = [
+    "كلية الهندسة",
+    "كلية الطب",
+    "كلية الصيدلة",
+    "كلية طب الأسنان",
+    "كلية العلوم",
+    "كلية التجارة",
+    "كلية الآداب",
+    "كلية الحقوق",
+    "كلية التربية",
+    "كلية الزراعة",
+    "كلية الطب البيطري",
+    "كلية التمريض",
+    "كلية العلاج الطبيعي",
+    "كلية الإعلام",
+    "كلية الاقتصاد والعلوم السياسية",
+    "كلية الحاسبات والمعلومات",
+    "كلية الفنون التطبيقية",
+    "كلية الفنون الجميلة",
+    "كلية التربية الرياضية",
+    "جميع الكليات"
+];
+
+const levelOptions = [
+    "السنة الأولى",
+    "السنة الثانية",
+    "السنة الثالثة",
+    "السنة الرابعة",
+    "السنة الخامسة",
+    "السنة السادسة",
+    "الماجستير",
+    "الدكتوراه",
+    "دبلوم",
+    "جميع المستويات"
+];
 
 const formSchema = z.object({
     title: z.string().min(1, {
@@ -21,6 +59,8 @@ const formSchema = z.object({
     description: z.string().min(1, {
         message: "الوصف مطلوب",
     }),
+    targetFaculty: z.string().optional(),
+    targetLevel: z.string().optional(),
 });
 
 interface CourseFormProps {
@@ -41,6 +81,8 @@ export const CourseForm = ({
         defaultValues: {
             title: initialData.title || "",
             description: initialData.description || "",
+            targetFaculty: initialData.targetFaculty || "",
+            targetLevel: initialData.targetLevel || "",
         },
     });
 
@@ -89,18 +131,39 @@ export const CourseForm = ({
                 </Button>
             </div>
             {!isEditing && (
-                <div className="mt-4 flex items-center justify-between">
-                    <p className="text-sm text-slate-500">
-                        {initialData.isPublished ? "منشور" : "مسودة"}
-                    </p>
-                    <Button
-                        onClick={onPublish}
-                        disabled={isLoading}
-                        variant={initialData.isPublished ? "destructive" : "default"}
-                    >
-                        <Globe className="h-4 w-4 mr-2" />
-                        {initialData.isPublished ? "إلغاء النشر" : "نشر"}
-                    </Button>
+                <div className="mt-4 space-y-4">
+                    {/* Target Audience Display */}
+                    {(initialData.targetFaculty || initialData.targetLevel) && (
+                        <div className="space-y-2">
+                            <h4 className="text-sm font-medium text-slate-700">الجمهور المستهدف</h4>
+                            <div className="flex flex-wrap gap-2">
+                                {initialData.targetFaculty && (
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        {initialData.targetFaculty}
+                                    </span>
+                                )}
+                                {initialData.targetLevel && (
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                                        {initialData.targetLevel}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                    
+                    <div className="flex items-center justify-between">
+                        <p className="text-sm text-slate-500">
+                            {initialData.isPublished ? "منشور" : "مسودة"}
+                        </p>
+                        <Button
+                            onClick={onPublish}
+                            disabled={isLoading}
+                            variant={initialData.isPublished ? "destructive" : "default"}
+                        >
+                            <Globe className="h-4 w-4 mr-2" />
+                            {initialData.isPublished ? "إلغاء النشر" : "نشر"}
+                        </Button>
+                    </div>
                 </div>
             )}
             {isEditing && (
@@ -135,6 +198,62 @@ export const CourseForm = ({
                                             {...field}
                                         />
                                     </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="targetFaculty"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>الكلية المستهدفة (اختياري)</FormLabel>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        defaultValue={field.value}
+                                        disabled={isLoading}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="اختر الكلية المستهدفة" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {facultyOptions.map((faculty) => (
+                                                <SelectItem key={faculty} value={faculty}>
+                                                    {faculty}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="targetLevel"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>المستوى المستهدف (اختياري)</FormLabel>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        defaultValue={field.value}
+                                        disabled={isLoading}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="اختر المستوى المستهدف" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {levelOptions.map((level) => (
+                                                <SelectItem key={level} value={level}>
+                                                    {level}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}
