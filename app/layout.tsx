@@ -23,7 +23,7 @@ const playpenSansArabic = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "منصة مستقبلنا",
+  title: "Flare Academy",
   description: "منصة تعليمية متكاملة",
 };
 

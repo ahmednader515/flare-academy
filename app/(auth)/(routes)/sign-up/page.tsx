@@ -105,7 +105,7 @@ export default function SignUpPage() {
             </div>
             <div className="space-y-4">
               <h3 className="text-2xl font-bold text-[#FF6B35]">
-                مرحباً بك في منصة مستقبلنا التعليمية
+                مرحباً بك في منصة Flare Academy التعليمية
               </h3>
               <p className="text-lg text-muted-foreground max-w-md">
                 انضم إلينا اليوم وابدأ رحلة التعلم مع أفضل المدرسين
