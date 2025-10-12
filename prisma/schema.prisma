@@ -14,7 +14,10 @@ model User {
   id                      String    @id @default(uuid())
   fullName                String
   phoneNumber             String    @unique
-  parentPhoneNumber       String
+  email                   String    @unique
+  college                 String?
+  faculty                 String?
+  level                   String?
   hashedPassword          String?
   image                   String?
   role                    String    @default("USER")

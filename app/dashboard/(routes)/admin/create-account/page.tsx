@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { Eye, EyeOff, UserPlus, ArrowLeft, CheckCircle } from "lucide-react";
 import Link from "next/link";
@@ -18,6 +19,67 @@ interface CreatedUser {
   role: string;
 }
 
+// Dropdown options
+const collegeOptions = [
+  "جامعة القاهرة",
+  "جامعة عين شمس",
+  "جامعة الإسكندرية",
+  "جامعة أسيوط",
+  "جامعة المنصورة",
+  "جامعة الزقازيق",
+  "جامعة طنطا",
+  "جامعة المنيا",
+  "جامعة جنوب الوادي",
+  "جامعة بنها",
+  "جامعة كفر الشيخ",
+  "جامعة سوهاج",
+  "جامعة بورسعيد",
+  "جامعة دمياط",
+  "جامعة الفيوم",
+  "جامعة بني سويف",
+  "جامعة حلوان",
+  "جامعة قناة السويس",
+  "جامعة دمنهور",
+  "جامعة أسوان",
+  "أخرى"
+];
+
+const facultyOptions = [
+  "كلية الهندسة",
+  "كلية الطب",
+  "كلية الصيدلة",
+  "كلية طب الأسنان",
+  "كلية العلوم",
+  "كلية التجارة",
+  "كلية الآداب",
+  "كلية الحقوق",
+  "كلية التربية",
+  "كلية الزراعة",
+  "كلية الطب البيطري",
+  "كلية التمريض",
+  "كلية العلاج الطبيعي",
+  "كلية الإعلام",
+  "كلية الاقتصاد والعلوم السياسية",
+  "كلية الحاسبات والمعلومات",
+  "كلية الفنون التطبيقية",
+  "كلية الفنون الجميلة",
+  "كلية التربية الرياضية",
+  "أخرى"
+];
+
+const levelOptions = [
+  "السنة الأولى",
+  "السنة الثانية",
+  "السنة الثالثة",
+  "السنة الرابعة",
+  "السنة الخامسة",
+  "السنة السادسة",
+  "الماجستير",
+  "الدكتوراه",
+  "دبلوم",
+  "أخرى"
+];
+
 export default function CreateAccountPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -27,13 +89,23 @@ export default function CreateAccountPage() {
   const [formData, setFormData] = useState({
     fullName: "",
     phoneNumber: "",
-    parentPhoneNumber: "",
+    email: "",
+    college: "",
+    faculty: "",
+    level: "",
     password: "",
     confirmPassword: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -69,7 +141,10 @@ export default function CreateAccountPage() {
         setFormData({
           fullName: "",
           phoneNumber: "",
-          parentPhoneNumber: "",
+          email: "",
+          college: "",
+          faculty: "",
+          level: "",
           password: "",
           confirmPassword: "",
         });
@@ -80,8 +155,10 @@ export default function CreateAccountPage() {
         const errorMessage = axiosError.response.data as string;
         if (errorMessage.includes("Phone number already exists")) {
           toast.error("رقم الهاتف مسجل مسبقاً");
-        } else if (errorMessage.includes("Parent phone number already exists")) {
-          toast.error("رقم هاتف الوالد مسجل مسبقاً");
+        } else if (errorMessage.includes("Email already exists")) {
+          toast.error("البريد الإلكتروني مسجل مسبقاً");
+        } else if (errorMessage.includes("Invalid email format")) {
+          toast.error("تنسيق البريد الإلكتروني غير صحيح");
         } else if (errorMessage.includes("Passwords do not match")) {
           toast.error("كلمات المرور غير متطابقة");
         } else {
@@ -99,7 +176,10 @@ export default function CreateAccountPage() {
     setFormData({
       fullName: "",
       phoneNumber: "",
-      parentPhoneNumber: "",
+      email: "",
+      college: "",
+      faculty: "",
+      level: "",
       password: "",
       confirmPassword: "",
     });
@@ -193,16 +273,78 @@ export default function CreateAccountPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="parentPhoneNumber">رقم هاتف الوالد *</Label>
+                  <Label htmlFor="email">البريد الإلكتروني *</Label>
                   <Input
-                    id="parentPhoneNumber"
-                    name="parentPhoneNumber"
-                    type="tel"
-                    value={formData.parentPhoneNumber}
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="أدخل رقم هاتف الوالد"
+                    placeholder="أدخل البريد الإلكتروني"
                     required
                   />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="college">الكلية (اختياري)</Label>
+                    <Select
+                      value={formData.college}
+                      onValueChange={(value) => handleSelectChange("college", value)}
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر الكلية" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {collegeOptions.map((college) => (
+                          <SelectItem key={college} value={college}>
+                            {college}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="faculty">التخصص (اختياري)</Label>
+                    <Select
+                      value={formData.faculty}
+                      onValueChange={(value) => handleSelectChange("faculty", value)}
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر التخصص" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {facultyOptions.map((faculty) => (
+                          <SelectItem key={faculty} value={faculty}>
+                            {faculty}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="level">المستوى (اختياري)</Label>
+                    <Select
+                      value={formData.level}
+                      onValueChange={(value) => handleSelectChange("level", value)}
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="اختر المستوى" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {levelOptions.map((level) => (
+                          <SelectItem key={level} value={level}>
+                            {level}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
