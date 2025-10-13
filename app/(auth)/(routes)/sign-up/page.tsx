@@ -11,70 +11,28 @@ import Link from "next/link";
 import axios, { AxiosError } from "axios";
 import { Check, X, Eye, EyeOff, ChevronLeft } from "lucide-react";
 import Image from "next/image";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 // Dropdown options
 const collegeOptions = [
-  "جامعة القاهرة",
-  "جامعة عين شمس",
-  "جامعة الإسكندرية",
-  "جامعة أسيوط",
-  "جامعة المنصورة",
-  "جامعة الزقازيق",
-  "جامعة طنطا",
-  "جامعة المنيا",
-  "جامعة جنوب الوادي",
-  "جامعة بنها",
-  "جامعة كفر الشيخ",
-  "جامعة سوهاج",
-  "جامعة بورسعيد",
-  "جامعة دمياط",
-  "جامعة الفيوم",
-  "جامعة بني سويف",
-  "جامعة حلوان",
-  "جامعة قناة السويس",
-  "جامعة دمنهور",
-  "جامعة أسوان",
-  "أخرى"
+  "الجامعة المصرية الصينية",
+  "جامعة الدلتا",
+  "جامعة القاهرة الأهلية",
+  "جامعة المنوفية الأهلية",
+  "جامعة سفنكس",
+  "جامعة السادات الأهلية"
 ];
 
 const facultyOptions = [
-  "كلية الهندسة",
-  "كلية الطب",
-  "كلية الصيدلة",
-  "كلية طب الأسنان",
-  "كلية العلوم",
-  "كلية التجارة",
-  "كلية الآداب",
-  "كلية الحقوق",
-  "كلية التربية",
-  "كلية الزراعة",
   "كلية الطب البيطري",
-  "كلية التمريض",
   "كلية العلاج الطبيعي",
-  "كلية الإعلام",
-  "كلية الاقتصاد والعلوم السياسية",
-  "كلية الحاسبات والمعلومات",
-  "كلية الفنون التطبيقية",
-  "كلية الفنون الجميلة",
-  "كلية التربية الرياضية",
-  "أخرى"
-];
-
-const levelOptions = [
-  "السنة الأولى",
-  "السنة الثانية",
-  "السنة الثالثة",
-  "السنة الرابعة",
-  "السنة الخامسة",
-  "السنة السادسة",
-  "الماجستير",
-  "الدكتوراه",
-  "دبلوم",
-  "أخرى"
+  "كلية الصيدلة",
+  "كلية طب أسنان"
 ];
 
 export default function SignUpPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -84,7 +42,6 @@ export default function SignUpPage() {
     email: "",
     college: "",
     faculty: "",
-    level: "",
     password: "",
     confirmPassword: "",
   });
@@ -118,7 +75,7 @@ export default function SignUpPage() {
     setIsLoading(true);
 
     if (!passwordChecks.isValid) {
-      toast.error("كلمات المرور غير متطابقة");
+      toast.error(t('auth.passwordsDoNotMatch'));
       setIsLoading(false);
       return;
     }
@@ -127,7 +84,7 @@ export default function SignUpPage() {
       const response = await axios.post("/api/auth/register", formData);
       
       if (response.data.success) {
-        toast.success("تم إنشاء الحساب بنجاح");
+        toast.success(t('auth.signUpSuccess'));
         router.push("/sign-in");
       }
     } catch (error) {
@@ -135,18 +92,18 @@ export default function SignUpPage() {
       if (axiosError.response?.status === 400) {
         const errorMessage = axiosError.response.data as string;
         if (errorMessage.includes("Phone number already exists")) {
-          toast.error("رقم الهاتف مسجل مسبقاً");
+          toast.error(t('auth.phoneAlreadyExists'));
         } else if (errorMessage.includes("Email already exists")) {
-          toast.error("البريد الإلكتروني مسجل مسبقاً");
+          toast.error(t('auth.emailAlreadyExists'));
         } else if (errorMessage.includes("Invalid email format")) {
-          toast.error("تنسيق البريد الإلكتروني غير صحيح");
+          toast.error(t('auth.invalidEmailFormat'));
         } else if (errorMessage.includes("Passwords do not match")) {
-          toast.error("كلمات المرور غير متطابقة");
+          toast.error(t('auth.passwordsDoNotMatch'));
         } else {
-          toast.error("حدث خطأ أثناء إنشاء الحساب");
+          toast.error(t('auth.signUpError'));
         }
       } else {
-        toast.error("حدث خطأ أثناء إنشاء الحساب");
+        toast.error(t('auth.signUpError'));
       }
     } finally {
       setIsLoading(false);
@@ -179,10 +136,10 @@ export default function SignUpPage() {
             </div>
             <div className="space-y-4">
               <h3 className="text-2xl font-bold text-[#FF6B35]">
-                مرحباً بك في منصة Flare Academy التعليمية
+                {t('auth.welcomeToFlareAcademy')}
               </h3>
               <p className="text-lg text-muted-foreground max-w-md">
-                انضم إلينا اليوم وابدأ رحلة التعلم مع أفضل المدرسين
+                {t('auth.joinUsToday')}
               </p>
             </div>
           </div>
@@ -194,15 +151,15 @@ export default function SignUpPage() {
         <div className="w-full max-w-md space-y-6 py-8 mt-8">
           <div className="space-y-2 text-center">
             <h2 className="text-3xl font-bold tracking-tight mt-8">
-              إنشاء حساب جديد
+              {t('auth.signUp')}
             </h2>
             <p className="text-sm text-muted-foreground">
-              أدخل بياناتك لإنشاء حساب جديد
+              {t('auth.enterDataToCreateAccount')}
             </p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="fullName">الاسم الكامل</Label>
+              <Label htmlFor="fullName">{t('auth.fullName')}</Label>
               <Input
                 id="fullName"
                 name="fullName"
@@ -216,7 +173,7 @@ export default function SignUpPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phoneNumber">رقم الهاتف</Label>
+              <Label htmlFor="phoneNumber">{t('auth.phoneNumber')}</Label>
               <Input
                 id="phoneNumber"
                 name="phoneNumber"
@@ -231,7 +188,7 @@ export default function SignUpPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">البريد الإلكتروني</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <Input
                 id="email"
                 name="email"
@@ -246,14 +203,14 @@ export default function SignUpPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="college">الكلية (اختياري)</Label>
+              <Label htmlFor="college">{t('auth.college')}</Label>
               <Select
                 value={formData.college}
                 onValueChange={(value) => handleSelectChange("college", value)}
                 disabled={isLoading}
               >
                 <SelectTrigger className="h-10">
-                  <SelectValue placeholder="اختر الكلية" />
+                  <SelectValue placeholder={t('auth.selectCollege')} />
                 </SelectTrigger>
                 <SelectContent>
                   {collegeOptions.map((college) => (
@@ -265,14 +222,14 @@ export default function SignUpPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="faculty">التخصص (اختياري)</Label>
+              <Label htmlFor="faculty">{t('auth.faculty')}</Label>
               <Select
                 value={formData.faculty}
                 onValueChange={(value) => handleSelectChange("faculty", value)}
                 disabled={isLoading}
               >
                 <SelectTrigger className="h-10">
-                  <SelectValue placeholder="اختر التخصص" />
+                  <SelectValue placeholder={t('auth.selectFaculty')} />
                 </SelectTrigger>
                 <SelectContent>
                   {facultyOptions.map((faculty) => (
@@ -284,26 +241,7 @@ export default function SignUpPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="level">المستوى (اختياري)</Label>
-              <Select
-                value={formData.level}
-                onValueChange={(value) => handleSelectChange("level", value)}
-                disabled={isLoading}
-              >
-                <SelectTrigger className="h-10">
-                  <SelectValue placeholder="اختر المستوى" />
-                </SelectTrigger>
-                <SelectContent>
-                  {levelOptions.map((level) => (
-                    <SelectItem key={level} value={level}>
-                      {level}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">كلمة المرور</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -320,7 +258,7 @@ export default function SignUpPage() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
+                  className="absolute rtl:left-0 ltr:right-0 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -333,7 +271,7 @@ export default function SignUpPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">تأكيد كلمة المرور</Label>
+              <Label htmlFor="confirmPassword">{t('auth.confirmPassword')}</Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
@@ -350,7 +288,7 @@ export default function SignUpPage() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
+                  className="absolute rtl:left-0 ltr:right-0 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? (
@@ -369,7 +307,7 @@ export default function SignUpPage() {
                 ) : (
                   <X className="h-4 w-4 text-red-500" />
                 )}
-                <span className="text-sm text-muted-foreground">كلمات المرور متطابقة</span>
+                <span className="text-sm text-muted-foreground">{t('auth.passwordsMatch')}</span>
               </div>
             </div>
 
@@ -378,16 +316,16 @@ export default function SignUpPage() {
               className="w-full h-10 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white"
               disabled={isLoading || !passwordChecks.isValid}
             >
-              {isLoading ? "جاري إنشاء الحساب..." : "إنشاء حساب"}
+              {isLoading ? t('auth.signingUp') : t('auth.signUp')}
             </Button>
           </form>
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">لديك حساب بالفعل؟ </span>
+            <span className="text-muted-foreground">{t('auth.hasAccount')} </span>
             <Link 
               href="/sign-in" 
               className="text-primary hover:underline transition-colors"
             >
-              تسجيل الدخول
+              {t('auth.signIn')}
             </Link>
           </div>
         </div>

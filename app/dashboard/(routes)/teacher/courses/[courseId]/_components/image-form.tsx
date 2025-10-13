@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { Course } from "@prisma/client";
 import Image from "next/image";
 import { FileUpload } from "@/components/file-upload";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface ImageFormProps {
     initialData: Course;
@@ -20,7 +21,7 @@ export const ImageForm = ({
     initialData,
     courseId
 }: ImageFormProps) => {
-
+    const { t } = useLanguage();
     const [isEditing, setIsEditing] = useState(false);
 
     const toggleEdit = () => setIsEditing((current) => !current);
@@ -30,30 +31,30 @@ export const ImageForm = ({
     const onSubmit = async (values: { imageUrl: string }) => {
         try {
             await axios.patch(`/api/courses/${courseId}`, values);
-            toast.success("تم تحديث الكورس");
+            toast.success(t('teacher.courseUpdatedSuccessfully'));
             toggleEdit();
             router.refresh();
         } catch {
-            toast.error("حدث خطأ");
+            toast.error(t('teacher.errorOccurred'));
         }
     }
 
     return (
         <div className="mt-6 border bg-card rounded-md p-4">
             <div className="font-medium flex items-center justify-between">
-                صورة الكورس
+                {t('teacher.courseImage')}
                 <Button onClick={toggleEdit} variant="ghost">
-                    {isEditing && (<>إلغاء</>)}
+                    {isEditing && (<>{t('common.cancel')}</>)}
                     {!isEditing && !initialData.imageUrl && (
                         <>
                             <PlusCircle className="h-4 w-4 mr-2"/>
-                            إضافة صورة
+                            {t('teacher.addImage')}
                         </>
                     )}
                     {!isEditing && initialData.imageUrl && (
                     <>
                         <Pencil className="h-4 w-4 mr-2" />
-                        تعديل الصورة
+                        {t('teacher.editImage')}
                     </>)}
                 </Button>
             </div>
@@ -86,7 +87,7 @@ export const ImageForm = ({
                     />
 
                     <div className="text-xs text-muted-foreground mt-4">
-                        النسبة العرضية 16:9 موصى بها
+                        {t('teacher.aspectRatioRecommended')}
                     </div>
                 </div>
             )}

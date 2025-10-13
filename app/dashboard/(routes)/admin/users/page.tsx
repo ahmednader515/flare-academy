@@ -38,6 +38,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface User {
     id: string;
@@ -69,6 +70,7 @@ interface EditUserData {
 }
 
 const UsersPage = () => {
+    const { t } = useLanguage();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -98,7 +100,7 @@ const UsersPage = () => {
             }
         } catch (error) {
             console.error("Error fetching users:", error);
-            toast.error("حدث خطأ في تحميل المستخدمين");
+            toast.error(t('dashboard.errorLoadingUsers'));
         } finally {
             setLoading(false);
         }
@@ -131,17 +133,17 @@ const UsersPage = () => {
             });
 
             if (response.ok) {
-                toast.success("تم تحديث المستخدم بنجاح");
+                toast.success(t('common.success'));
                 setIsEditDialogOpen(false);
                 setEditingUser(null);
                 fetchUsers(); // Refresh the list
             } else {
                 const error = await response.text();
-                toast.error(error || "حدث خطأ في تحديث المستخدم");
+                toast.error(error || t('common.error'));
             }
         } catch (error) {
             console.error("Error updating user:", error);
-            toast.error("حدث خطأ في تحديث المستخدم");
+            toast.error(t('common.error'));
         }
     };
 
@@ -153,15 +155,15 @@ const UsersPage = () => {
             });
 
             if (response.ok) {
-                toast.success("تم حذف المستخدم بنجاح");
+                toast.success(t('common.success'));
                 fetchUsers(); // Refresh the list
             } else {
                 const error = await response.text();
-                toast.error(error || "حدث خطأ في حذف المستخدم");
+                toast.error(error || t('common.error'));
             }
         } catch (error) {
             console.error("Error deleting user:", error);
-            toast.error("حدث خطأ في حذف المستخدم");
+            toast.error(t('common.error'));
         } finally {
             setIsDeleting(false);
         }
@@ -178,7 +180,7 @@ const UsersPage = () => {
     if (loading) {
         return (
             <div className="p-6">
-                <div className="text-center">جاري التحميل...</div>
+                <div className="text-center">{t('dashboard.loadingUsers')}</div>
             </div>
         );
     }
@@ -187,7 +189,7 @@ const UsersPage = () => {
         <div className="p-6 space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    إدارة المستخدمين
+                    {t('dashboard.userManagement')}
                 </h1>
             </div>
 
@@ -195,11 +197,11 @@ const UsersPage = () => {
             {staffUsers.length > 0 && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>المشرفين والمعلمين</CardTitle>
+                        <CardTitle>{t('dashboard.staffAndTeachers')}</CardTitle>
                         <div className="flex items-center space-x-2">
                             <Search className="h-4 w-4 text-muted-foreground" />
                             <Input
-                                placeholder="البحث بالاسم أو رقم الهاتف..."
+                                placeholder={t('dashboard.searchByNameOrPhone')}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="max-w-sm"
@@ -210,12 +212,12 @@ const UsersPage = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="text-right">الاسم</TableHead>
-                                    <TableHead className="text-right">رقم الهاتف</TableHead>
-                                    <TableHead className="text-right">البريد الإلكتروني</TableHead>
-                                    <TableHead className="text-right">الدور</TableHead>
-                                    <TableHead className="text-right">تاريخ التسجيل</TableHead>
-                                    <TableHead className="text-right">الإجراءات</TableHead>
+                                    <TableHead className="text-right">{t('dashboard.name')}</TableHead>
+                                    <TableHead className="text-right">{t('dashboard.phoneNumber')}</TableHead>
+                                    <TableHead className="text-right">{t('dashboard.email')}</TableHead>
+                                    <TableHead className="text-right">{t('dashboard.role')}</TableHead>
+                                    <TableHead className="text-right">{t('dashboard.registrationDate')}</TableHead>
+                                    <TableHead className="text-right">{t('dashboard.actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>

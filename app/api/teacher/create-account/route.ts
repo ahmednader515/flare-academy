@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       return new NextResponse("Forbidden - Teacher access required", { status: 403 });
     }
 
-    const { fullName, phoneNumber, email, college, faculty, level, password, confirmPassword } = await req.json();
+    const { fullName, phoneNumber, email, college, faculty, password, confirmPassword } = await req.json();
 
     if (!fullName || !phoneNumber || !email || !password || !confirmPassword) {
       return new NextResponse("Missing required fields", { status: 400 });
@@ -63,7 +63,6 @@ export async function POST(req: Request) {
         email,
         college: college || null,
         faculty: faculty || null,
-        level: level || null,
         hashedPassword,
         role: "USER", // Always create as student
       },

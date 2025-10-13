@@ -39,6 +39,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface DataTableProps<TData extends { id: string }, TValue> {
     columns: ColumnDef<TData, TValue>[];
@@ -51,6 +52,7 @@ export function CoursesTable<TData extends { id: string }, TValue>({
     data,
     hideActions = false,
 }: DataTableProps<TData, TValue>) {
+    const { t } = useLanguage();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [filterValue, setFilterValue] = useState("");
@@ -83,13 +85,13 @@ export function CoursesTable<TData extends { id: string }, TValue>({
             });
 
             if (!response.ok) {
-                throw new Error("فشل حذف الكورس");
+                throw new Error(t('teacher.deleteCourseError'));
             }
 
-            toast.success("تم حذف الكورس بنجاح");
+            toast.success(t('teacher.deleteCourseSuccess'));
             router.refresh();
         } catch {
-            toast.error("حدث خطأ");
+            toast.error(t('teacher.errorOccurred'));
         }
     };
 
@@ -99,7 +101,7 @@ export function CoursesTable<TData extends { id: string }, TValue>({
                 <div className="relative w-full max-w-sm">
                     <Search className="absolute h-4 w-4 top-3 left-3 text-muted-foreground" />
                     <Input
-                        placeholder="ابحث عن الكورسات..."
+                        placeholder={t('teacher.searchInCourses')}
                         value={filterValue}
                         onChange={(e) => handleFilterChange(e.target.value)}
                         className="w-full pl-9"
@@ -157,15 +159,15 @@ export function CoursesTable<TData extends { id: string }, TValue>({
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
-                                                            <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
+                                                            <AlertDialogTitle>{t('teacher.areYouSure')}</AlertDialogTitle>
                                                             <AlertDialogDescription>
-                                                                لا يمكن التراجع عن هذا العمل. سيتم حذف الكورس وكل محتواها بشكل دائم.
+                                                                {t('teacher.deleteCourseWarning')}
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
-                                                            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                                            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                                                             <AlertDialogAction onClick={() => onDelete(row.original.id)}>
-                                                                حذف
+                                                                {t('teacher.delete')}
                                                             </AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>
@@ -181,7 +183,7 @@ export function CoursesTable<TData extends { id: string }, TValue>({
                                     colSpan={columns.length}
                                     className="h-24 text-center"
                                 >
-                                    لا يوجد نتائج.
+                                    {t('teacher.noResults')}
                                 </TableCell>
                             </TableRow>
                         )}
@@ -195,7 +197,7 @@ export function CoursesTable<TData extends { id: string }, TValue>({
                     onClick={() => table.previousPage()}
                     disabled={!table.getCanPreviousPage()}
                 >
-                    السابق
+                    {t('common.previous')}
                 </Button>
                 <Button
                     variant="outline"
@@ -203,7 +205,7 @@ export function CoursesTable<TData extends { id: string }, TValue>({
                     onClick={() => table.nextPage()}
                     disabled={!table.getCanNextPage()}
                 >
-                    التالي
+                    {t('common.next')}
                 </Button>
             </div>
         </div>

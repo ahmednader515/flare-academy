@@ -6,6 +6,7 @@ import { Grip, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Trash2 } from "lucide-react";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface CourseItem {
     id: string;
@@ -29,6 +30,7 @@ export const CourseContentList = ({
     onEdit,
     onDelete
 }: CourseContentListProps) => {
+    const { t } = useLanguage();
     const onDragEnd = (result: DropResult) => {
         if (!result.destination) return;
 
@@ -78,14 +80,14 @@ export const CourseContentList = ({
                                             <div className="flex items-center gap-x-2">
                                                 <span>{item.title}</span>
                                                 <Badge variant="outline" className="text-xs">
-                                                    {item.type === "chapter" ? "فصل" : "اختبار"}
+                                                    {item.type === "chapter" ? t('teacher.chapter') : t('teacher.quiz')}
                                                 </Badge>
                                             </div>
                                         </div>
                                         <div className="ml-auto pr-2 flex items-center gap-x-2">
                                                                                          {item.type === "chapter" && item.isFree && (
                                                  <Badge>
-                                                     مجاني
+                                                     {t('teacher.free')}
                                                  </Badge>
                                              )}
                                             <Badge
@@ -94,7 +96,7 @@ export const CourseContentList = ({
                                                     item.isPublished && "bg-primary text-primary-foreground"
                                                 )}
                                             >
-                                                {item.isPublished ? "تم النشر" : "مسودة"}
+                                                {item.isPublished ? t('teacher.published') : t('teacher.draft')}
                                             </Badge>
                                             <button
                                                 onClick={() => onEdit(item.id, item.type)}

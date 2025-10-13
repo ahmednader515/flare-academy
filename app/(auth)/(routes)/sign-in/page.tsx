@@ -12,9 +12,11 @@ import { signIn } from "next-auth/react";
 import { Eye, EyeOff, ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import { getDashboardUrlByRole } from "@/lib/utils";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 export default function SignInPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -43,14 +45,14 @@ export default function SignInPage() {
 
       if (result?.error) {
         if (result.error === "CredentialsSignin") {
-          toast.error("رقم الهاتف أو كلمة المرور غير صحيحة");
+          toast.error(t('auth.invalidCredentials'));
         } else {
-          toast.error("حدث خطأ أثناء تسجيل الدخول");
+          toast.error(t('auth.signInError'));
         }
         return;
       }
 
-      toast.success("تم تسجيل الدخول بنجاح");
+      toast.success(t('auth.signInSuccess'));
       
       // Get user data to determine role and redirect accordingly
       const response = await fetch("/api/auth/session", { cache: "no-store" });
@@ -66,7 +68,7 @@ export default function SignInPage() {
         router.replace(target);
       }
     } catch {
-      toast.error("حدث خطأ أثناء تسجيل الدخول");
+      toast.error(t('auth.signInError'));
     } finally {
       setIsLoading(false);
     }
@@ -98,10 +100,10 @@ export default function SignInPage() {
             </div>
             <div className="space-y-4">
               <h3 className="text-2xl font-bold text-[#FF6B35]">
-                مرحباً بك مرة أخرى
+                {t('auth.welcomeBack')}
               </h3>
               <p className="text-lg text-muted-foreground max-w-md">
-                سجل دخولك واستكشف الكورسات التعليمية المميزة
+                {t('auth.signInSubtitle')}
               </p>
             </div>
           </div>
@@ -113,15 +115,15 @@ export default function SignInPage() {
         <div className="w-full max-w-md space-y-6 py-8 mt-8">
           <div className="space-y-2 text-center">
             <h2 className="text-3xl font-bold tracking-tight">
-              تسجيل الدخول
+              {t('auth.signIn')}
             </h2>
             <p className="text-sm text-muted-foreground">
-              أدخل رقم هاتفك وكلمة المرور للدخول إلى حسابك
+              {t('auth.enterPhonePassword')}
             </p>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="phoneNumber">رقم الهاتف</Label>
+              <Label htmlFor="phoneNumber">{t('auth.phoneNumber')}</Label>
               <Input
                 id="phoneNumber"
                 name="phoneNumber"
@@ -136,7 +138,7 @@ export default function SignInPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">كلمة المرور</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -153,7 +155,7 @@ export default function SignInPage() {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
+                  className="absolute rtl:left-0 ltr:right-0 top-1/2 -translate-y-1/2 h-8 w-8 p-0 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -168,19 +170,19 @@ export default function SignInPage() {
             <LoadingButton
               type="submit"
               loading={isLoading}
-              loadingText="جاري تسجيل الدخول..."
+              loadingText={t('auth.signingIn')}
               className="w-full h-10 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white"
             >
-              تسجيل الدخول
+              {t('auth.signIn')}
             </LoadingButton>
           </form>
           <div className="text-center text-sm">
-            <span className="text-muted-foreground">ليس لديك حساب؟ </span>
+            <span className="text-muted-foreground">{t('auth.noAccount')} </span>
             <Link 
               href="/sign-up" 
               className="text-primary hover:underline transition-colors"
             >
-              إنشاء حساب جديد
+              {t('auth.createAccount')}
             </Link>
           </div>
         </div>

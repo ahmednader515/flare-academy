@@ -20,6 +20,7 @@ import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { Course } from "@prisma/client";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface DescriptionFormProps {
     initialData: Course;
@@ -29,7 +30,7 @@ interface DescriptionFormProps {
 
 const formSchema = z.object({
     description: z.string().min(1, {
-        message: "الوصف مطلوب",
+        message: "Description is required",
     }),
 });
 
@@ -37,7 +38,7 @@ export const DescriptionForm = ({
     initialData,
     courseId
 }: DescriptionFormProps) => {
-
+    const { t } = useLanguage();
     const [isEditing, setIsEditing] = useState(false);
 
     const toggleEdit = () => setIsEditing((current) => !current);
@@ -56,24 +57,24 @@ export const DescriptionForm = ({
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
             await axios.patch(`/api/courses/${courseId}`, values);
-            toast.success("تم تحديث الكورس");
+            toast.success(t('teacher.courseUpdatedSuccessfully'));
             toggleEdit();
             router.refresh();
         } catch {
-            toast.error("حدث خطأ");
+            toast.error(t('teacher.errorOccurred'));
         }
     }
 
     return (
         <div className="mt-6 border bg-card rounded-md p-4">
             <div className="font-medium flex items-center justify-between">
-                الوصف
+                {t('teacher.description')}
                 <Button onClick={toggleEdit} variant="ghost">
-                    {isEditing && (<>إلغاء</>)}
+                    {isEditing && (<>{t('common.cancel')}</>)}
                     {!isEditing && (
                     <>
                         <Pencil className="h-4 w-4 mr-2" />
-                        تعديل الوصف
+                        {t('teacher.editDescription')}
                     </>)}
                 </Button>
             </div>
@@ -82,7 +83,7 @@ export const DescriptionForm = ({
                     "text-sm mt-2 text-muted-foreground",
                     !initialData.description && "text-muted-foreground italic"
                 )}>
-                    {initialData.description || "لا يوجد وصف"}
+                    {initialData.description || t('teacher.noDescription')}
                 </p>
             )}
 
@@ -97,7 +98,7 @@ export const DescriptionForm = ({
                                     <FormControl>
                                         <Textarea 
                                             disabled={isSubmitting}
-                                            placeholder="e.g. 'هذه الكورس عن...'"
+                                            placeholder={t('teacher.descriptionPlaceholder')}
                                             {...field}
                                         />
                                     </FormControl>
@@ -107,7 +108,7 @@ export const DescriptionForm = ({
                         />
                         <div className="flex items-center gap-x-2">
                             <Button disabled={!isValid || isSubmitting} type="submit">
-                                حفظ
+                                {t('common.save')}
                             </Button>
                         </div>
                     </form>

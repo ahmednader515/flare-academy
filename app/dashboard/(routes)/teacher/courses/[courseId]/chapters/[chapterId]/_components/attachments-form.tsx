@@ -6,6 +6,7 @@ import { FileText, Pencil, Upload, X, Download, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/file-upload";
 import toast from "react-hot-toast";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface ChapterAttachment {
     id: string;
@@ -28,6 +29,7 @@ export const AttachmentsForm = ({
     courseId,
     chapterId
 }: AttachmentsFormProps) => {
+    const { t } = useLanguage();
     const [isEditing, setIsEditing] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,11 +50,11 @@ export const AttachmentsForm = ({
             if (filename) {
                 const decodedFilename = decodeURIComponent(filename);
                 const cleanFilename = decodedFilename.split('?')[0];
-                return cleanFilename || 'مستند الفصل';
+                return cleanFilename || t('teacher.chapterDocument');
             }
-            return 'مستند الفصل';
+            return t('teacher.chapterDocument');
         } catch {
-            return 'مستند الفصل';
+            return t('teacher.chapterDocument');
         }
     };
 
@@ -78,7 +80,7 @@ export const AttachmentsForm = ({
                 document.body.removeChild(link);
                 
                 window.URL.revokeObjectURL(downloadUrl);
-                toast.success("تم بدء تحميل الملف");
+                toast.success(t('teacher.downloadStarted'));
             } else {
                 throw new Error('Failed to fetch file');
             }
@@ -97,7 +99,7 @@ export const AttachmentsForm = ({
             link.click();
             document.body.removeChild(link);
             
-            toast.success("تم فتح الملف في تبويب جديد للتحميل");
+            toast.success(t('teacher.fileOpenedInNewTab'));
         }
     };
 
@@ -118,10 +120,10 @@ export const AttachmentsForm = ({
 
             const newAttachment = await response.json();
             setAttachments(prev => [...prev, newAttachment]);
-            toast.success("تم رفع المستند بنجاح");
+            toast.success(t('teacher.documentUploadedSuccessfully'));
         } catch (error) {
             console.error("[CHAPTER_ATTACHMENT]", error);
-            toast.error("حدث خطأ ما");
+            toast.error(t('teacher.errorOccurred'));
         } finally {
             setIsSubmitting(false);
         }
@@ -139,10 +141,10 @@ export const AttachmentsForm = ({
             }
 
             setAttachments(prev => prev.filter(att => att.id !== attachmentId));
-            toast.success("تم حذف المستند بنجاح");
+            toast.success(t('teacher.documentDeletedSuccessfully'));
         } catch (error) {
             console.error("[CHAPTER_ATTACHMENT_DELETE]", error);
-            toast.error("حدث خطأ ما");
+            toast.error(t('teacher.errorOccurred'));
         } finally {
             setIsSubmitting(false);
         }
@@ -155,14 +157,14 @@ export const AttachmentsForm = ({
     return (
         <div className="mt-6 border bg-card rounded-md p-4">
             <div className="font-medium flex items-center justify-between">
-                مستندات الفصل
+                {t('teacher.chapterDocuments')}
                 <Button onClick={() => setIsEditing(!isEditing)} variant="ghost">
                     {isEditing ? (
-                        <>إلغاء</>
+                        <>{t('common.cancel')}</>
                     ) : (
                         <>
                             <Pencil className="h-4 w-4 mr-2" />
-                            إدارة المستندات
+                            {t('teacher.manageDocuments')}
                         </>
                     )}
                 </Button>
@@ -179,7 +181,7 @@ export const AttachmentsForm = ({
                                         <p className="text-sm font-medium truncate">
                                             {attachment.name || getFilenameFromUrl(attachment.url)}
                                         </p>
-                                        <p className="text-xs text-muted-foreground">مستند الفصل</p>
+                                        <p className="text-xs text-muted-foreground">{t('teacher.chapterDocument')}</p>
                                     </div>
                                     <div className="ml-auto flex items-center gap-2 flex-shrink-0">
                                         <Button
@@ -187,7 +189,7 @@ export const AttachmentsForm = ({
                                             size="sm"
                                             onClick={() => window.open(attachment.url, '_blank')}
                                         >
-                                            عرض
+                                            {t('teacher.view')}
                                         </Button>
                                         <Button
                                             variant="ghost"
@@ -196,7 +198,7 @@ export const AttachmentsForm = ({
                                             className="flex items-center gap-1"
                                         >
                                             <Download className="h-3 w-3" />
-                                            تحميل
+                                            {t('teacher.download')}
                                         </Button>
                                     </div>
                                 </div>
@@ -204,7 +206,7 @@ export const AttachmentsForm = ({
                         </div>
                     ) : (
                         <p className="text-sm mt-2 text-muted-foreground italic">
-                            لا توجد مستندات مرفوعة
+                            {t('teacher.noDocumentsUploaded')}
                         </p>
                     )}
                 </div>
@@ -220,7 +222,7 @@ export const AttachmentsForm = ({
                                     <p className="text-sm font-medium truncate">
                                         {attachment.name || getFilenameFromUrl(attachment.url)}
                                     </p>
-                                    <p className="text-xs text-muted-foreground">مستند الفصل</p>
+                                    <p className="text-xs text-muted-foreground">{t('teacher.chapterDocument')}</p>
                                 </div>
                                 <div className="ml-auto flex items-center gap-2 flex-shrink-0">
                                     <Button
@@ -228,7 +230,7 @@ export const AttachmentsForm = ({
                                         size="sm"
                                         onClick={() => window.open(attachment.url, '_blank')}
                                     >
-                                        عرض
+                                        {t('teacher.view')}
                                     </Button>
                                     <Button
                                         variant="ghost"
@@ -237,7 +239,7 @@ export const AttachmentsForm = ({
                                         className="flex items-center gap-1"
                                     >
                                         <Download className="h-3 w-3" />
-                                        تحميل
+                                        {t('teacher.download')}
                                     </Button>
                                     <Button
                                         variant="ghost"
@@ -266,7 +268,7 @@ export const AttachmentsForm = ({
                             }}
                         />
                         <div className="text-xs text-muted-foreground mt-2 text-center">
-                            أضف مستندات إضافية قد يحتاجها الطلاب لفهم الفصل بشكل أفضل.
+                            {t('teacher.addAdditionalDocumentsForStudents')}
                         </div>
                     </div>
                 </div>

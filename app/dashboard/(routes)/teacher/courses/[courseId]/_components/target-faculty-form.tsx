@@ -20,29 +20,14 @@ import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { Course } from "@prisma/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 // Dropdown options for course targeting
 const facultyOptions = [
-    "كلية الهندسة",
-    "كلية الطب",
-    "كلية الصيدلة",
-    "كلية طب الأسنان",
-    "كلية العلوم",
-    "كلية التجارة",
-    "كلية الآداب",
-    "كلية الحقوق",
-    "كلية التربية",
-    "كلية الزراعة",
     "كلية الطب البيطري",
-    "كلية التمريض",
     "كلية العلاج الطبيعي",
-    "كلية الإعلام",
-    "كلية الاقتصاد والعلوم السياسية",
-    "كلية الحاسبات والمعلومات",
-    "كلية الفنون التطبيقية",
-    "كلية الفنون الجميلة",
-    "كلية التربية الرياضية",
-    "جميع الكليات"
+    "كلية الصيدلة",
+    "كلية طب أسنان"
 ];
 
 interface TargetFacultyFormProps {
@@ -58,6 +43,7 @@ export const TargetFacultyForm = ({
     initialData,
     courseId
 }: TargetFacultyFormProps) => {
+    const { t } = useLanguage();
     const [isEditing, setIsEditing] = useState(false);
     const router = useRouter();
 
@@ -75,24 +61,24 @@ export const TargetFacultyForm = ({
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
             await axios.patch(`/api/courses/${courseId}`, values);
-            toast.success("تم تحديث الكلية المستهدفة");
+            toast.success(t('teacher.targetFacultyUpdatedSuccessfully'));
             toggleEdit();
             router.refresh();
         } catch {
-            toast.error("حدث خطأ");
+            toast.error(t('teacher.errorOccurred'));
         }
     }
 
     return (
         <div className="mt-6 border bg-card rounded-md p-4">
             <div className="font-medium flex items-center justify-between">
-                الكلية المستهدفة
+                {t('teacher.targetFaculty')}
                 <Button onClick={toggleEdit} variant="ghost">
-                    {isEditing && (<>إلغاء</>)}
+                    {isEditing && (<>{t('common.cancel')}</>)}
                     {!isEditing && (
                     <>
                         <Pencil className="h-4 w-4 mr-2" />
-                        تعديل الكلية
+                        {t('teacher.editFaculty')}
                     </>)}
                 </Button>
             </div>
@@ -101,7 +87,7 @@ export const TargetFacultyForm = ({
                     "text-sm mt-2 text-muted-foreground",
                     !initialData.targetFaculty && "text-muted-foreground italic"
                 )}>
-                    {initialData.targetFaculty || "غير محدد"}
+                    {initialData.targetFaculty || t('teacher.notSpecified')}
                 </p>
             )}
 
@@ -120,7 +106,7 @@ export const TargetFacultyForm = ({
                                             disabled={isSubmitting}
                                         >
                                             <SelectTrigger>
-                                                <SelectValue placeholder="اختر الكلية المستهدفة" />
+                                                <SelectValue placeholder={t('teacher.selectTargetFaculty')} />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {facultyOptions.map((faculty) => (
@@ -140,7 +126,7 @@ export const TargetFacultyForm = ({
                                 disabled={!isValid || isSubmitting}
                                 type="submit"
                             >
-                                حفظ
+                                {t('common.save')}
                             </Button>
                         </div>
                     </form>

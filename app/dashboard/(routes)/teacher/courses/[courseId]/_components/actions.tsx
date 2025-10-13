@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface ActionsProps {
     disabled: boolean;
@@ -25,6 +26,7 @@ export const Actions = ({
     courseId,
     isPublished,
 }: ActionsProps) => {
+    const { t } = useLanguage();
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
 
@@ -34,15 +36,15 @@ export const Actions = ({
 
             if (isPublished) {
                 await axios.patch(`/api/courses/${courseId}/unpublish`);
-                toast.success("تم إلغاء النشر");
+                toast.success(t('teacher.unpublishSuccess'));
             } else {
                 await axios.patch(`/api/courses/${courseId}/publish`);
-                toast.success("تم نشر الكورس");
+                toast.success(t('teacher.publishCourseSuccess'));
             }
 
             router.refresh();
         } catch {
-            toast.error("حدث خطأ");
+            toast.error(t('teacher.errorOccurred'));
         } finally {
             setIsLoading(false);
         }
@@ -58,12 +60,12 @@ export const Actions = ({
             {isPublished ? (
                 <>
                     <EyeOff className="h-4 w-4 mr-2" />
-                    إلغاء النشر
+                    {t('teacher.unpublish')}
                 </>
             ) : (
                 <>
                     <Eye className="h-4 w-4 mr-2" />
-                    نشر الكورس
+                    {t('teacher.publishCourse')}
                 </>
             )}
         </Button>
@@ -82,13 +84,13 @@ export const Actions = ({
                         </TooltipTrigger>
                         <TooltipContent className="max-w-xs">
                             <div className="text-sm">
-                                <p className="font-semibold mb-2">لا يمكن نشر الكورس حتى:</p>
+                                <p className="font-semibold mb-2">{t('teacher.cannotPublishCourseUntil')}:</p>
                                 <ul className="space-y-1 text-xs">
-                                    <li>• إضافة عنوان للكورس</li>
-                                    <li>• إضافة وصف للكورس</li>
-                                    <li>• إضافة صورة للكورس</li>
-                                    <li>• تحديد سعر للكورس (يمكن أن يكون مجاني)</li>
-                                    <li>• إضافة فصل واحد على الأقل ونشره</li>
+                                    <li>• {t('teacher.addCourseTitle')}</li>
+                                    <li>• {t('teacher.addCourseDescription')}</li>
+                                    <li>• {t('teacher.addCourseImage')}</li>
+                                    <li>• {t('teacher.setCoursePrice')} ({t('teacher.canBeFree')})</li>
+                                    <li>• {t('teacher.addAtLeastOneChapterAndPublish')}</li>
                                 </ul>
                             </div>
                         </TooltipContent>

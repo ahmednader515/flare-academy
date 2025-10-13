@@ -16,6 +16,7 @@ import {
 import { Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { useTheme } from 'next-themes';
+import { useLanguage } from '@/lib/contexts/language-context';
 
 // Register ChartJS components
 ChartJS.register(
@@ -61,6 +62,7 @@ interface AnalyticsData {
 
 const AnalyticsPage = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(true);
   const [analytics, setAnalytics] = useState<AnalyticsData>({
     totalRevenue: 0,
@@ -71,7 +73,7 @@ const AnalyticsPage = () => {
       labels: [],
       datasets: [
         {
-          label: 'الإيرادات',
+          label: t('dashboard.revenue'),
           data: [],
           backgroundColor: 'rgba(75, 192, 192, 0.5)',
         },
@@ -81,7 +83,7 @@ const AnalyticsPage = () => {
       labels: [],
       datasets: [
         {
-          label: 'Sales',
+          label: t('dashboard.sales'),
           data: [],
           backgroundColor: [
             'rgba(255, 99, 132, 0.6)',
@@ -143,7 +145,7 @@ const AnalyticsPage = () => {
       },
       title: {
         display: true,
-        text: 'إيرادات الكورس',
+        text: t('dashboard.revenueByCourse'),
         color: textColor,
         font: {
           family: 'Inter, sans-serif',
@@ -187,7 +189,7 @@ const AnalyticsPage = () => {
       },
       title: {
         display: true,
-        text: 'توزيع المبيعات',
+        text: t('dashboard.salesDistribution'),
         color: textColor,
         font: {
           family: 'Inter, sans-serif',
@@ -209,24 +211,24 @@ const AnalyticsPage = () => {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">لوحة الاحصائيات</h1>
+        <h1 className="text-2xl font-bold">{t('dashboard.analyticsDashboard')}</h1>
         <p className="text-sm text-muted-foreground">
-          التحليلات الخاصة بك
+          {t('dashboard.yourAnalytics')}
         </p>
       </div>
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-6 bg-orange-50 rounded-lg shadow-sm">
-          <h3 className="text-sm font-medium text-muted-foreground">إجمالي الإيرادات</h3>
+          <h3 className="text-sm font-medium text-muted-foreground">{t('dashboard.totalRevenue')}</h3>
           <p className="text-3xl font-bold">EGP {analytics.totalRevenue.toFixed(2)}</p>
         </Card>
         <Card className="p-6 bg-green-50 rounded-lg shadow-sm">
-          <h3 className="text-sm font-medium text-muted-foreground">إجمالي المبيعات</h3>
+          <h3 className="text-sm font-medium text-muted-foreground">{t('dashboard.totalSales')}</h3>
           <p className="text-3xl font-bold">{analytics.totalSales}</p>
         </Card>
         <Card className="p-6 bg-amber-50 rounded-lg shadow-sm">
-          <h3 className="text-sm font-medium text-muted-foreground">الكورسات المنشورة</h3>
+          <h3 className="text-sm font-medium text-muted-foreground">{t('dashboard.publishedCourses')}</h3>
           <p className="text-3xl font-bold">{analytics.courseCount}</p>
         </Card>
       </div>
@@ -234,13 +236,13 @@ const AnalyticsPage = () => {
       {/* Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-6 rounded-lg shadow-sm">
-          <h3 className="text-lg font-medium mb-4">الإيرادات بالكورس</h3>
+          <h3 className="text-lg font-medium mb-4">{t('dashboard.revenueByCourse')}</h3>
           <div className="h-80">
             <Bar options={barOptions} data={analytics.revenueData} />
           </div>
         </Card>
         <Card className="p-6 rounded-lg shadow-sm">
-          <h3 className="text-lg font-medium mb-4">توزيع المبيعات</h3>
+          <h3 className="text-lg font-medium mb-4">{t('dashboard.salesDistribution')}</h3>
           <div className="h-80 flex items-center justify-center">
             <Pie options={pieOptions} data={analytics.salesData} />
           </div>
@@ -249,15 +251,15 @@ const AnalyticsPage = () => {
 
       {/* Course Performance Table */}
       <Card className="p-6 rounded-lg shadow-sm">
-        <h3 className="text-lg font-medium mb-4">أداء الكورس</h3>
+        <h3 className="text-lg font-medium mb-4">{t('dashboard.coursePerformance')}</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b">
-                <th className="text-left py-3 px-2">الكورس</th>
-                <th className="text-center py-3 px-2">المبيعات</th>
-                <th className="text-center py-3 px-2">الإيرادات</th>
-                <th className="text-center py-3 px-2">معدل الاكتمال</th>
+                <th className="text-left py-3 px-2">{t('dashboard.course')}</th>
+                <th className="text-center py-3 px-2">{t('dashboard.sales')}</th>
+                <th className="text-center py-3 px-2">{t('dashboard.revenue')}</th>
+                <th className="text-center py-3 px-2">{t('dashboard.completionRate')}</th>
               </tr>
             </thead>
             <tbody>

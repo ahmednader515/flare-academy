@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { Course } from "@prisma/client";
 import { Input } from "@/components/ui/input";
 import { formatPrice } from "@/lib/format";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface PriceFormProps {
     initialData: Course;
@@ -36,7 +37,7 @@ export const PriceForm = ({
     initialData,
     courseId
 }: PriceFormProps) => {
-
+    const { t } = useLanguage();
     const [isEditing, setIsEditing] = useState(false);
 
     const toggleEdit = () => setIsEditing((current) => !current);
@@ -55,24 +56,24 @@ export const PriceForm = ({
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
             await axios.patch(`/api/courses/${courseId}`, values);
-            toast.success("تم تحديث الكورس");
+            toast.success(t('teacher.courseUpdatedSuccessfully'));
             toggleEdit();
             router.refresh();
         } catch {
-            toast.error("حدث خطأ");
+            toast.error(t('teacher.errorOccurred'));
         }
     }
 
     return (
         <div className="mt-6 border bg-card rounded-md p-4">
             <div className="font-medium flex items-center justify-between">
-                سعر الكورس
+                {t('teacher.coursePrice')}
                 <Button onClick={toggleEdit} variant="ghost">
-                    {isEditing && (<>إلغاء</>)}
+                    {isEditing && (<>{t('common.cancel')}</>)}
                     {!isEditing && (
                     <>
                         <Pencil className="h-4 w-4 mr-2" />
-                        تعديل السعر
+                        {t('teacher.editPrice')}
                     </>)}
                 </Button>
             </div>
@@ -82,10 +83,10 @@ export const PriceForm = ({
                     !initialData.price && initialData.price !== 0 && "text-muted-foreground italic"
                 )}>
                     {initialData.price === 0
-                      ? "مجاني"
+                      ? t('teacher.free')
                       : initialData.price
                       ? formatPrice(initialData.price)
-                      : "لا يوجد سعر"
+                      : t('teacher.noPrice')
                     }
                 </p>
             )}
@@ -103,7 +104,7 @@ export const PriceForm = ({
                                             type="number"
                                             step="0.01"
                                             disabled={isSubmitting}
-                                            placeholder="ضع سعر للكورس"
+                                            placeholder={t('teacher.setCoursePrice')}
                                             value={field.value || ''}
                                             onChange={(e) => {
                                                 const value = e.target.value;
@@ -117,7 +118,7 @@ export const PriceForm = ({
                         />
                         <div className="flex items-center gap-x-2">
                             <Button disabled={!isValid || isSubmitting} type="submit">
-                                حفظ
+                                {t('common.save')}
                             </Button>
                         </div>
                     </form>

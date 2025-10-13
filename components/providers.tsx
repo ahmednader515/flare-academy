@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ToastProvider } from "@/components/providers/toaster-provider";
 import { Toaster } from "sonner";
 import { RTLProvider } from "@/components/providers/rtl-provider";
+import { LanguageProvider } from "@/lib/contexts/language-context";
 import { useEffect } from "react";
 
 // Component to handle session loading states
@@ -29,18 +30,20 @@ export const Providers = ({ children }: { children: React.ReactNode }) => {
       refetchWhenOffline={false} // Don't refetch when offline
     >
       <SessionHandler>
-        <RTLProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem={false}
-            disableTransitionOnChange
-          >
-            <ToastProvider />
-            {children}
-            <Toaster />
-          </ThemeProvider>
-        </RTLProvider>
+        <LanguageProvider>
+          <RTLProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="light"
+              enableSystem={false}
+              disableTransitionOnChange
+            >
+              <ToastProvider />
+              {children}
+              <Toaster />
+            </ThemeProvider>
+          </RTLProvider>
+        </LanguageProvider>
       </SessionHandler>
     </SessionProvider>
   );

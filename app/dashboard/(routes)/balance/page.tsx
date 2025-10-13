@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { Wallet, Plus, History, ArrowUpRight } from "lucide-react";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface BalanceTransaction {
   id: string;
@@ -18,6 +19,7 @@ interface BalanceTransaction {
 
 export default function BalancePage() {
   const { data: session } = useSession();
+  const { t } = useLanguage();
   const [balance, setBalance] = useState(0);
   const [amount, setAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -60,7 +62,7 @@ export default function BalancePage() {
 
   const handleAddBalance = async () => {
     if (!amount || parseFloat(amount) <= 0) {
-      toast.error("يرجى إدخال مبلغ صحيح");
+      toast.error(t('validation.required'));
       return;
     }
 
@@ -78,15 +80,15 @@ export default function BalancePage() {
         const data = await response.json();
         setBalance(data.newBalance);
         setAmount("");
-        toast.success("تم إضافة الرصيد بنجاح");
+        toast.success(t('common.success'));
         fetchTransactions(); // Refresh transactions
       } else {
         const error = await response.text();
-        toast.error(error || "حدث خطأ أثناء إضافة الرصيد");
+        toast.error(error || t('common.error'));
       }
     } catch (error) {
       console.error("Error adding balance:", error);
-      toast.error("حدث خطأ أثناء إضافة الرصيد");
+      toast.error(t('common.error'));
     } finally {
       setIsLoading(false);
     }
@@ -106,11 +108,11 @@ export default function BalancePage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">إدارة الرصيد</h1>
+          <h1 className="text-2xl font-bold">{t('dashboard.balanceManagement')}</h1>
           <p className="text-muted-foreground">
             {isStudent 
-              ? "عرض رصيد حسابك وسجل المعاملات" 
-              : "أضف رصيد إلى حسابك لشراء الكورسات"
+              ? t('dashboard.viewBalanceAndTransactions')
+              : t('dashboard.addBalanceToAccount')
             }
           </p>
         </div>
@@ -121,15 +123,15 @@ export default function BalancePage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Wallet className="h-5 w-5" />
-            رصيد الحساب
+            {t('dashboard.accountBalance')}
           </CardTitle>
           <CardDescription>
-            الرصيد المتاح في حسابك
+            {t('dashboard.availableInAccount')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold text-[#211FC3]">
-            {balance.toFixed(2)} جنيه
+            {balance.toFixed(2)} {t('dashboard.egyptianPound')}
           </div>
         </CardContent>
       </Card>
@@ -140,17 +142,17 @@ export default function BalancePage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5" />
-              إضافة رصيد
+              {t('dashboard.addAmount')}
             </CardTitle>
             <CardDescription>
-              أضف مبلغ إلى رصيد حسابك
+              {t('dashboard.addAmount')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex gap-4">
               <Input
                 type="number"
-                placeholder="أدخل المبلغ"
+                placeholder={t('dashboard.enterAmount')}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 min="0"
@@ -162,7 +164,7 @@ export default function BalancePage() {
                 disabled={isLoading}
                 className="bg-[#211FC3] hover:bg-[#211FC3]/90"
               >
-                {isLoading ? "جاري الإضافة..." : "إضافة الرصيد"}
+                {isLoading ? t('dashboard.addingBalance') : t('dashboard.addBalanceButton')}
               </Button>
             </div>
           </CardContent>
@@ -174,21 +176,21 @@ export default function BalancePage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <History className="h-5 w-5" />
-            سجل المعاملات
+            {t('dashboard.transactionHistory')}
           </CardTitle>
           <CardDescription>
-            تاريخ جميع المعاملات المالية
+            {t('dashboard.allFinancialTransactions')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoadingTransactions ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#211FC3] mx-auto"></div>
-              <p className="mt-2 text-muted-foreground">جاري التحميل...</p>
+              <p className="mt-2 text-muted-foreground">{t('common.loading')}</p>
             </div>
           ) : transactions.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">لا توجد معاملات حتى الآن</p>
+              <p className="text-muted-foreground">{t('dashboard.noTransactionsYet')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -222,16 +224,16 @@ export default function BalancePage() {
                          {formatDate(transaction.createdAt)}
                        </p>
                        <p className="text-xs text-muted-foreground">
-                         {transaction.type === "DEPOSIT" ? "إيداع" : "شراء كورس"}
+                         {transaction.type === "DEPOSIT" ? t('dashboard.depositType') : t('dashboard.purchaseType')}
                        </p>
                      </div>
-                  </div>
-                  <div className={`font-bold ${
-                    transaction.type === "DEPOSIT" ? "text-green-600" : "text-red-600"
-                  }`}>
-                    {transaction.type === "DEPOSIT" ? "+" : "-"}
-                    {Math.abs(transaction.amount).toFixed(2)} جنيه
-                  </div>
+                   </div>
+                   <div className={`font-bold ${
+                     transaction.type === "DEPOSIT" ? "text-green-600" : "text-red-600"
+                   }`}>
+                     {transaction.type === "DEPOSIT" ? "+" : "-"}
+                     {Math.abs(transaction.amount).toFixed(2)} {t('dashboard.egyptianPound')}
+                   </div>
                 </div>
               ))}
             </div>

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import toast from "react-hot-toast";
 import { PlyrVideoPlayer } from "@/components/plyr-video-player";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface VideoFormProps {
     initialData: {
@@ -26,6 +27,7 @@ export const VideoForm = ({
     courseId,
     chapterId
 }: VideoFormProps) => {
+    const { t } = useLanguage();
     const [isEditing, setIsEditing] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState("");
@@ -51,12 +53,12 @@ export const VideoForm = ({
                 throw new Error('Failed to upload video');
             }
 
-            toast.success("تم رفع الفيديو بنجاح");
+            toast.success(t('teacher.videoUploadedSuccessfully'));
             setIsEditing(false);
             router.refresh();
         } catch (error) {
             console.error("[CHAPTER_VIDEO]", error);
-            toast.error("حدث خطأ ما");
+            toast.error(t('teacher.errorOccurred'));
         } finally {
             setIsSubmitting(false);
         }
@@ -64,7 +66,7 @@ export const VideoForm = ({
 
     const onSubmitYouTube = async () => {
         if (!youtubeUrl.trim()) {
-            toast.error("يرجى إدخال رابط YouTube");
+            toast.error(t('teacher.pleaseEnterYouTubeUrl'));
             return;
         }
 
@@ -83,13 +85,13 @@ export const VideoForm = ({
                 throw new Error(error || 'Failed to add YouTube video');
             }
 
-            toast.success("تم إضافة فيديو YouTube بنجاح");
+            toast.success(t('teacher.youtubeVideoAddedSuccessfully'));
             setIsEditing(false);
             setYoutubeUrl("");
             router.refresh();
         } catch (error) {
             console.error("[CHAPTER_YOUTUBE]", error);
-            toast.error(error instanceof Error ? error.message : "حدث خطأ ما");
+            toast.error(error instanceof Error ? error.message : t('teacher.errorOccurred'));
         } finally {
             setIsSubmitting(false);
         }
@@ -102,14 +104,14 @@ export const VideoForm = ({
     return (
         <div className="mt-6 border bg-card rounded-md p-4">
             <div className="font-medium flex items-center justify-between">
-                فيديو الفصل
+                {t('teacher.chapterVideo')}
                 <Button onClick={() => setIsEditing(!isEditing)} variant="ghost">
                     {isEditing ? (
-                        <>إلغاء</>
+                        <>{t('common.cancel')}</>
                     ) : (
                         <>
                             <Pencil className="h-4 w-4 mr-2" />
-                            تعديل الفيديو
+                            {t('teacher.editVideo')}
                         </>
                     )}
                 </Button>
@@ -149,18 +151,18 @@ export const VideoForm = ({
                         <TabsList className="grid w-full grid-cols-2">
                             <TabsTrigger value="upload" className="flex items-center gap-2">
                                 <Upload className="h-4 w-4" />
-                                رفع فيديو
+                                {t('teacher.uploadVideo')}
                             </TabsTrigger>
                             <TabsTrigger value="youtube" className="flex items-center gap-2">
                                 <Youtube className="h-4 w-4" />
-                                رابط YouTube
+                                {t('teacher.youtubeLink')}
                             </TabsTrigger>
                         </TabsList>
                         
                         <TabsContent value="upload" className="mt-4">
                             <div className="space-y-4">
                                 <div className="text-sm text-muted-foreground">
-                                    ارفع فيديو من جهازك
+                                    {t('teacher.uploadVideoFromDevice')}
                                 </div>
                                 <FileUpload
                                     endpoint="chapterVideo"
@@ -176,10 +178,10 @@ export const VideoForm = ({
                         <TabsContent value="youtube" className="mt-4">
                             <div className="space-y-4">
                                 <div className="text-sm text-muted-foreground">
-                                    الصق رابط فيديو YouTube
+                                    {t('teacher.pasteYouTubeVideoLink')}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="youtube-url">رابط YouTube</Label>
+                                    <Label htmlFor="youtube-url">{t('teacher.youtubeUrl')}</Label>
                                     <div className="flex gap-2">
                                         <Input
                                             id="youtube-url"
@@ -194,12 +196,12 @@ export const VideoForm = ({
                                             className="flex items-center gap-2"
                                         >
                                             <Link className="h-4 w-4" />
-                                            إضافة
+                                            {t('teacher.add')}
                                         </Button>
                                     </div>
                                 </div>
                                 <div className="text-xs text-muted-foreground">
-                                    يدعم الروابط التالية:
+                                    {t('teacher.supportedLinks')}:
                                     <br />
                                     • https://www.youtube.com/watch?v=VIDEO_ID
                                     <br />

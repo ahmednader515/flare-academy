@@ -8,9 +8,11 @@ import { UserButton } from "./user-button";
 import { useSession, signOut } from "next-auth/react";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { useState } from "react";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 export const NavbarRoutes = () => {
     const { data: session } = useSession();
+    const { t } = useLanguage();
     const [isLoggingOut, setIsLoggingOut] = useState(false);
 
     const handleLogout = async () => {
@@ -33,11 +35,11 @@ export const NavbarRoutes = () => {
                     variant="ghost" 
                     onClick={handleLogout}
                     loading={isLoggingOut}
-                    loadingText="جاري تسجيل الخروج..."
+                    loadingText={t('dashboard.loggingOut')}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors duration-200 ease-in-out"
                 >
                     <LogOut className="h-4 w-4 rtl:ml-2 ltr:mr-2"/>
-                    تسجيل الخروج
+                    {t('navigation.logout')}
                 </LoadingButton>
             )}
             

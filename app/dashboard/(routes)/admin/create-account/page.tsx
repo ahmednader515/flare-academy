@@ -21,63 +21,19 @@ interface CreatedUser {
 
 // Dropdown options
 const collegeOptions = [
-  "جامعة القاهرة",
-  "جامعة عين شمس",
-  "جامعة الإسكندرية",
-  "جامعة أسيوط",
-  "جامعة المنصورة",
-  "جامعة الزقازيق",
-  "جامعة طنطا",
-  "جامعة المنيا",
-  "جامعة جنوب الوادي",
-  "جامعة بنها",
-  "جامعة كفر الشيخ",
-  "جامعة سوهاج",
-  "جامعة بورسعيد",
-  "جامعة دمياط",
-  "جامعة الفيوم",
-  "جامعة بني سويف",
-  "جامعة حلوان",
-  "جامعة قناة السويس",
-  "جامعة دمنهور",
-  "جامعة أسوان",
-  "أخرى"
+  "الجامعة المصرية الصينية",
+  "جامعة الدلتا",
+  "جامعة القاهرة الأهلية",
+  "جامعة المنوفية الأهلية",
+  "جامعة سفنكس",
+  "جامعة السادات الأهلية"
 ];
 
 const facultyOptions = [
-  "كلية الهندسة",
-  "كلية الطب",
-  "كلية الصيدلة",
-  "كلية طب الأسنان",
-  "كلية العلوم",
-  "كلية التجارة",
-  "كلية الآداب",
-  "كلية الحقوق",
-  "كلية التربية",
-  "كلية الزراعة",
   "كلية الطب البيطري",
-  "كلية التمريض",
   "كلية العلاج الطبيعي",
-  "كلية الإعلام",
-  "كلية الاقتصاد والعلوم السياسية",
-  "كلية الحاسبات والمعلومات",
-  "كلية الفنون التطبيقية",
-  "كلية الفنون الجميلة",
-  "كلية التربية الرياضية",
-  "أخرى"
-];
-
-const levelOptions = [
-  "السنة الأولى",
-  "السنة الثانية",
-  "السنة الثالثة",
-  "السنة الرابعة",
-  "السنة الخامسة",
-  "السنة السادسة",
-  "الماجستير",
-  "الدكتوراه",
-  "دبلوم",
-  "أخرى"
+  "كلية الصيدلة",
+  "كلية طب أسنان"
 ];
 
 export default function CreateAccountPage() {
@@ -92,7 +48,6 @@ export default function CreateAccountPage() {
     email: "",
     college: "",
     faculty: "",
-    level: "",
     password: "",
     confirmPassword: "",
   });
@@ -285,7 +240,7 @@ export default function CreateAccountPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="college">الكلية (اختياري)</Label>
                     <Select
@@ -320,26 +275,6 @@ export default function CreateAccountPage() {
                         {facultyOptions.map((faculty) => (
                           <SelectItem key={faculty} value={faculty}>
                             {faculty}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="level">المستوى (اختياري)</Label>
-                    <Select
-                      value={formData.level}
-                      onValueChange={(value) => handleSelectChange("level", value)}
-                      disabled={isLoading}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر المستوى" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {levelOptions.map((level) => (
-                          <SelectItem key={level} value={level}>
-                            {level}
                           </SelectItem>
                         ))}
                       </SelectContent>

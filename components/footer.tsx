@@ -1,9 +1,11 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 export const Footer = () => {
   const pathname = usePathname();
+  const { t } = useLanguage();
   
   // Check if we're on a page with a sidebar
   const hasSidebar = pathname?.startsWith('/dashboard') || pathname?.startsWith('/courses');
@@ -16,7 +18,7 @@ export const Footer = () => {
             ? 'md:rtl:pr-56 md:ltr:pl-56 lg:rtl:pr-80 lg:ltr:pl-80' 
             : ''
         }`}>
-          <p>© {new Date().getFullYear()} Mordesu Studio. جميع الحقوق محفوظة</p>
+          <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
         </div>
       </div>
     </footer>

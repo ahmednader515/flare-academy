@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface RTLContextType {
   isRTL: boolean;
@@ -15,12 +16,18 @@ const RTLContext = createContext<RTLContextType>({
 export const useRTL = () => useContext(RTLContext);
 
 export const RTLProvider = ({ children }: { children: React.ReactNode }) => {
-  const [isRTL, setIsRTL] = useState(true);
+  const { isRTL: languageIsRTL } = useLanguage();
+  const [isRTL, setIsRTL] = useState(languageIsRTL);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Sync with language context
+  useEffect(() => {
+    setIsRTL(languageIsRTL);
+  }, [languageIsRTL]);
 
   useEffect(() => {
     if (!mounted) return;

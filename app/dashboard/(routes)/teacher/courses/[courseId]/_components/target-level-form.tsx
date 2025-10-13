@@ -20,6 +20,7 @@ import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import { Course } from "@prisma/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 // Dropdown options for course targeting
 const levelOptions = [
@@ -48,6 +49,7 @@ export const TargetLevelForm = ({
     initialData,
     courseId
 }: TargetLevelFormProps) => {
+    const { t } = useLanguage();
     const [isEditing, setIsEditing] = useState(false);
     const router = useRouter();
 
@@ -65,24 +67,24 @@ export const TargetLevelForm = ({
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
             await axios.patch(`/api/courses/${courseId}`, values);
-            toast.success("تم تحديث المستوى المستهدف");
+            toast.success(t('teacher.targetLevelUpdatedSuccessfully'));
             toggleEdit();
             router.refresh();
         } catch {
-            toast.error("حدث خطأ");
+            toast.error(t('teacher.errorOccurred'));
         }
     }
 
     return (
         <div className="mt-6 border bg-card rounded-md p-4">
             <div className="font-medium flex items-center justify-between">
-                المستوى المستهدف
+                {t('teacher.targetLevel')}
                 <Button onClick={toggleEdit} variant="ghost">
-                    {isEditing && (<>إلغاء</>)}
+                    {isEditing && (<>{t('common.cancel')}</>)}
                     {!isEditing && (
                     <>
                         <Pencil className="h-4 w-4 mr-2" />
-                        تعديل المستوى
+                        {t('teacher.editLevel')}
                     </>)}
                 </Button>
             </div>
@@ -91,7 +93,7 @@ export const TargetLevelForm = ({
                     "text-sm mt-2 text-muted-foreground",
                     !initialData.targetLevel && "text-muted-foreground italic"
                 )}>
-                    {initialData.targetLevel || "غير محدد"}
+                    {initialData.targetLevel || t('teacher.notSpecified')}
                 </p>
             )}
 
@@ -110,7 +112,7 @@ export const TargetLevelForm = ({
                                             disabled={isSubmitting}
                                         >
                                             <SelectTrigger>
-                                                <SelectValue placeholder="اختر المستوى المستهدف" />
+                                                <SelectValue placeholder={t('teacher.selectTargetLevel')} />
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {levelOptions.map((level) => (
@@ -130,7 +132,7 @@ export const TargetLevelForm = ({
                                 disabled={!isValid || isSubmitting}
                                 type="submit"
                             >
-                                حفظ
+                                {t('common.save')}
                             </Button>
                         </div>
                     </form>

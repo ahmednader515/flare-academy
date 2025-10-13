@@ -4,10 +4,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 export const SearchInput = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { t } = useLanguage();
 
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -28,7 +30,7 @@ export const SearchInput = () => {
                 <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                     name="title"
-                    placeholder="ابحث عن كورسات تعليمية..."
+                    placeholder={t('dashboard.searchPlaceholder')}
                     defaultValue={searchParams.get("title") || ""}
                     className="h-12 pr-10 pl-4 text-base border-2 focus:border-[#211FC3] transition-colors"
                 />
@@ -38,7 +40,7 @@ export const SearchInput = () => {
                 className="h-12 px-6 bg-[#211FC3] hover:bg-[#211FC3]/90 text-white font-semibold transition-all duration-200 hover:scale-105"
             >
                 <Search className="h-4 w-4 ml-2" />
-                بحث
+                {t('dashboard.searchButton')}
             </Button>
         </form>
     );

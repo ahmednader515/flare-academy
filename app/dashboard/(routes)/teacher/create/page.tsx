@@ -21,16 +21,17 @@ import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { useAuth } from "@clerk/nextjs";
-
-const formSchema = z.object({
-    title: z.string().min(1, {
-        message: "Title is required",
-    }),
-})
+import { useLanguage } from "@/lib/contexts/language-context";
 
 const CreatePage = () => {
-
+    const { t } = useLanguage();
     const router = useRouter();
+
+    const formSchema = z.object({
+        title: z.string().min(1, {
+            message: t('validation.required'),
+        }),
+    })
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -54,9 +55,9 @@ const CreatePage = () => {
           });
       
           router.push(`/dashboard/teacher/courses/${response.data.id}`);
-          toast.success("تم إنشاء الكورس");
+          toast.success(t('teacher.courseCreatedSuccessfully'));
         } catch {
-          toast.error("حدث خطأ");
+          toast.error(t('teacher.courseCreationError'));
         }
       };
 
@@ -64,10 +65,10 @@ const CreatePage = () => {
         <div className="max-w-5xl mx-auto flex md:items-center md:justify-center h-full p-6">
             <div>
                 <h1 className="text-2xl">
-                    اسم الكورس
+                    {t('teacher.courseName')}
                 </h1>
                 <p className="text-sm text-slate-600">
-                    ماذا تريد أن تسمي دورتك؟ لا تقلق، يمكنك تغيير هذا لاحقاً.
+                    {t('teacher.courseNameDescription')}
                 </p>
                 <Form {...form}>
                     <form
@@ -82,17 +83,17 @@ const CreatePage = () => {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>
-                                        عنوان الكورس
+                                        {t('teacher.courseTitle')}
                                     </FormLabel>
                                     <FormControl>
                                         <Input
                                             disabled={isSubmitting}
-                                            placeholder="e.g. 'تطوير الويب المتقدم'"
+                                            placeholder={t('teacher.courseTitlePlaceholder')}
                                             {...field}
                                         />
                                     </FormControl>
                                     <FormDescription>
-                                        ماذا ستعلم في هذه الكورس؟
+                                        {t('teacher.courseTitleDescription')}
                                     </FormDescription>
                                     <FormMessage />
                                 </FormItem>
@@ -106,14 +107,14 @@ const CreatePage = () => {
                                     variant="ghost"
                                     type="button"
                                 >
-                                    إلغاء
+                                    {t('common.cancel')}
                                 </Button>
                             </Link>
                             <Button
                                 type="submit"
                                 disabled={!isValid || isSubmitting}
                             >
-                                استمر
+                                {t('common.continue')}
                             </Button>
                         </div>
 

@@ -9,6 +9,7 @@ import { Navbar } from "@/components/navbar";
 import { ScrollProgress } from "@/components/scroll-progress";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/db"; // Import db client
+import { useLanguage } from "@/lib/contexts/language-context";
 
 // Define types based on Prisma schema
 type Course = {
@@ -42,6 +43,7 @@ type CourseWithProgress = Course & {
 };
 
 export default function HomePage() {
+  const { t } = useLanguage();
   const [courses, setCourses] = useState<CourseWithProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
@@ -121,7 +123,7 @@ export default function HomePage() {
           >
             <div className="relative w-64 h-64 md:w-80 md:h-80">
               <Image
-                src="/flare-academy.jpg"
+                src="/hero-img.jpg"
                 alt="Flare Academy"
                 fill
                 priority
@@ -238,15 +240,17 @@ export default function HomePage() {
             transition={{ duration: 0.8 }}
             className="text-center mt-0 md:mt-0 order-2 md:order-1"
           >
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              Flare Academy
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 font-sans">
+              <span className="text-blue-600">Fla</span>
+              <span className="text-orange-500">Re</span>
+              <span className="text-cyan-500"> Academy</span>
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8">
-              كل ما يحتاجه الطالب في مكان واحد — محاضرات، مراجعات، وطرق ذكية للفهم والتفوق.
+              {t('home.subtitle')}
             </p>
             <Button size="lg" asChild className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white">
               <Link href="/sign-up">
-                ابدأ الآن <ArrowRight className="mr-2 h-4 w-4" />
+                {t('home.getStarted')} <ArrowRight className="mr-2 h-4 w-4" />
               </Link>
             </Button>
           </motion.div>
@@ -302,8 +306,8 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold mb-4">الكورسات المتاحة</h2>
-            <p className="text-muted-foreground">اكتشف مجموعة متنوعة من الكورسات التعليمية المميزة</p>
+            <h2 className="text-3xl font-bold mb-4">{t('home.availableCourses')}</h2>
+            <p className="text-muted-foreground">{t('home.discoverCourses')}</p>
           </motion.div>
 
           <motion.div
@@ -334,9 +338,9 @@ export default function HomePage() {
                     <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
                       <BookOpen className="h-8 w-8 text-muted-foreground" />
                     </div>
-                    <h3 className="text-lg font-semibold mb-2">لا توجد كورسات متاحة حالياً</h3>
+                    <h3 className="text-lg font-semibold mb-2">{t('home.noCoursesAvailable')}</h3>
                     <p className="text-muted-foreground mb-4">
-                      سيتم إضافة الكورسات قريباً. تحقق من هذه الصفحة لاحقاً للاطلاع على أحدث الكورسات التعليمية.
+                      {t('home.noCoursesDescription')}
                     </p>
                     <Button 
                       variant="outline" 
@@ -344,7 +348,7 @@ export default function HomePage() {
                       className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white border-[#FF6B35]"
                     >
                       <Link href="/sign-up">
-                        سجل الآن للوصول المبكر
+                        {t('home.signUpForEarlyAccess')}
                       </Link>
                     </Button>
                   </div>
@@ -392,9 +396,9 @@ export default function HomePage() {
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                         <BookOpen className="h-4 w-4" />
                         <span>
-                          {course.chapters?.length || 0} {course.chapters?.length === 1 ? "فصل" : "فصول"}
+                          {course.chapters?.length || 0} {course.chapters?.length === 1 ? t('home.chapter') : t('home.chapters')}
                           {course.quizzes && course.quizzes.length > 0 && (
-                            <span className="mr-2">، {course.quizzes.length} {course.quizzes.length === 1 ? "اختبار" : "اختبارات"}</span>
+                            <span className="mr-2">، {course.quizzes.length} {course.quizzes.length === 1 ? t('home.quiz') : t('home.quizzes')}</span>
                           )}
                         </span>
                       </div>
@@ -404,7 +408,7 @@ export default function HomePage() {
                         asChild
                       >
                         <Link href={course.chapters && course.chapters.length > 0 ? `/courses/${course.id}/chapters/${course.chapters[0].id}` : `/courses/${course.id}`}>
-                          {course.progress === 100 ? "عرض الكورس" : "عرض الكورس"}
+                          {t('home.viewCourse')}
                         </Link>
                       </Button>
                     </div>
@@ -414,73 +418,6 @@ export default function HomePage() {
             )}
           </motion.div>
         </motion.div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">آراء الطلاب</h2>
-            <p className="text-muted-foreground">ماذا يقول طلابنا عن تجربتهم معنا</p>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                name: "عصام اسامة",
-                grade: "الصف الأول الثانوي",
-                testimonial: "تجربة رائعة مع الأستاذ حسن، شرح مميز وطريقة سهلة في توصيل المعلومة"
-              },
-              {
-                name: "سيف طارق",
-                grade: "الصف الثاني الثانوي",
-                testimonial: "المنهج منظم جداً والشرح واضح، ساعدني في فهم المواد بشكل أفضل"
-              },
-              {
-                name: "عمر جمال",
-                grade: "الصف الأول الثانوي",
-                testimonial: "أفضل منصة تعليمية استخدمتها، المحتوى غني والشرح مبسط"
-              }
-            ].map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-card rounded-lg p-6 shadow-lg"
-              >
-                <div className="flex items-center mb-4">
-                  <div className="relative h-12 w-12 rounded-full overflow-hidden">
-                    <Image
-                      src="/male.png"
-                      alt={testimonial.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="mr-4">
-                    <h4 className="font-semibold">{testimonial.name}</h4>
-                    <p className="text-sm text-muted-foreground">{testimonial.grade}</p>
-                  </div>
-                </div>
-                <p className="text-muted-foreground">
-                  &ldquo;{testimonial.testimonial}&rdquo;
-                </p>
-                <div className="flex mt-4">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* Features Section */}
@@ -499,8 +436,8 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold mb-4">مميزات المنصة</h2>
-            <p className="text-muted-foreground">اكتشف ما يجعل منصتنا مميزة</p>
+            <h2 className="text-3xl font-bold mb-4">{t('home.platformFeatures')}</h2>
+            <p className="text-muted-foreground">{t('home.featuresSubtitle')}</p>
           </motion.div>
 
           <motion.div
@@ -520,8 +457,8 @@ export default function HomePage() {
               <div className="w-12 h-12 bg-[#FF6B35]/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Star className="h-6 w-6 text-[#FF6B35]" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">جودة عالية</h3>
-              <p className="text-muted-foreground">أفضل منصة متخصصة لكورسات اللغة العربية</p>
+              <h3 className="text-xl font-semibold mb-2">{t('home.highQuality')}</h3>
+              <p className="text-muted-foreground">{t('home.highQualityDesc')}</p>
             </motion.div>
 
             <motion.div
@@ -534,8 +471,8 @@ export default function HomePage() {
               <div className="w-12 h-12 bg-[#FF6B35]/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="h-6 w-6 text-[#FF6B35]" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">مجتمع نشط</h3>
-              <p className="text-muted-foreground">انضم إلى مجتمع من الطلاب النشطين والمتفوقين والأوائل</p>
+              <h3 className="text-xl font-semibold mb-2">{t('home.activeCommunity')}</h3>
+              <p className="text-muted-foreground">{t('home.activeCommunityDesc')}</p>
             </motion.div>
 
             <motion.div
@@ -548,8 +485,8 @@ export default function HomePage() {
               <div className="w-12 h-12 bg-[#FF6B35]/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Award className="h-6 w-6 text-[#FF6B35]" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">شهادات تقدير</h3>
-              <p className="text-muted-foreground">احصل على شهادات تقدير عند إكمال الكورسات</p>
+              <h3 className="text-xl font-semibold mb-2">{t('home.certificates')}</h3>
+              <p className="text-muted-foreground">{t('home.certificatesDesc')}</p>
             </motion.div>
           </motion.div>
         </motion.div>
@@ -565,13 +502,13 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">ابدأ رحلة التعلم معنا</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('home.startLearningJourney')}</h2>
             <p className="text-muted-foreground mb-8">
-              انضم إلينا اليوم وابدأ رحلة النجاح
+              {t('home.joinToday')}
             </p>
             <Button size="lg" asChild className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white">
               <Link href="/sign-up">
-                سجل الآن <ArrowRight className="mr-2 h-4 w-4" />
+                {t('home.signUpNow')} <ArrowRight className="mr-2 h-4 w-4" />
               </Link>
             </Button>
           </motion.div>
