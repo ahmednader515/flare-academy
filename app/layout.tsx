@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter, PT_Serif } from "next/font/google";
+import { Geist, Geist_Mono, PT_Serif } from "next/font/google";
+import localFont from 'next/font/local';
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Footer } from "@/components/footer";
@@ -14,18 +15,39 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const inter = Inter({
-  variable: '--font-inter',
-  subsets: ["latin"],
-  display: 'swap',
-  preload: true,
-});
-
 const ptSerif = PT_Serif({
   variable: '--font-pt-serif',
   subsets: ["latin"],
   weight: ['400', '700'],
   style: ['normal', 'italic'],
+  display: 'swap',
+  preload: true,
+});
+
+const playpenSansArabic = localFont({
+  src: [
+    {
+      path: '../public/fonts/static/PlaypenSansArabic-Regular.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../public/fonts/static/PlaypenSansArabic-Medium.ttf',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../public/fonts/static/PlaypenSansArabic-SemiBold.ttf',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../public/fonts/static/PlaypenSansArabic-Bold.ttf',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-playpen-sans-arabic',
   display: 'swap',
   preload: true,
 });
@@ -41,7 +63,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html suppressHydrationWarning lang="ar" dir="rtl" className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${ptSerif.variable}`}>
+    <html suppressHydrationWarning lang="ar" dir="rtl" className={`${geistSans.variable} ${geistMono.variable} ${playpenSansArabic.variable} ${ptSerif.variable}`}>
       <body suppressHydrationWarning className="font-playpen-sans-arabic" data-pt-serif={ptSerif.variable}>
         <Providers>
           <div className="min-h-screen flex flex-col">
