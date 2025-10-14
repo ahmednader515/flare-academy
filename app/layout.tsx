@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter, Playpen_Sans, PT_Serif } from "next/font/google";
+import { Geist, Geist_Mono, Inter, PT_Serif } from "next/font/google";
+import localFont from 'next/font/local';
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Footer } from "@/components/footer";
@@ -14,8 +15,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const playpenSansArabic = Playpen_Sans({
-  variable: '--font-playpen-sans-arabic',
+const inter = Inter({
+  variable: '--font-inter',
   subsets: ["latin"],
   display: 'swap',
   preload: true,
@@ -30,6 +31,14 @@ const ptSerif = PT_Serif({
   preload: true,
 });
 
+// Use a system font stack for Arabic support
+const playpenSansArabic = localFont({
+  src: [],
+  variable: '--font-playpen-sans-arabic',
+  display: 'swap',
+  preload: false,
+});
+
 export const metadata: Metadata = {
   title: "Flare Academy",
   description: "منصة تعليمية متكاملة",
@@ -41,7 +50,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html suppressHydrationWarning lang="ar" dir="rtl" className={`${geistSans.variable} ${geistMono.variable} ${playpenSansArabic.variable} ${ptSerif.variable}`}>
+    <html suppressHydrationWarning lang="ar" dir="rtl" className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${playpenSansArabic.variable} ${ptSerif.variable}`}>
       <body suppressHydrationWarning className="font-playpen-sans-arabic" data-pt-serif={ptSerif.variable}>
         <Providers>
           <div className="min-h-screen flex flex-col">
