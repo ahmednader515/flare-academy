@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import localFont from 'next/font/local';
+import { Geist, Geist_Mono, Inter, Playpen_Sans, PT_Serif } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Footer } from "@/components/footer";
@@ -15,37 +14,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const playpenSansArabic = localFont({
-  src: './fonts/PlaypenSansArabic-VariableFont_wght.ttf',
+const playpenSansArabic = Playpen_Sans({
   variable: '--font-playpen-sans-arabic',
+  subsets: ["latin"],
   display: 'swap',
   preload: true,
 });
 
-const ptSerif = localFont({
-  src: [
-    {
-      path: './fonts/PT_Serif/PTSerif-Regular.ttf',
-      weight: '400',
-      style: 'normal',
-    },
-    {
-      path: './fonts/PT_Serif/PTSerif-Italic.ttf',
-      weight: '400',
-      style: 'italic',
-    },
-    {
-      path: './fonts/PT_Serif/PTSerif-Bold.ttf',
-      weight: '700',
-      style: 'normal',
-    },
-    {
-      path: './fonts/PT_Serif/PTSerif-BoldItalic.ttf',
-      weight: '700',
-      style: 'italic',
-    },
-  ],
+const ptSerif = PT_Serif({
   variable: '--font-pt-serif',
+  subsets: ["latin"],
+  weight: ['400', '700'],
+  style: ['normal', 'italic'],
   display: 'swap',
   preload: true,
 });
