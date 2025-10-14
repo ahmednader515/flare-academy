@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 type Course = {
   id: string;
@@ -22,17 +23,18 @@ type Course = {
 };
 
 export function AdminCoursesTable({ courses, onDeleted }: { courses: Course[]; onDeleted?: () => void }) {
+  const { t, isRTL } = useLanguage();
   const handleDelete = async (courseId: string) => {
     try {
       const res = await fetch(`/api/courses/${courseId}`, { method: "DELETE" });
       if (!res.ok) {
         const msg = await res.text();
-        throw new Error(msg || "فشل حذف الكورس");
+        throw new Error(msg || t('dashboard.deleteCourseError'));
       }
-      toast.success("تم حذف الكورس بنجاح");
+      toast.success(t('dashboard.deleteCourseSuccess'));
       onDeleted?.();
     } catch (e: any) {
-      toast.error(e?.message || "حدث خطأ");
+      toast.error(e?.message || t('dashboard.errorOccurred'));
     }
   };
 
@@ -41,19 +43,19 @@ export function AdminCoursesTable({ courses, onDeleted }: { courses: Course[]; o
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-right">العنوان</TableHead>
-            <TableHead className="text-right">السعر</TableHead>
-            <TableHead className="text-right">الحالة</TableHead>
-            <TableHead className="text-right">الإجراءات</TableHead>
+            <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.title')}</TableHead>
+            <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.price')}</TableHead>
+            <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.status')}</TableHead>
+            <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {courses.map((course) => (
             <TableRow key={course.id}>
-              <TableCell>{course.title}</TableCell>
-              <TableCell>{Number(course.price || 0)}</TableCell>
-              <TableCell>{course.isPublished ? "منشور" : "مسودة"}</TableCell>
-              <TableCell>
+              <TableCell className={isRTL ? "text-right" : "text-left"}>{course.title}</TableCell>
+              <TableCell className={isRTL ? "text-right" : "text-left"}>{Number(course.price || 0)}</TableCell>
+              <TableCell className={isRTL ? "text-right" : "text-left"}>{course.isPublished ? t('dashboard.published') : t('dashboard.draft')}</TableCell>
+              <TableCell className={isRTL ? "text-right" : "text-left"}>
                 <div className="flex items-center gap-2">
                   <Link href={`/dashboard/teacher/courses/${course.id}`}>
                     <Button variant="ghost" size="icon">

@@ -38,7 +38,7 @@ interface Question {
 
 const QuizzesPage = () => {
     const router = useRouter();
-    const { t } = useLanguage();
+    const { t, isRTL } = useLanguage();
     const [quizzes, setQuizzes] = useState<Quiz[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -133,45 +133,45 @@ const QuizzesPage = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>{t('teacher.quizTitle')}</TableHead>
-                                <TableHead>{t('teacher.course')}</TableHead>
-                                <TableHead>{t('teacher.position')}</TableHead>
-                                <TableHead>{t('teacher.status')}</TableHead>
-                                <TableHead>{t('teacher.numberOfQuestions')}</TableHead>
-                                <TableHead>{t('teacher.creationDate')}</TableHead>
-                                <TableHead>{t('teacher.actions')}</TableHead>
+                                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.quizTitle')}</TableHead>
+                                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.course')}</TableHead>
+                                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.position')}</TableHead>
+                                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.status')}</TableHead>
+                                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.numberOfQuestions')}</TableHead>
+                                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.creationDate')}</TableHead>
+                                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.actions')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {filteredQuizzes.map((quiz) => (
                                 <TableRow key={quiz.id}>
-                                    <TableCell className="font-medium">
+                                    <TableCell className={`font-medium ${isRTL ? "text-right" : "text-left"}`}>
                                         {quiz.title}
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className={isRTL ? "text-right" : "text-left"}>
                                         <Badge variant="outline">
                                             {quiz.course.title}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className={isRTL ? "text-right" : "text-left"}>
                                         <Badge variant="secondary">
                                             {quiz.position}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className={isRTL ? "text-right" : "text-left"}>
                                         <Badge variant={quiz.isPublished ? "default" : "secondary"}>
                                             {quiz.isPublished ? t('teacher.published') : t('teacher.draft')}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className={isRTL ? "text-right" : "text-left"}>
                                         <Badge variant="secondary">
                                             {quiz.questions.length} {quiz.questions.length === 1 ? t('teacher.question') : t('teacher.questions')}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className={isRTL ? "text-right" : "text-left"}>
                                         {new Date(quiz.createdAt).toLocaleDateString("ar-EG")}
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className={isRTL ? "text-right" : "text-left"}>
                                         <div className="flex items-center space-x-2">
                                             <Button 
                                                 size="sm" 

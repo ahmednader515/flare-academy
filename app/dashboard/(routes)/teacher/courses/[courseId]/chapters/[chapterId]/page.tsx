@@ -28,6 +28,11 @@ export default async function ChapterPage({
                     position: 'asc',
                 },
             },
+            course: {
+                select: {
+                    isFree: true
+                }
+            }
         }
     });
 
@@ -52,6 +57,7 @@ export default async function ChapterPage({
             courseId={courseId}
             chapterId={chapterId}
             completionText={completionText}
+            courseIsFree={chapter.course.isFree}
         />
     );
 } 

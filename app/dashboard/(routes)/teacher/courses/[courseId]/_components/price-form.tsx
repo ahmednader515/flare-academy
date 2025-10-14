@@ -68,27 +68,38 @@ export const PriceForm = ({
         <div className="mt-6 border bg-card rounded-md p-4">
             <div className="font-medium flex items-center justify-between">
                 {t('teacher.coursePrice')}
-                <Button onClick={toggleEdit} variant="ghost">
-                    {isEditing && (<>{t('common.cancel')}</>)}
-                    {!isEditing && (
-                    <>
-                        <Pencil className="h-4 w-4 mr-2" />
-                        {t('teacher.editPrice')}
-                    </>)}
-                </Button>
+                {!initialData.isFree && (
+                    <Button onClick={toggleEdit} variant="ghost">
+                        {isEditing && (<>{t('common.cancel')}</>)}
+                        {!isEditing && (
+                        <>
+                            <Pencil className="h-4 w-4 mr-2" />
+                            {t('teacher.editPrice')}
+                        </>)}
+                    </Button>
+                )}
             </div>
             {!isEditing && (
-                <p className={cn(
-                    "text-sm mt-2 text-muted-foreground",
-                    !initialData.price && initialData.price !== 0 && "text-muted-foreground italic"
-                )}>
-                    {initialData.price === 0
-                      ? t('teacher.free')
-                      : initialData.price
-                      ? formatPrice(initialData.price)
-                      : t('teacher.noPrice')
-                    }
-                </p>
+                <div className="mt-2">
+                    <p className={cn(
+                        "text-sm text-muted-foreground",
+                        !initialData.price && initialData.price !== 0 && "text-muted-foreground italic"
+                    )}>
+                        {initialData.isFree
+                          ? t('teacher.free')
+                          : initialData.price === 0
+                          ? t('teacher.free')
+                          : initialData.price
+                          ? formatPrice(initialData.price)
+                          : t('teacher.noPrice')
+                        }
+                    </p>
+                    {initialData.isFree && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                            {t('teacher.priceDisabledForFreeCourse')}
+                        </p>
+                    )}
+                </div>
             )}
 
             {isEditing && (

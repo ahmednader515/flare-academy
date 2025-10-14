@@ -6,6 +6,8 @@ import { BookOpen, Clock, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/language-context";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 type CourseWithDetails = {
     id: string;
@@ -30,6 +32,29 @@ interface SearchPageContentProps {
 
 export const SearchPageContent = ({ coursesWithProgress, title }: SearchPageContentProps) => {
     const { t } = useLanguage();
+    const router = useRouter();
+
+    const handleEnrollInFreeCourse = async (courseId: string) => {
+        try {
+            const response = await fetch(`/api/courses/${courseId}/enroll`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                toast.success(t('dashboard.enrolledSuccessfully'));
+                router.refresh();
+            } else {
+                const errorData = await response.json();
+                toast.error(errorData.message || t('dashboard.enrollmentFailed'));
+            }
+        } catch (error) {
+            console.error('Error enrolling in course:', error);
+            toast.error(t('dashboard.enrollmentFailed'));
+        }
+    };
 
     return (
         <div className="p-6 space-y-6">
@@ -97,11 +122,11 @@ export const SearchPageContent = ({ coursesWithProgress, title }: SearchPageCont
                                 {/* Price Badge */}
                                 <div className="absolute top-4 left-4">
                                     <div className={`rounded-full px-3 py-1 text-sm font-medium ${
-                                        course.price === 0 
+                                        course.isFree 
                                             ? "bg-green-500 text-white" 
                                             : "bg-white/90 backdrop-blur-sm text-gray-800"
                                     }`}>
-                                        {course.price === 0 ? t('dashboard.free') : `${course.price} ${t('dashboard.egyptianPound')}`}
+                                        {course.isFree ? t('dashboard.free') : `${course.price} ${t('dashboard.egyptianPound')}`}
                                     </div>
                                 </div>
 
@@ -166,15 +191,35 @@ export const SearchPageContent = ({ coursesWithProgress, title }: SearchPageCont
                                     </div>
                                 </div>
                                 
-                                <Button 
-                                    className="w-full bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-semibold py-3 text-base transition-all duration-200 hover:scale-105" 
-                                    variant="default"
-                                    asChild
-                                >
-                                    <Link href={course.chapters.length > 0 ? `/courses/${course.id}/chapters/${course.chapters[0].id}` : `/courses/${course.id}`}>
-                                        {course.purchases.length > 0 ? t('dashboard.continueLearning') : t('dashboard.viewCourse')}
-                                    </Link>
-                                </Button>
+                                {course.purchases.length > 0 ? (
+                                    <Button 
+                                        className="w-full bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-semibold py-3 text-base transition-all duration-200 hover:scale-105" 
+                                        variant="default"
+                                        asChild
+                                    >
+                                        <Link href={course.chapters.length > 0 ? `/courses/${course.id}/chapters/${course.chapters[0].id}` : `/courses/${course.id}`}>
+                                            {t('dashboard.continueLearning')}
+                                        </Link>
+                                    </Button>
+                                ) : course.isFree ? (
+                                    <Button 
+                                        className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 text-base transition-all duration-200 hover:scale-105" 
+                                        variant="default"
+                                        onClick={() => handleEnrollInFreeCourse(course.id)}
+                                    >
+                                        {t('dashboard.enrollInFreeCourse')}
+                                    </Button>
+                                ) : (
+                                    <Button 
+                                        className="w-full bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-semibold py-3 text-base transition-all duration-200 hover:scale-105" 
+                                        variant="default"
+                                        asChild
+                                    >
+                                        <Link href={`/courses/${course.id}/purchase`}>
+                                            {t('dashboard.viewCourse')}
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     ))}

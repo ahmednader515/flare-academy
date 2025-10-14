@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function POST(req: Request) {
     try {
         const { userId } = await auth()
-        const { title } = await req.json();
+        const { title, isFree } = await req.json();
 
         if(!userId) {
             return new NextResponse("Unauthorized", { status: 401 });
@@ -15,6 +15,7 @@ export async function POST(req: Request) {
             data: {
                 userId,
                 title,
+                isFree: isFree || false,
             }
         });
 

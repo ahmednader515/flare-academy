@@ -240,7 +240,7 @@ export default function HomePage() {
             transition={{ duration: 0.8 }}
             className="text-center mt-0 md:mt-0 order-2 md:order-1"
           >
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 font-sans">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 font-pt-serif">
               <span className="text-blue-600">Fla</span>
               <span className="text-orange-500">Re</span>
               <span className="text-cyan-500"> Academy</span>

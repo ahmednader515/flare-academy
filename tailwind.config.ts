@@ -20,6 +20,7 @@ const config = {
     extend: {
       fontFamily: {
         'playpen-sans-arabic': ['var(--font-playpen-sans-arabic)'],
+        'pt-serif': ['var(--font-pt-serif)', 'PT Serif Local', 'PT Serif', 'serif'],
       },
       colors: {
         border: "hsl(var(--border))",

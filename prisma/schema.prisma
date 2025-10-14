@@ -39,6 +39,7 @@ model Course {
   imageUrl String? @db.Text
   price Float?
   isPublished Boolean @default(false)
+  isFree Boolean @default(false)
   targetFaculty String?
   targetLevel String?
 

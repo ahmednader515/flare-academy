@@ -17,21 +17,37 @@ export async function POST(
         }
 
         // Check if user has access to the course
-        const purchase = await db.purchase.findUnique({
+        const course = await db.course.findUnique({
             where: {
-                userId_courseId: {
-                    userId,
-                    courseId: resolvedParams.courseId
+                id: resolvedParams.courseId,
+                isPublished: true
+            },
+            include: {
+                purchases: {
+                    where: {
+                        userId,
+                        status: "ACTIVE"
+                    }
                 }
             }
         });
 
-        if (!purchase) {
-            return new NextResponse("Course access required", { status: 403 });
+        if (!course) {
+            return new NextResponse("Course not found", { status: 404 });
         }
 
-        // Get the quiz with questions
-        const quiz = await db.quiz.findFirst({
+        // If course is free, allow access
+        if (!course.isFree) {
+            // Check if user has purchased the course
+            const hasAccess = course.purchases.length > 0;
+            
+            if (!hasAccess) {
+                return new NextResponse("Course access required", { status: 403 });
+            }
+        }
+
+        // Get the quiz with questions (quiz already fetched above, but need questions)
+        const quizWithQuestions = await db.quiz.findFirst({
             where: {
                 id: resolvedParams.quizId,
                 courseId: resolvedParams.courseId,
@@ -55,7 +71,7 @@ export async function POST(
             }
         });
 
-        if (!quiz) {
+        if (!quizWithQuestions) {
             return new NextResponse("Quiz not found", { status: 404 });
         }
 
@@ -72,7 +88,7 @@ export async function POST(
 
         const currentAttemptNumber = existingResults.length + 1;
 
-        if (existingResults.length >= quiz.maxAttempts) {
+        if (existingResults.length >= quizWithQuestions.maxAttempts) {
             return new NextResponse("Maximum attempts reached for this quiz", { status: 400 });
         }
 
@@ -81,7 +97,7 @@ export async function POST(
         let totalPoints = 0;
         const quizAnswers = [];
 
-        for (const question of quiz.questions) {
+        for (const question of quizWithQuestions.questions) {
             totalPoints += question.points;
             const studentAnswer = answers.find((a: any) => a.questionId === question.id)?.answer || "";
             

@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Eye, EyeOff, UserPlus, ArrowLeft, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import axios, { AxiosError } from "axios";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface CreatedUser {
   id: string;
@@ -38,6 +39,7 @@ const facultyOptions = [
 
 export default function CreateAccountPage() {
   const router = useRouter();
+  const { t, isRTL } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -81,7 +83,7 @@ export default function CreateAccountPage() {
     setIsLoading(true);
 
     if (!passwordChecks.isValid) {
-      toast.error("كلمات المرور غير متطابقة");
+      toast.error(t('dashboard.passwordsDoNotMatch'));
       setIsLoading(false);
       return;
     }
@@ -91,7 +93,7 @@ export default function CreateAccountPage() {
       
       if (response.data.success) {
         setCreatedUser(response.data.user);
-        toast.success("تم إنشاء حساب الطالب بنجاح");
+        toast.success(t('dashboard.accountCreatedSuccessfully'));
         // Reset form
         setFormData({
           fullName: "",
@@ -109,18 +111,18 @@ export default function CreateAccountPage() {
       if (axiosError.response?.status === 400) {
         const errorMessage = axiosError.response.data as string;
         if (errorMessage.includes("Phone number already exists")) {
-          toast.error("رقم الهاتف مسجل مسبقاً");
+          toast.error(t('dashboard.phoneAlreadyExists'));
         } else if (errorMessage.includes("Email already exists")) {
-          toast.error("البريد الإلكتروني مسجل مسبقاً");
+          toast.error(t('dashboard.emailAlreadyExists'));
         } else if (errorMessage.includes("Invalid email format")) {
-          toast.error("تنسيق البريد الإلكتروني غير صحيح");
+          toast.error(t('dashboard.invalidEmailFormat'));
         } else if (errorMessage.includes("Passwords do not match")) {
-          toast.error("كلمات المرور غير متطابقة");
+          toast.error(t('dashboard.passwordsDoNotMatch'));
         } else {
-          toast.error("حدث خطأ أثناء إنشاء الحساب");
+          toast.error(t('dashboard.accountCreationError'));
         }
       } else {
-        toast.error("حدث خطأ أثناء إنشاء الحساب");
+        toast.error(t('dashboard.accountCreationError'));
       }
     } finally {
       setIsLoading(false);
@@ -148,11 +150,11 @@ export default function CreateAccountPage() {
           <Button variant="ghost" size="sm" asChild>
             <Link href="/dashboard/admin/users">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              العودة
+              {t('dashboard.back')}
             </Link>
           </Button>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            إنشاء حساب طالب جديد
+            {t('dashboard.createNewStudentAccount')}
           </h1>
         </div>
       </div>
@@ -163,27 +165,27 @@ export default function CreateAccountPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-green-700 dark:text-green-300">
                 <CheckCircle className="h-5 w-5" />
-                تم إنشاء الحساب بنجاح
+                {t('dashboard.accountCreatedSuccessfully')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium text-green-700 dark:text-green-300">الاسم الكامل</Label>
+                  <Label className="text-sm font-medium text-green-700 dark:text-green-300">{t('dashboard.fullName')}</Label>
                   <p className="text-green-800 dark:text-green-200 font-semibold">{createdUser.fullName}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-green-700 dark:text-green-300">رقم الهاتف</Label>
+                  <Label className="text-sm font-medium text-green-700 dark:text-green-300">{t('dashboard.phoneNumber')}</Label>
                   <p className="text-green-800 dark:text-green-200 font-semibold">{createdUser.phoneNumber}</p>
                 </div>
               </div>
               <div className="flex gap-4">
                 <Button onClick={resetForm} className="bg-green-600 hover:bg-green-700 text-white">
-                  إنشاء حساب آخر
+                  {t('dashboard.createAnotherAccount')}
                 </Button>
                 <Button variant="outline" asChild>
                   <Link href="/dashboard/admin/users">
-                    عرض جميع المستخدمين
+                    {t('dashboard.viewAllUsers')}
                   </Link>
                 </Button>
               </div>
@@ -194,62 +196,62 @@ export default function CreateAccountPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserPlus className="h-5 w-5" />
-                معلومات الطالب
+                {t('dashboard.studentInformation')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="fullName">الاسم الكامل *</Label>
+                    <Label htmlFor="fullName">{t('dashboard.fullName')} *</Label>
                     <Input
                       id="fullName"
                       name="fullName"
                       type="text"
                       value={formData.fullName}
                       onChange={handleInputChange}
-                      placeholder="أدخل الاسم الكامل"
+                      placeholder={t('dashboard.enterFullName')}
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phoneNumber">رقم الهاتف *</Label>
+                    <Label htmlFor="phoneNumber">{t('dashboard.phoneNumber')} *</Label>
                     <Input
                       id="phoneNumber"
                       name="phoneNumber"
                       type="tel"
                       value={formData.phoneNumber}
                       onChange={handleInputChange}
-                      placeholder="أدخل رقم الهاتف"
+                      placeholder={t('dashboard.enterPhoneNumber')}
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">البريد الإلكتروني *</Label>
+                  <Label htmlFor="email">{t('dashboard.email')} *</Label>
                   <Input
                     id="email"
                     name="email"
                     type="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="أدخل البريد الإلكتروني"
+                    placeholder={t('dashboard.enterEmail')}
                     required
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="college">الكلية (اختياري)</Label>
+                    <Label htmlFor="college">{t('dashboard.collegeOptional')}</Label>
                     <Select
                       value={formData.college}
                       onValueChange={(value) => handleSelectChange("college", value)}
                       disabled={isLoading}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="اختر الكلية" />
+                        <SelectValue placeholder={t('dashboard.selectCollege')} />
                       </SelectTrigger>
                       <SelectContent>
                         {collegeOptions.map((college) => (
@@ -262,14 +264,14 @@ export default function CreateAccountPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="faculty">التخصص (اختياري)</Label>
+                    <Label htmlFor="faculty">{t('dashboard.facultyOptional')}</Label>
                     <Select
                       value={formData.faculty}
                       onValueChange={(value) => handleSelectChange("faculty", value)}
                       disabled={isLoading}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="اختر التخصص" />
+                        <SelectValue placeholder={t('dashboard.selectFaculty')} />
                       </SelectTrigger>
                       <SelectContent>
                         {facultyOptions.map((faculty) => (
@@ -284,7 +286,7 @@ export default function CreateAccountPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="password">كلمة المرور *</Label>
+                    <Label htmlFor="password">{t('dashboard.password')} *</Label>
                     <div className="relative">
                       <Input
                         id="password"
@@ -292,14 +294,14 @@ export default function CreateAccountPage() {
                         type={showPassword ? "text" : "password"}
                         value={formData.password}
                         onChange={handleInputChange}
-                        placeholder="أدخل كلمة المرور"
+                        placeholder={t('dashboard.enterPassword')}
                         required
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        className={`absolute top-0 h-full px-3 py-2 hover:bg-transparent ${isRTL ? 'left-0' : 'right-0'}`}
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? (
@@ -312,7 +314,7 @@ export default function CreateAccountPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">تأكيد كلمة المرور *</Label>
+                    <Label htmlFor="confirmPassword">{t('dashboard.confirmPassword')} *</Label>
                     <div className="relative">
                       <Input
                         id="confirmPassword"
@@ -320,14 +322,14 @@ export default function CreateAccountPage() {
                         type={showConfirmPassword ? "text" : "password"}
                         value={formData.confirmPassword}
                         onChange={handleInputChange}
-                        placeholder="أكد كلمة المرور"
+                        placeholder={t('dashboard.confirmPasswordPlaceholder')}
                         required
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute left-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        className={`absolute top-0 h-full px-3 py-2 hover:bg-transparent ${isRTL ? 'left-0' : 'right-0'}`}
                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       >
                         {showConfirmPassword ? (
@@ -345,12 +347,12 @@ export default function CreateAccountPage() {
                     {passwordChecks.match ? (
                       <span className="flex items-center gap-1">
                         <span className="w-2 h-2 bg-green-600 rounded-full"></span>
-                        كلمات المرور متطابقة
+                        {t('dashboard.passwordsMatch')}
                       </span>
                     ) : (
                       <span className="flex items-center gap-1">
                         <span className="w-2 h-2 bg-red-600 rounded-full"></span>
-                        كلمات المرور غير متطابقة
+                        {t('dashboard.passwordsDoNotMatch')}
                       </span>
                     )}
                   </div>
@@ -362,14 +364,14 @@ export default function CreateAccountPage() {
                     disabled={isLoading || !passwordChecks.isValid}
                     className="flex-1 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white"
                   >
-                    {isLoading ? "جاري الإنشاء..." : "إنشاء الحساب"}
+                    {isLoading ? t('dashboard.creating') : t('dashboard.createAccount')}
                   </Button>
                   <Button
                     type="button"
                     variant="outline"
                     onClick={resetForm}
                   >
-                    إعادة تعيين
+                    {t('dashboard.resetForm')}
                   </Button>
                 </div>
               </form>

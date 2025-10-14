@@ -8,6 +8,7 @@ import { ImageForm } from "./image-form";
 import { PriceForm } from "./price-form";
 import { TargetFacultyForm } from "./target-faculty-form";
 import { CourseContentForm } from "./course-content-form";
+import { IsFreeForm } from "./is-free-form";
 import { Banner } from "@/components/banner";
 import { Actions } from "./actions";
 import { useLanguage } from "@/lib/contexts/language-context";
@@ -19,6 +20,7 @@ interface Course {
     imageUrl: string | null;
     price: number | null;
     isPublished: boolean;
+    isFree: boolean;
     userId: string;
     chapters: Array<{
         id: string;
@@ -123,6 +125,10 @@ export const CourseEditContent = ({
                             courseId={course.id}
                         />
                         <TargetFacultyForm
+                            initialData={course}
+                            courseId={course.id}
+                        />
+                        <IsFreeForm
                             initialData={course}
                             courseId={course.id}
                         />

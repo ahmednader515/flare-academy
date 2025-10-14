@@ -28,17 +28,20 @@ interface ChapterFormProps {
         chapters: Chapter[];
     };
     courseId: string;
+    courseIsFree?: boolean;
 }
 
 const formSchema = z.object({
     title: z.string().min(1, {
         message: "Title is required",
     }),
+    isFree: z.boolean().default(false),
 });
 
 export const ChapterForm = ({
     initialData,
-    courseId
+    courseId,
+    courseIsFree = false
 }: ChapterFormProps) => {
     const [isCreating, setIsCreating] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
@@ -51,6 +54,7 @@ export const ChapterForm = ({
         resolver: zodResolver(formSchema),
         defaultValues: {
             title: "",
+            isFree: false,
         },
     });
 
@@ -134,6 +138,32 @@ export const ChapterForm = ({
                                 </FormItem>
                             )}
                         />
+                        {!courseIsFree && (
+                            <FormField
+                                control={form.control}
+                                name="isFree"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                        <FormControl>
+                                            <input
+                                                type="checkbox"
+                                                checked={field.value}
+                                                onChange={(e) => field.onChange(e.target.checked)}
+                                                className="rounded border-gray-300"
+                                            />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel>
+                                                {t('teacher.makeChapterFree')}
+                                            </FormLabel>
+                                            <FormDescription>
+                                                {t('teacher.checkToMakeChapterFreeForPreview')}
+                                            </FormDescription>
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+                        )}
                         <div className="flex items-center gap-x-2">
                             <Button disabled={!isValid || isSubmitting} type="submit">
                                 إنشاء
@@ -182,11 +212,6 @@ export const ChapterForm = ({
                                                         {chapter.title}
                                                     </div>
                                                     <div className="ml-auto pr-2 flex items-center gap-x-2">
-                                                        {chapter.isFree && (
-                                                            <Badge>
-                                                                مجاني
-                                                            </Badge>
-                                                        )}
                                                         <Badge
                                                             className={cn(
                                                                 "bg-muted text-muted-foreground",

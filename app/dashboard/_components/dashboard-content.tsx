@@ -101,7 +101,7 @@ export const DashboardContent = ({
         <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-100 text-sm">{t('dashboard.purchasedCourses')}</p>
+              <p className="text-green-100 text-sm">{t('dashboard.enrolledCourses')}</p>
               <p className="text-2xl font-bold">{studentStats.totalCourses}</p>
             </div>
             <BookOpenIcon className="h-8 w-8 text-green-200" />

@@ -70,7 +70,7 @@ interface EditUserData {
 }
 
 const UsersPage = () => {
-    const { t } = useLanguage();
+    const { t, isRTL } = useLanguage();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -212,22 +212,22 @@ const UsersPage = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="text-right">{t('dashboard.name')}</TableHead>
-                                    <TableHead className="text-right">{t('dashboard.phoneNumber')}</TableHead>
-                                    <TableHead className="text-right">{t('dashboard.email')}</TableHead>
-                                    <TableHead className="text-right">{t('dashboard.role')}</TableHead>
-                                    <TableHead className="text-right">{t('dashboard.registrationDate')}</TableHead>
-                                    <TableHead className="text-right">{t('dashboard.actions')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.name')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.phoneNumber')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.email')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.role')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.registrationDate')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {staffUsers.map((user) => (
                                     <TableRow key={user.id}>
-                                        <TableCell className="font-medium">
+                                        <TableCell className={`font-medium ${isRTL ? "text-right" : "text-left"}`}>
                                             {user.fullName}
                                         </TableCell>
-                                        <TableCell>{user.phoneNumber}</TableCell>
-                                        <TableCell>{user.email}</TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>{user.phoneNumber}</TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>{user.email}</TableCell>
                                         <TableCell>
                                             <Badge 
                                                 variant="secondary"
@@ -237,14 +237,14 @@ const UsersPage = () => {
                                                     ""
                                                 }
                                             >
-                                                {user.role === "TEACHER" ? "معلم" : 
-                                                 user.role === "ADMIN" ? "مشرف" : user.role}
+                                                {user.role === "TEACHER" ? t('dashboard.teacher') : 
+                                                 user.role === "ADMIN" ? t('dashboard.admin') : user.role}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             {format(new Date(user.createdAt), "dd/MM/yyyy", { locale: ar })}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <div className="flex items-center gap-2">
                                                 <Dialog open={isEditDialogOpen && editingUser?.id === user.id} onOpenChange={(open) => {
                                                     if (!open) {
@@ -263,15 +263,15 @@ const UsersPage = () => {
                                                     </DialogTrigger>
                                                     <DialogContent>
                                                         <DialogHeader>
-                                                            <DialogTitle>تعديل المستخدم</DialogTitle>
+                                                            <DialogTitle>{t('dashboard.editUser')}</DialogTitle>
                                                             <DialogDescription>
-                                                                قم بتعديل معلومات المستخدم
+                                                                {t('dashboard.editUserInfo')}
                                                             </DialogDescription>
                                                         </DialogHeader>
                                                         <div className="grid gap-4 py-4">
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="fullName" className="text-right">
-                                                                    الاسم
+                                                                <Label htmlFor="fullName" className={isRTL ? "text-right" : "text-left"}>
+                                                                    {t('dashboard.name')}
                                                                 </Label>
                                                                 <Input
                                                                     id="fullName"
@@ -281,8 +281,8 @@ const UsersPage = () => {
                                                                 />
                                                             </div>
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="phoneNumber" className="text-right">
-                                                                    رقم الهاتف
+                                                                <Label htmlFor="phoneNumber" className={isRTL ? "text-right" : "text-left"}>
+                                                                    {t('dashboard.phoneNumber')}
                                                                 </Label>
                                                                 <Input
                                                                     id="phoneNumber"
@@ -292,8 +292,8 @@ const UsersPage = () => {
                                                                 />
                                                             </div>
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="email" className="text-right">
-                                                                    البريد الإلكتروني
+                                                                <Label htmlFor="email" className={isRTL ? "text-right" : "text-left"}>
+                                                                    {t('dashboard.email')}
                                                                 </Label>
                                                                 <Input
                                                                     id="email"
@@ -304,20 +304,20 @@ const UsersPage = () => {
                                                                 />
                                                             </div>
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="role" className="text-right">
-                                                                    الدور
+                                                                <Label htmlFor="role" className={isRTL ? "text-right" : "text-left"}>
+                                                                    {t('dashboard.role')}
                                                                 </Label>
                                                                 <Select
                                                                     value={editData.role}
                                                                     onValueChange={(value) => setEditData({...editData, role: value})}
                                                                 >
                                                                     <SelectTrigger className="col-span-3">
-                                                                        <SelectValue placeholder="اختر الدور" />
+                                                                        <SelectValue placeholder={t('dashboard.selectRole')} />
                                                                     </SelectTrigger>
                                                                     <SelectContent>
-                                                                        <SelectItem value="USER">طالب</SelectItem>
-                                                                        <SelectItem value="TEACHER">معلم</SelectItem>
-                                                                        <SelectItem value="ADMIN">مشرف</SelectItem>
+                                                                        <SelectItem value="USER">{t('dashboard.students')}</SelectItem>
+                                                                        <SelectItem value="TEACHER">{t('dashboard.teacher')}</SelectItem>
+                                                                        <SelectItem value="ADMIN">{t('dashboard.admin')}</SelectItem>
                                                                     </SelectContent>
                                                                 </Select>
                                                             </div>
@@ -327,10 +327,10 @@ const UsersPage = () => {
                                                                 setIsEditDialogOpen(false);
                                                                 setEditingUser(null);
                                                             }}>
-                                                                إلغاء
+                                                                {t('common.cancel')}
                                                             </Button>
                                                             <Button onClick={handleSaveUser}>
-                                                                حفظ التغييرات
+                                                                {t('dashboard.saveChanges')}
                                                             </Button>
                                                         </DialogFooter>
                                                     </DialogContent>
@@ -348,18 +348,18 @@ const UsersPage = () => {
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
-                                                            <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
+                                                            <AlertDialogTitle>{t('dashboard.areYouSure')}</AlertDialogTitle>
                                                             <AlertDialogDescription>
-                                                                هذا الإجراء لا يمكن التراجع عنه. سيتم حذف المستخدم وجميع البيانات المرتبطة به نهائياً.
+                                                                {t('dashboard.deleteUserWarning')}
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
-                                                            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                                            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                                                             <AlertDialogAction
                                                                 onClick={() => handleDeleteUser(user.id)}
                                                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                                             >
-                                                                حذف
+                                                                {t('dashboard.delete')}
                                                             </AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>
@@ -378,11 +378,11 @@ const UsersPage = () => {
             {studentUsers.length > 0 && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>قائمة الطلاب</CardTitle>
+                        <CardTitle>{t('dashboard.studentsList')}</CardTitle>
                         <div className="flex items-center space-x-2">
                             <Search className="h-4 w-4 text-muted-foreground" />
                             <Input
-                                placeholder="البحث بالاسم أو رقم الهاتف..."
+                                placeholder={t('dashboard.searchByNameOrPhone')}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="max-w-sm"
@@ -393,43 +393,43 @@ const UsersPage = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="text-right">الاسم</TableHead>
-                                    <TableHead className="text-right">رقم الهاتف</TableHead>
-                                    <TableHead className="text-right">البريد الإلكتروني</TableHead>
-                                    <TableHead className="text-right">الدور</TableHead>
-                                    <TableHead className="text-right">الرصيد</TableHead>
-                                    <TableHead className="text-right">الكورسات المشتراة</TableHead>
-                                    <TableHead className="text-right">تاريخ التسجيل</TableHead>
-                                    <TableHead className="text-right">الإجراءات</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.name')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.phoneNumber')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.email')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.role')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.balance')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.purchasedCoursesCount')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.registrationDate')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {studentUsers.map((user) => (
                                     <TableRow key={user.id}>
-                                        <TableCell className="font-medium">
+                                        <TableCell className={`font-medium ${isRTL ? "text-right" : "text-left"}`}>
                                             {user.fullName}
                                         </TableCell>
-                                        <TableCell>{user.phoneNumber}</TableCell>
-                                        <TableCell>{user.email}</TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>{user.phoneNumber}</TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>{user.email}</TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <Badge variant="secondary">
-                                                طالب
+                                                {t('dashboard.students')}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <Badge variant="secondary">
-                                                {user.balance} جنيه
+                                                {user.balance} {t('dashboard.egyptianPound')}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <Badge variant="outline">
                                                 {user._count.purchases}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             {format(new Date(user.createdAt), "dd/MM/yyyy", { locale: ar })}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <div className="flex items-center gap-2">
                                                 <Dialog open={isEditDialogOpen && editingUser?.id === user.id} onOpenChange={(open) => {
                                                     if (!open) {
@@ -448,15 +448,15 @@ const UsersPage = () => {
                                                     </DialogTrigger>
                                                     <DialogContent>
                                                         <DialogHeader>
-                                                            <DialogTitle>تعديل المستخدم</DialogTitle>
+                                                            <DialogTitle>{t('dashboard.editUser')}</DialogTitle>
                                                             <DialogDescription>
-                                                                قم بتعديل معلومات المستخدم
+                                                                {t('dashboard.editUserInfo')}
                                                             </DialogDescription>
                                                         </DialogHeader>
                                                         <div className="grid gap-4 py-4">
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="fullName" className="text-right">
-                                                                    الاسم
+                                                                <Label htmlFor="fullName" className={isRTL ? "text-right" : "text-left"}>
+                                                                    {t('dashboard.name')}
                                                                 </Label>
                                                                 <Input
                                                                     id="fullName"
@@ -466,8 +466,8 @@ const UsersPage = () => {
                                                                 />
                                                             </div>
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="phoneNumber" className="text-right">
-                                                                    رقم الهاتف
+                                                                <Label htmlFor="phoneNumber" className={isRTL ? "text-right" : "text-left"}>
+                                                                    {t('dashboard.phoneNumber')}
                                                                 </Label>
                                                                 <Input
                                                                     id="phoneNumber"
@@ -477,8 +477,8 @@ const UsersPage = () => {
                                                                 />
                                                             </div>
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="email" className="text-right">
-                                                                    البريد الإلكتروني
+                                                                <Label htmlFor="email" className={isRTL ? "text-right" : "text-left"}>
+                                                                    {t('dashboard.email')}
                                                                 </Label>
                                                                 <Input
                                                                     id="email"
@@ -489,20 +489,20 @@ const UsersPage = () => {
                                                                 />
                                                             </div>
                                                             <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="role" className="text-right">
-                                                                    الدور
+                                                                <Label htmlFor="role" className={isRTL ? "text-right" : "text-left"}>
+                                                                    {t('dashboard.role')}
                                                                 </Label>
                                                                 <Select
                                                                     value={editData.role}
                                                                     onValueChange={(value) => setEditData({...editData, role: value})}
                                                                 >
                                                                     <SelectTrigger className="col-span-3">
-                                                                        <SelectValue placeholder="اختر الدور" />
+                                                                        <SelectValue placeholder={t('dashboard.selectRole')} />
                                                                     </SelectTrigger>
                                                                     <SelectContent>
-                                                                        <SelectItem value="USER">طالب</SelectItem>
-                                                                        <SelectItem value="TEACHER">معلم</SelectItem>
-                                                                        <SelectItem value="ADMIN">مشرف</SelectItem>
+                                                                        <SelectItem value="USER">{t('dashboard.students')}</SelectItem>
+                                                                        <SelectItem value="TEACHER">{t('dashboard.teacher')}</SelectItem>
+                                                                        <SelectItem value="ADMIN">{t('dashboard.admin')}</SelectItem>
                                                                     </SelectContent>
                                                                 </Select>
                                                             </div>
@@ -512,10 +512,10 @@ const UsersPage = () => {
                                                                 setIsEditDialogOpen(false);
                                                                 setEditingUser(null);
                                                             }}>
-                                                                إلغاء
+                                                                {t('common.cancel')}
                                                             </Button>
                                                             <Button onClick={handleSaveUser}>
-                                                                حفظ التغييرات
+                                                                {t('dashboard.saveChanges')}
                                                             </Button>
                                                         </DialogFooter>
                                                     </DialogContent>
@@ -533,18 +533,18 @@ const UsersPage = () => {
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
-                                                            <AlertDialogTitle>هل أنت متأكد؟</AlertDialogTitle>
+                                                            <AlertDialogTitle>{t('dashboard.areYouSure')}</AlertDialogTitle>
                                                             <AlertDialogDescription>
-                                                                هذا الإجراء لا يمكن التراجع عنه. سيتم حذف المستخدم وجميع البيانات المرتبطة به نهائياً.
+                                                                {t('dashboard.deleteUserWarning')}
                                                             </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
-                                                            <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                                            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                                                             <AlertDialogAction
                                                                 onClick={() => handleDeleteUser(user.id)}
                                                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                                             >
-                                                                حذف
+                                                                {t('dashboard.delete')}
                                                             </AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>

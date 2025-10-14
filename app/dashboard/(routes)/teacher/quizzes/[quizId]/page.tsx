@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Edit, Trash2, Eye, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface Quiz {
     id: string;
@@ -36,6 +37,7 @@ interface Question {
 
 const QuizViewPage = ({ params }: { params: Promise<{ quizId: string }> }) => {
     const router = useRouter();
+    const { t, isRTL } = useLanguage();
     const [quiz, setQuiz] = useState<Quiz | null>(null);
     const [loading, setLoading] = useState(true);
     
@@ -54,19 +56,19 @@ const QuizViewPage = ({ params }: { params: Promise<{ quizId: string }> }) => {
                 const data = await response.json();
                 setQuiz(data);
             } else {
-                toast.error("لم يتم العثور على الاختبار");
+                toast.error(t('teacher.quizNotFound'));
                 router.push("/dashboard/teacher/quizzes");
             }
         } catch (error) {
             console.error("Error fetching quiz:", error);
-            toast.error("حدث خطأ أثناء تحميل الاختبار");
+            toast.error(t('teacher.errorLoadingQuiz'));
         } finally {
             setLoading(false);
         }
     };
 
     const handleDeleteQuiz = async () => {
-        if (!quiz || !confirm("هل أنت متأكد من حذف هذا الاختبار؟")) {
+        if (!quiz || !confirm(t('teacher.deleteQuizConfirm'))) {
             return;
         }
 
@@ -76,21 +78,21 @@ const QuizViewPage = ({ params }: { params: Promise<{ quizId: string }> }) => {
             });
 
             if (response.ok) {
-                toast.success("تم حذف الاختبار بنجاح");
+                toast.success(t('teacher.deleteQuizSuccess'));
                 router.push("/dashboard/teacher/quizzes");
             } else {
-                toast.error("حدث خطأ أثناء حذف الاختبار");
+                toast.error(t('teacher.deleteQuizError'));
             }
         } catch (error) {
             console.error("Error deleting quiz:", error);
-            toast.error("حدث خطأ أثناء حذف الاختبار");
+            toast.error(t('teacher.deleteQuizError'));
         }
     };
 
     if (loading) {
         return (
             <div className="p-6">
-                <div className="text-center">جاري التحميل...</div>
+                <div className="text-center">{t('common.loading')}</div>
             </div>
         );
     }
@@ -98,7 +100,7 @@ const QuizViewPage = ({ params }: { params: Promise<{ quizId: string }> }) => {
     if (!quiz) {
         return (
             <div className="p-6">
-                <div className="text-center">لم يتم العثور على الاختبار</div>
+                <div className="text-center">{t('teacher.quizNotFound')}</div>
             </div>
         );
     }
@@ -111,8 +113,8 @@ const QuizViewPage = ({ params }: { params: Promise<{ quizId: string }> }) => {
                         variant="outline"
                         onClick={() => router.push("/dashboard/teacher/quizzes")}
                     >
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        العودة
+                        <ArrowLeft className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                        {t('common.back')}
                     </Button>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                         {quiz.title}
@@ -123,15 +125,15 @@ const QuizViewPage = ({ params }: { params: Promise<{ quizId: string }> }) => {
                         variant="outline"
                         onClick={() => router.push(`/dashboard/teacher/quizzes/${quiz.id}/edit`)}
                     >
-                        <Edit className="h-4 w-4 mr-2" />
-                        تعديل
+                        <Edit className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                        {t('common.edit')}
                     </Button>
                     <Button
                         variant="destructive"
                         onClick={handleDeleteQuiz}
                     >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        حذف
+                        <Trash2 className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                        {t('common.delete')}
                     </Button>
                 </div>
             </div>
@@ -140,32 +142,32 @@ const QuizViewPage = ({ params }: { params: Promise<{ quizId: string }> }) => {
                 <div className="md:col-span-2 space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>تفاصيل الاختبار</CardTitle>
+                            <CardTitle>{t('teacher.quizDetails')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
-                                <h3 className="text-lg font-semibold mb-2">الوصف</h3>
-                                <p className="text-muted-foreground">{quiz.description || "لا يوجد وصف"}</p>
+                                <h3 className="text-lg font-semibold mb-2">{t('teacher.description')}</h3>
+                                <p className="text-muted-foreground">{quiz.description || t('teacher.noDescription')}</p>
                             </div>
                             
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <h4 className="font-medium mb-1">الكورس</h4>
+                                    <h4 className="font-medium mb-1">{t('teacher.course')}</h4>
                                     <Badge variant="outline">{quiz.course.title}</Badge>
                                 </div>
                                 <div>
-                                    <h4 className="font-medium mb-1">الموقع</h4>
+                                    <h4 className="font-medium mb-1">{t('teacher.position')}</h4>
                                     <Badge variant="secondary">{quiz.position}</Badge>
                                 </div>
                                 <div>
-                                    <h4 className="font-medium mb-1">الحالة</h4>
+                                    <h4 className="font-medium mb-1">{t('teacher.status')}</h4>
                                     <Badge variant={quiz.isPublished ? "default" : "secondary"}>
-                                        {quiz.isPublished ? "منشور" : "مسودة"}
+                                        {quiz.isPublished ? t('teacher.published') : t('teacher.draft')}
                                     </Badge>
                                 </div>
                                 <div>
-                                    <h4 className="font-medium mb-1">عدد الأسئلة</h4>
-                                    <Badge variant="secondary">{quiz.questions.length} سؤال</Badge>
+                                    <h4 className="font-medium mb-1">{t('teacher.questionsCount')}</h4>
+                                    <Badge variant="secondary">{quiz.questions.length} {t('teacher.questions')}</Badge>
                                 </div>
                             </div>
                         </CardContent>
@@ -174,16 +176,16 @@ const QuizViewPage = ({ params }: { params: Promise<{ quizId: string }> }) => {
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center">
-                                <FileText className="h-5 w-5 mr-2" />
-                                الأسئلة ({quiz.questions.length})
+                                <FileText className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                                {t('teacher.questions')} ({quiz.questions.length})
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {quiz.questions.map((question, index) => (
                                 <div key={question.id} className="border rounded-lg p-4">
                                     <div className="flex items-center justify-between mb-3">
-                                        <h4 className="font-medium">السؤال {index + 1}</h4>
-                                        <Badge variant="outline">{question.points} درجة</Badge>
+                                        <h4 className="font-medium">{t('teacher.question')} {index + 1}</h4>
+                                        <Badge variant="outline">{question.points} {t('teacher.points')}</Badge>
                                     </div>
                                     
                                     <p className="text-muted-foreground mb-3">{question.text}</p>
@@ -195,7 +197,7 @@ const QuizViewPage = ({ params }: { params: Promise<{ quizId: string }> }) => {
                                         
                                         {question.type === "MULTIPLE_CHOICE" && question.options && (
                                             <div className="space-y-2">
-                                                <h5 className="font-medium text-sm">الخيارات:</h5>
+                                                <h5 className="font-medium text-sm">{t('teacher.options')}:</h5>
                                                 <div className="space-y-1">
                                                     {question.options.map((option, optionIndex) => (
                                                         <div
@@ -209,8 +211,8 @@ const QuizViewPage = ({ params }: { params: Promise<{ quizId: string }> }) => {
                                                             <span className="text-sm">
                                                                 {optionIndex + 1}. {option}
                                                                 {option === question.correctAnswer && (
-                                                                    <Badge variant="default" className="mr-2">
-                                                                        الإجابة الصحيحة
+                                                                    <Badge variant="default" className={isRTL ? 'ml-2' : 'mr-2'}>
+                                                                        {t('teacher.correctAnswer')}
                                                                     </Badge>
                                                                 )}
                                                             </span>
@@ -222,16 +224,16 @@ const QuizViewPage = ({ params }: { params: Promise<{ quizId: string }> }) => {
                                         
                                         {question.type === "TRUE_FALSE" && (
                                             <div className="space-y-2">
-                                                <h5 className="font-medium text-sm">الإجابة الصحيحة:</h5>
+                                                <h5 className="font-medium text-sm">{t('teacher.correctAnswer')}:</h5>
                                                 <Badge variant="default">
-                                                    {question.correctAnswer === "true" ? "صح" : "خطأ"}
+                                                    {question.correctAnswer === "true" ? t('teacher.true') : t('teacher.false')}
                                                 </Badge>
                                             </div>
                                         )}
                                         
                                         {question.type === "SHORT_ANSWER" && (
                                             <div className="space-y-2">
-                                                <h5 className="font-medium text-sm">الإجابة الصحيحة:</h5>
+                                                <h5 className="font-medium text-sm">{t('teacher.correctAnswer')}:</h5>
                                                 <p className="text-sm bg-green-50 p-2 rounded border border-green-200">
                                                     {question.correctAnswer}
                                                 </p>
@@ -247,25 +249,25 @@ const QuizViewPage = ({ params }: { params: Promise<{ quizId: string }> }) => {
                 <div className="space-y-6">
                     <Card>
                         <CardHeader>
-                            <CardTitle>إحصائيات</CardTitle>
+                            <CardTitle>{t('teacher.statistics')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <span>إجمالي الدرجات</span>
+                                <span>{t('teacher.totalPoints')}</span>
                                 <Badge variant="default">
-                                    {quiz.questions.reduce((sum, q) => sum + q.points, 0)} درجة
+                                    {quiz.questions.reduce((sum, q) => sum + q.points, 0)} {t('teacher.points')}
                                 </Badge>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span>تاريخ الإنشاء</span>
+                                <span>{t('teacher.createdDate')}</span>
                                 <span className="text-sm text-muted-foreground">
-                                    {new Date(quiz.createdAt).toLocaleDateString("ar-EG")}
+                                    {new Date(quiz.createdAt).toLocaleDateString(isRTL ? "ar-EG" : "en-US")}
                                 </span>
                             </div>
                             <div className="flex items-center justify-between">
-                                <span>آخر تحديث</span>
+                                <span>{t('teacher.lastUpdated')}</span>
                                 <span className="text-sm text-muted-foreground">
-                                    {new Date(quiz.updatedAt).toLocaleDateString("ar-EG")}
+                                    {new Date(quiz.updatedAt).toLocaleDateString(isRTL ? "ar-EG" : "en-US")}
                                 </span>
                             </div>
                         </CardContent>
@@ -273,7 +275,7 @@ const QuizViewPage = ({ params }: { params: Promise<{ quizId: string }> }) => {
 
                     <Card>
                         <CardHeader>
-                            <CardTitle>الإجراءات السريعة</CardTitle>
+                            <CardTitle>{t('teacher.quickActions')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2">
                             <Button
@@ -281,16 +283,16 @@ const QuizViewPage = ({ params }: { params: Promise<{ quizId: string }> }) => {
                                 variant="outline"
                                 onClick={() => router.push(`/dashboard/teacher/quizzes/${quiz.id}/edit`)}
                             >
-                                <Edit className="h-4 w-4 mr-2" />
-                                تعديل الاختبار
+                                <Edit className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                                {t('teacher.editQuiz')}
                             </Button>
                             <Button
                                 className="w-full"
                                 variant="outline"
                                 onClick={() => router.push(`/dashboard/teacher/quiz-results?quizId=${quiz.id}`)}
                             >
-                                <Eye className="h-4 w-4 mr-2" />
-                                عرض النتائج
+                                <Eye className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                                {t('teacher.viewResults')}
                             </Button>
                         </CardContent>
                     </Card>

@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Search, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface Quiz {
   id: string;
@@ -24,6 +25,7 @@ interface Quiz {
 
 export default function AdminQuizzesPage() {
   const router = useRouter();
+  const { t, isRTL } = useLanguage();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -36,10 +38,10 @@ export default function AdminQuizzesPage() {
           const data = await response.json();
           setQuizzes(data);
         } else {
-          toast.error("تعذر تحميل الاختبارات");
+          toast.error(t('dashboard.errorLoadingQuizzes'));
         }
       } catch (e) {
-        toast.error("حدث خطأ أثناء التحميل");
+        toast.error(t('dashboard.loadingError'));
       } finally {
         setLoading(false);
       }
@@ -54,7 +56,7 @@ export default function AdminQuizzesPage() {
   if (loading) {
     return (
       <div className="p-6">
-        <div className="text-center">جاري التحميل...</div>
+        <div className="text-center">{t('dashboard.loadingQuizzes')}</div>
       </div>
     );
   }
@@ -62,16 +64,16 @@ export default function AdminQuizzesPage() {
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">كل الاختبارات</h1>
+        <h1 className="text-3xl font-bold">{t('dashboard.allQuizzes')}</h1>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>الاختبارات</CardTitle>
+          <CardTitle>{t('dashboard.quizzes')}</CardTitle>
           <div className="flex items-center space-x-2">
             <Search className="h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="البحث في الاختبارات..."
+              placeholder={t('dashboard.searchInQuizzes')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
@@ -82,30 +84,30 @@ export default function AdminQuizzesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-right">عنوان الاختبار</TableHead>
-                <TableHead className="text-right">الكورس</TableHead>
-                <TableHead className="text-right">الموقع</TableHead>
-                <TableHead className="text-right">الحالة</TableHead>
-                <TableHead className="text-right">عدد الأسئلة</TableHead>
+                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.quizTitle')}</TableHead>
+                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.course')}</TableHead>
+                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.position')}</TableHead>
+                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.status')}</TableHead>
+                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.numberOfQuestions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredQuizzes.map((quiz) => (
                 <TableRow key={quiz.id}>
-                  <TableCell className="font-medium">{quiz.title}</TableCell>
-                  <TableCell>
+                  <TableCell className={`font-medium ${isRTL ? "text-right" : "text-left"}`}>{quiz.title}</TableCell>
+                  <TableCell className={isRTL ? "text-right" : "text-left"}>
                     <Badge variant="outline">{quiz.course.title}</Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className={isRTL ? "text-right" : "text-left"}>
                     <Badge variant="secondary">{quiz.position}</Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className={isRTL ? "text-right" : "text-left"}>
                     <Badge variant={quiz.isPublished ? "default" : "secondary"}>
-                      {quiz.isPublished ? "منشور" : "مسودة"}
+                      {quiz.isPublished ? t('dashboard.published') : t('dashboard.draft')}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{quiz.questions.length} سؤال</Badge>
+                  <TableCell className={isRTL ? "text-right" : "text-left"}>
+                    <Badge variant="secondary">{quiz.questions.length} {t('dashboard.question')}</Badge>
                   </TableCell>
                   
                 </TableRow>

@@ -4,8 +4,11 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { CourseSidebar } from "./course-sidebar";
 import { DialogTitle } from "@/components/ui/dialog";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 export const CourseMobileSidebar = () => {
+  const { t } = useLanguage();
+  
   return (
     <Sheet>
       <SheetTrigger className="md:hidden pl-4 hover:opacity-75 transition">
@@ -14,7 +17,7 @@ export const CourseMobileSidebar = () => {
         </div>
       </SheetTrigger>
       <SheetContent side="right" className="p-0 w-72">
-        <DialogTitle className="sr-only">Course Menu</DialogTitle>
+        <DialogTitle className="sr-only">{t('student.courseMenu')}</DialogTitle>
         <CourseSidebar />
       </SheetContent>
     </Sheet>

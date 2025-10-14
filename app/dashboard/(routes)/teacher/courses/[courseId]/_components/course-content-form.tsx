@@ -25,15 +25,17 @@ export const CourseContentForm = ({
     const [isCreating, setIsCreating] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [title, setTitle] = useState("");
+    const [isFree, setIsFree] = useState(false);
 
     const router = useRouter();
 
     const onCreate = async () => {
         try {
             setIsUpdating(true);
-            await axios.post(`/api/courses/${courseId}/chapters`, { title });
+            await axios.post(`/api/courses/${courseId}/chapters`, { title, isFree });
             toast.success(t('teacher.chapterCreatedSuccessfully'));
             setTitle("");
+            setIsFree(false);
             setIsCreating(false);
             router.refresh();
         } catch {
@@ -137,6 +139,20 @@ export const CourseContentForm = ({
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                     />
+                    {!initialData.isFree && (
+                        <div className="flex items-center space-x-2">
+                            <input
+                                type="checkbox"
+                                id="isFree"
+                                checked={isFree}
+                                onChange={(e) => setIsFree(e.target.checked)}
+                                className="rounded border-gray-300"
+                            />
+                            <label htmlFor="isFree" className="text-sm font-medium">
+                                {t('teacher.makeChapterFree')}
+                            </label>
+                        </div>
+                    )}
                     <Button
                         onClick={onCreate}
                         disabled={!title || isUpdating}

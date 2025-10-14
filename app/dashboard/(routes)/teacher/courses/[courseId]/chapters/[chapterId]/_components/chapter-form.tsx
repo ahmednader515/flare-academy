@@ -34,6 +34,7 @@ interface ChapterFormProps {
     };
     courseId: string;
     chapterId: string;
+    courseIsFree?: boolean;
 }
 
 const titleSchema = z.object({
@@ -52,10 +53,12 @@ const accessSchema = z.object({
     isFree: z.boolean().default(false),
 });
 
+
 export const ChapterForm = ({
     initialData,
     courseId,
-    chapterId
+    chapterId,
+    courseIsFree = false
 }: ChapterFormProps) => {
     const { t } = useLanguage();
     const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -90,6 +93,7 @@ export const ChapterForm = ({
             isFree: !!initialData.isFree
         }
     });
+
 
     const { isSubmitting: isSubmittingTitle, isValid: isValidTitle } = titleForm.formState;
     const { isSubmitting: isSubmittingDescription, isValid: isValidDescription } = descriptionForm.formState;
@@ -327,75 +331,75 @@ export const ChapterForm = ({
                 </div>
             </div>
 
-            <div>
-                <div className="flex items-center gap-x-2">
-                    <IconBadge icon={Eye} />
-                    <h2 className="text-xl">
-                        {t('teacher.accessSettings')}
-                    </h2>
-                </div>
-                <div className="space-y-4 mt-4">
-                    <div className="border bg-card rounded-md p-4">
-                        <div className="font-medium flex items-center justify-between">
+            {!courseIsFree && (
+                <div>
+                    <div className="flex items-center gap-x-2">
+                        <IconBadge icon={Eye} />
+                        <h2 className="text-xl">
                             {t('teacher.accessSettings')}
-                            <Button onClick={() => setIsEditingAccess(!isEditingAccess)} variant="ghost">
-                                {isEditingAccess ? (
-                                    <>{t('common.cancel')}</>
-                                ) : (
-                                    <>
-                                        <Pencil className="h-4 w-4 mr-2" />
-                                        {t('teacher.editAccess')}
-                                    </>
-                                )}
-                            </Button>
+                        </h2>
+                    </div>
+                    <div className="space-y-4 mt-4">
+                        <div className="border bg-card rounded-md p-4">
+                            <div className="font-medium flex items-center justify-between">
+                                {t('teacher.accessSettings')}
+                                <Button onClick={() => setIsEditingAccess(!isEditingAccess)} variant="ghost">
+                                    {isEditingAccess ? (
+                                        <>{t('common.cancel')}</>
+                                    ) : (
+                                        <>
+                                            <Pencil className="h-4 w-4 mr-2" />
+                                            {t('teacher.editAccess')}
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                            {!isEditingAccess && (
+                                <p className="text-sm mt-2">
+                                    {initialData.isFree ? t('teacher.chapterIsFreeForPreview') : t('teacher.chapterIsNotFree')}
+                                </p>
+                            )}
+                            {isEditingAccess && (
+                                <Form {...accessForm}>
+                                    <form
+                                        onSubmit={accessForm.handleSubmit(onSubmitAccess)}
+                                        className="space-y-4 mt-4"
+                                    >
+                                        <FormField
+                                            control={accessForm.control}
+                                            name="isFree"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                                    <FormControl>
+                                                        <Checkbox
+                                                            checked={field.value}
+                                                            onCheckedChange={field.onChange}
+                                                        />
+                                                    </FormControl>
+                                                    <div className="space-y-1 leading-none">
+                                                        <FormDescription>
+                                                            {t('teacher.checkToMakeChapterFreeForPreview')}
+                                                        </FormDescription>
+                                                    </div>
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <div className="flex items-center gap-x-2">
+                                            <Button
+                                                disabled={!isValidAccess || isSubmittingAccess}
+                                                type="submit"
+                                            >
+                                                {t('common.save')}
+                                            </Button>
+                                        </div>
+                                    </form>
+                                </Form>
+                            )}
                         </div>
-                        {!isEditingAccess && (
-                            <p className={cn(
-                                "text-sm mt-2",
-                                !initialData.isFree && "text-muted-foreground italic"
-                            )}>
-                                {initialData.isFree ? t('teacher.chapterIsFreeForPreview') : t('teacher.chapterIsNotFree')}
-                            </p>
-                        )}
-                        {isEditingAccess && (
-                            <Form {...accessForm}>
-                                <form
-                                    onSubmit={accessForm.handleSubmit(onSubmitAccess)}
-                                    className="space-y-4 mt-4"
-                                >
-                                    <FormField
-                                        control={accessForm.control}
-                                        name="isFree"
-                                        render={({ field }) => (
-                                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                                                <FormControl>
-                                                    <Checkbox
-                                                        checked={field.value}
-                                                        onCheckedChange={field.onChange}
-                                                    />
-                                                </FormControl>
-                                                <div className="space-y-1 leading-none">
-                                                    <FormDescription>
-                                                        {t('teacher.checkToMakeChapterFreeForPreview')}
-                                                    </FormDescription>
-                                                </div>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <div className="flex items-center gap-x-2">
-                                        <Button
-                                            disabled={!isValidAccess || isSubmittingAccess}
-                                            type="submit"
-                                        >
-                                            {t('common.save')}
-                                        </Button>
-                                    </div>
-                                </form>
-                            </Form>
-                        )}
                     </div>
                 </div>
-            </div>
+            )}
+
         </div>
     )
 } 

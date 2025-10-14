@@ -15,20 +15,37 @@ export async function GET(
         }
 
         // Check if user has access to the course
-        const purchase = await db.purchase.findUnique({
+        const course = await db.course.findUnique({
             where: {
-                userId_courseId: {
-                    userId,
-                    courseId: resolvedParams.courseId
+                id: resolvedParams.courseId,
+                isPublished: true
+            },
+            include: {
+                purchases: {
+                    where: {
+                        userId
+                    }
                 }
             }
         });
 
-        if (!purchase) {
-            return new NextResponse("Course access required", { status: 403 });
+        if (!course) {
+            return new NextResponse("Course not found", { status: 404 });
         }
 
-        // Get the current quiz
+        // If course is free, allow access
+        if (course.isFree) {
+            // Course is free, allow access
+        } else {
+            // Check if user has purchased the course
+            const hasAccess = course.purchases.some(purchase => purchase.status === "ACTIVE");
+            
+            if (!hasAccess) {
+                return new NextResponse("Course access required", { status: 403 });
+            }
+        }
+
+        // Get the quiz
         const quiz = await db.quiz.findFirst({
             where: {
                 id: resolvedParams.quizId,

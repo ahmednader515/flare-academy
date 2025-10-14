@@ -70,7 +70,7 @@ interface EditUserData {
 }
 
 const UsersPage = () => {
-    const { t } = useLanguage();
+    const { t, isRTL } = useLanguage();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -273,10 +273,10 @@ const UsersPage = () => {
                                                  user.role === "ADMIN" ? t('teacher.admin') : user.role}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             {format(new Date(user.createdAt), "dd/MM/yyyy", { locale: ar })}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <div className="flex items-center gap-2">
                                                 <Dialog open={isEditDialogOpen && editingUser?.id === user.id} onOpenChange={(open) => {
                                                     if (!open) {
@@ -425,25 +425,25 @@ const UsersPage = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>{t('teacher.name')}</TableHead>
-                                    <TableHead>{t('teacher.phoneNumber')}</TableHead>
-                                    <TableHead>{t('teacher.email')}</TableHead>
-                                    <TableHead>{t('teacher.role')}</TableHead>
-                                    <TableHead>{t('teacher.balance')}</TableHead>
-                                    <TableHead>{t('teacher.purchasedCourses')}</TableHead>
-                                    <TableHead>{t('teacher.registrationDate')}</TableHead>
-                                    <TableHead>{t('teacher.actions')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.name')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.phoneNumber')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.email')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.role')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.balance')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.purchasedCourses')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.registrationDate')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {studentUsers.map((user) => (
                                     <TableRow key={user.id}>
-                                        <TableCell className="font-medium">
+                                        <TableCell className={`font-medium ${isRTL ? "text-right" : "text-left"}`}>
                                             {user.fullName}
                                         </TableCell>
-                                        <TableCell>{user.phoneNumber}</TableCell>
-                                        <TableCell>{user.email}</TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>{user.phoneNumber}</TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>{user.email}</TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <Badge 
                                                 variant="secondary"
                                                 className="bg-green-600 text-white hover:bg-green-700"
@@ -451,20 +451,20 @@ const UsersPage = () => {
                                                 {t('teacher.student')}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <Badge variant="secondary">
                                                 {user.balance} {t('teacher.currency')}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <Badge variant="outline">
                                                 {user._count.purchases}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             {format(new Date(user.createdAt), "dd/MM/yyyy", { locale: ar })}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <div className="flex items-center gap-2">
                                                 <Dialog open={isEditDialogOpen && editingUser?.id === user.id} onOpenChange={(open) => {
                                                     if (!open) {

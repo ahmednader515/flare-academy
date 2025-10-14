@@ -31,12 +31,14 @@ const CreatePage = () => {
         title: z.string().min(1, {
             message: t('validation.required'),
         }),
+        isFree: z.boolean().optional(),
     })
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            title: ""
+            title: "",
+            isFree: false
         },
     })
 
@@ -99,6 +101,31 @@ const CreatePage = () => {
                                 </FormItem>
                             )}
 
+                        />
+
+                        <FormField
+                            control={form.control}
+                            name="isFree"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                                    <FormControl>
+                                        <input
+                                            type="checkbox"
+                                            checked={field.value}
+                                            onChange={(e) => field.onChange(e.target.checked)}
+                                            className="rounded border-gray-300"
+                                        />
+                                    </FormControl>
+                                    <div className="space-y-1 leading-none">
+                                        <FormLabel>
+                                            {t('teacher.makeCourseFree')}
+                                        </FormLabel>
+                                        <FormDescription>
+                                            {t('teacher.freeCourseDescription')}
+                                        </FormDescription>
+                                    </div>
+                                </FormItem>
+                            )}
                         />
 
                         <div className="flex items-center gap-x-2">

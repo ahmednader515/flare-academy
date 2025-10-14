@@ -35,7 +35,7 @@ export async function GET(
     }
 
     // Free courses are always accessible
-    if (course.price === 0) {
+    if (course.isFree) {
       return NextResponse.json({ hasAccess: true });
     }
 

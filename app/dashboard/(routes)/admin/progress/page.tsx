@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Search, Eye, BookOpen, CheckCircle, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface User {
     id: string;
@@ -59,6 +60,7 @@ interface Purchase {
 }
 
 const ProgressPage = () => {
+    const { t, isRTL } = useLanguage();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -126,7 +128,7 @@ const ProgressPage = () => {
     if (loading) {
         return (
             <div className="p-6">
-                <div className="text-center">جاري التحميل...</div>
+                <div className="text-center">{t('dashboard.loadingUsers')}</div>
             </div>
         );
     }
@@ -135,17 +137,17 @@ const ProgressPage = () => {
         <div className="p-6 space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    تقدم الطلاب
+                    {t('dashboard.studentProgress')}
                 </h1>
             </div>
 
             <Card>
                 <CardHeader>
-                    <CardTitle>قائمة الطلاب</CardTitle>
+                    <CardTitle>{t('dashboard.studentsList')}</CardTitle>
                     <div className="flex items-center space-x-2">
                         <Search className="h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="البحث بالاسم أو رقم الهاتف..."
+                            placeholder={t('dashboard.searchByNameOrPhone')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="max-w-sm"
@@ -156,38 +158,38 @@ const ProgressPage = () => {
                     <Table>
                                                  <TableHeader>
                              <TableRow>
-                                 <TableHead className="text-right">الاسم</TableHead>
-                                 <TableHead className="text-right">رقم الهاتف</TableHead>
-                                 <TableHead className="text-right">الكورسات المشتراة</TableHead>
-                                 <TableHead className="text-right">التقدم</TableHead>
-                                 <TableHead className="text-right">الإجراءات</TableHead>
+                                 <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.name')}</TableHead>
+                                 <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.phoneNumber')}</TableHead>
+                                 <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.purchasedCourses')}</TableHead>
+                                 <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.progress')}</TableHead>
+                                 <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.actions')}</TableHead>
                              </TableRow>
                          </TableHeader>
                         <TableBody>
                             {studentUsers.map((user) => (
                                 <TableRow key={user.id}>
-                                    <TableCell className="font-medium">
+                                    <TableCell className={`font-medium ${isRTL ? "text-right" : "text-left"}`}>
                                         {user.fullName}
                                     </TableCell>
-                                    <TableCell>{user.phoneNumber}</TableCell>
-                                    <TableCell>
+                                    <TableCell className={isRTL ? "text-right" : "text-left"}>{user.phoneNumber}</TableCell>
+                                    <TableCell className={isRTL ? "text-right" : "text-left"}>
                                         <Badge variant="outline">
-                                            {user._count.purchases} كورس
+                                            {user._count.purchases} {t('dashboard.course')}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className={isRTL ? "text-right" : "text-left"}>
                                         <Badge variant="secondary">
-                                            {user._count.userProgress} فصل
+                                            {user._count.userProgress} {t('dashboard.chapter')}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className={isRTL ? "text-right" : "text-left"}>
                                         <Button 
                                             size="sm" 
                                             variant="outline"
                                             onClick={() => handleViewProgress(user)}
                                         >
                                             <Eye className="h-4 w-4" />
-                                            عرض التقدم
+                                            {t('dashboard.viewProgress')}
                                         </Button>
                                     </TableCell>
                                 </TableRow>
@@ -201,34 +203,34 @@ const ProgressPage = () => {
                 <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>
-                            تقدم {selectedUser?.fullName}
+                            {t('dashboard.progressFor')} {selectedUser?.fullName}
                         </DialogTitle>
                     </DialogHeader>
                     
                     {loadingProgress ? (
-                        <div className="text-center py-8">جاري التحميل...</div>
+                        <div className="text-center py-8">{t('dashboard.loadingUsers')}</div>
                     ) : (
                         <div className="space-y-6">
                             {/* Progress Summary */}
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>ملخص التقدم</CardTitle>
+                                    <CardTitle>{t('dashboard.progressSummary')}</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <span>نسبة الإنجاز</span>
+                                            <span>{t('dashboard.completionRate')}</span>
                                             <span className="font-bold">{progressPercentage.toFixed(1)}%</span>
                                         </div>
                                         <Progress value={progressPercentage} className="w-full" />
                                         <div className="grid grid-cols-2 gap-4 text-center">
                                             <div>
                                                 <div className="text-2xl font-bold text-green-600">{completedProgress}</div>
-                                                <div className="text-sm text-muted-foreground">مكتمل</div>
+                                                <div className="text-sm text-muted-foreground">{t('dashboard.completed')}</div>
                                             </div>
                                             <div>
                                                 <div className="text-2xl font-bold text-gray-600">{notStartedChapters}</div>
-                                                <div className="text-sm text-muted-foreground">لم يبدأ</div>
+                                                <div className="text-sm text-muted-foreground">{t('dashboard.notStarted')}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -238,33 +240,33 @@ const ProgressPage = () => {
                             {/* Purchased Courses */}
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>الكورسات المشتراة</CardTitle>
+                                    <CardTitle>{t('dashboard.purchasedCourses')}</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <Table>
                                                                                  <TableHeader>
                                              <TableRow>
-                                                 <TableHead className="text-right">اسم الكورس</TableHead>
-                                                 <TableHead className="text-right">السعر</TableHead>
-                                                 <TableHead className="text-right">الحالة</TableHead>
-                                                 <TableHead className="text-right">تاريخ الشراء</TableHead>
+                                                 <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.courseName')}</TableHead>
+                                                 <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.price')}</TableHead>
+                                                 <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.status')}</TableHead>
+                                                 <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.purchaseDate')}</TableHead>
                                              </TableRow>
                                          </TableHeader>
                                         <TableBody>
                                             {userPurchases.map((purchase) => (
                                                 <TableRow key={purchase.id}>
-                                                    <TableCell className="font-medium">
+                                                    <TableCell className={`font-medium ${isRTL ? "text-right" : "text-left"}`}>
                                                         {purchase.course.title}
                                                     </TableCell>
-                                                    <TableCell>
-                                                        {purchase.course.price} جنيه
+                                                    <TableCell className={isRTL ? "text-right" : "text-left"}>
+                                                        {purchase.course.price} {t('dashboard.egp')}
                                                     </TableCell>
-                                                    <TableCell>
+                                                    <TableCell className={isRTL ? "text-right" : "text-left"}>
                                                         <Badge variant={purchase.status === "ACTIVE" ? "default" : "secondary"}>
-                                                            {purchase.status === "ACTIVE" ? "نشط" : "غير نشط"}
+                                                            {purchase.status === "ACTIVE" ? t('dashboard.active') : t('dashboard.inactive')}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell>
+                                                    <TableCell className={isRTL ? "text-right" : "text-left"}>
                                                         {format(new Date(purchase.createdAt), "dd/MM/yyyy", { locale: ar })}
                                                     </TableCell>
                                                 </TableRow>
@@ -277,16 +279,16 @@ const ProgressPage = () => {
                             {/* Progress Details */}
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>تفاصيل التقدم</CardTitle>
+                                    <CardTitle>{t('dashboard.progressDetails')}</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <Table>
                                                                                  <TableHeader>
                                              <TableRow>
-                                                 <TableHead className="text-right">الكورس</TableHead>
-                                                 <TableHead className="text-right">الفصل</TableHead>
-                                                 <TableHead className="text-right">الحالة</TableHead>
-                                                 <TableHead className="text-right">آخر تحديث</TableHead>
+                                                 <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.course')}</TableHead>
+                                                 <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.chapter')}</TableHead>
+                                                 <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.status')}</TableHead>
+                                                 <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.lastUpdate')}</TableHead>
                                              </TableRow>
                                          </TableHeader>
                                         <TableBody>
@@ -294,33 +296,33 @@ const ProgressPage = () => {
                                                 const progress = userProgress.find(p => p.chapter.id === chapter.id);
                                                 return (
                                                     <TableRow key={chapter.id}>
-                                                        <TableCell className="font-medium">
+                                                        <TableCell className={`font-medium ${isRTL ? "text-right" : "text-left"}`}>
                                                             {chapter.course.title}
                                                         </TableCell>
-                                                        <TableCell>
+                                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                                             {chapter.title}
                                                         </TableCell>
-                                                        <TableCell>
+                                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                                             {progress ? (
                                                                 progress.isCompleted ? (
                                                                     <Badge variant="default" className="flex items-center gap-1">
                                                                         <CheckCircle className="h-3 w-3" />
-                                                                        مكتمل
+                                                                        {t('dashboard.completed')}
                                                                     </Badge>
                                                                 ) : (
                                                                     <Badge variant="secondary" className="flex items-center gap-1">
                                                                         <Clock className="h-3 w-3" />
-                                                                        قيد التقدم
+                                                                        {t('dashboard.inProgress')}
                                                                     </Badge>
                                                                 )
                                                             ) : (
                                                                 <Badge variant="outline" className="flex items-center gap-1">
                                                                     <BookOpen className="h-3 w-3" />
-                                                                    لم يبدأ
+                                                                    {t('dashboard.notStarted')}
                                                                 </Badge>
                                                             )}
                                                         </TableCell>
-                                                        <TableCell>
+                                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                                             {progress ? (
                                                                 format(new Date(progress.updatedAt), "dd/MM/yyyy", { locale: ar })
                                                             ) : (

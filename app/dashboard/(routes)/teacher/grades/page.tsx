@@ -66,7 +66,7 @@ interface QuizAnswer {
 }
 
 const GradesPage = () => {
-    const { t } = useLanguage();
+    const { t, isRTL } = useLanguage();
     const [courses, setCourses] = useState<Course[]>([]);
     const [quizzes, setQuizzes] = useState<Quiz[]>([]);
     const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
@@ -291,13 +291,13 @@ const GradesPage = () => {
                     <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>{t('teacher.student')}</TableHead>
-                                    <TableHead>{t('teacher.test')}</TableHead>
-                                    <TableHead>{t('teacher.course')}</TableHead>
-                                    <TableHead>{t('teacher.grade')}</TableHead>
-                                    <TableHead>{t('teacher.percentage')}</TableHead>
-                                    <TableHead>{t('teacher.submissionDate')}</TableHead>
-                                    <TableHead>{t('teacher.actions')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.student')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.test')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.course')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.grade')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.percentage')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.submissionDate')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                         <TableBody>
@@ -305,31 +305,31 @@ const GradesPage = () => {
                                 const gradeBadge = getGradeBadge(result.percentage);
                                 return (
                                     <TableRow key={result.id}>
-                                        <TableCell className="font-medium">
+                                        <TableCell className={`font-medium ${isRTL ? "text-right" : "text-left"}`}>
                                             {result.user.fullName}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             {result.quiz.title}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <Badge variant="outline">
                                                 {result.quiz.course.title}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <span className="font-bold">
                                                 {result.score}/{result.totalPoints}
                                             </span>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <Badge {...gradeBadge}>
                                                 {result.percentage}%
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             {format(new Date(result.submittedAt), "dd/MM/yyyy", { locale: ar })}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <Button 
                                                 size="sm" 
                                                 variant="outline"

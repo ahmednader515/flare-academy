@@ -48,6 +48,7 @@ const QuizResultsContent = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const quizId = searchParams.get('quizId');
+    const { t, isRTL } = useLanguage();
     
     const [results, setResults] = useState<QuizResult[]>([]);
     const [loading, setLoading] = useState(true);
@@ -262,12 +263,12 @@ const QuizResultsContent = () => {
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="text-right">الطالب</TableHead>
-                                <TableHead className="text-right">الدرجة</TableHead>
-                                <TableHead className="text-right">النسبة المئوية</TableHead>
-                                <TableHead className="text-right">التقييم</TableHead>
-                                <TableHead className="text-right">تاريخ التقديم</TableHead>
-                                <TableHead className="text-right">الإجراءات</TableHead>
+                                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.student')}</TableHead>
+                                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.grade')}</TableHead>
+                                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.percentage')}</TableHead>
+                                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.evaluation')}</TableHead>
+                                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.submissionDate')}</TableHead>
+                                <TableHead className={isRTL ? "text-right" : "text-left"}>{t('teacher.actions')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -277,7 +278,7 @@ const QuizResultsContent = () => {
                                 
                                 return (
                                     <TableRow key={result.id}>
-                                        <TableCell className="font-medium">
+                                        <TableCell className={`font-medium ${isRTL ? "text-right" : "text-left"}`}>
                                             <div>
                                                 <div>{result.user.fullName}</div>
                                                 <div className="text-sm text-muted-foreground">
@@ -285,22 +286,22 @@ const QuizResultsContent = () => {
                                                 </div>
                                             </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <div className="font-medium">
                                                 {result.score} / {result.totalPoints}
                                             </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <div className={`font-medium ${getGradeColor(percentage)}`}>
                                                 {percentage}%
                                             </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <Badge variant={grade.variant}>
                                                 {grade.text}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <div className="text-sm text-muted-foreground">
                                                 {new Date(result.submittedAt).toLocaleDateString("ar-EG")}
                                             </div>
@@ -308,7 +309,7 @@ const QuizResultsContent = () => {
                                                 {new Date(result.submittedAt).toLocaleTimeString("ar-EG")}
                                             </div>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <Button
                                                 size="sm"
                                                 variant="outline"

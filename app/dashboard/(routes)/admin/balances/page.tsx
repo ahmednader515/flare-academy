@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Edit, Search, Wallet } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface User {
     id: string;
@@ -20,6 +21,7 @@ interface User {
 }
 
 const BalancesPage = () => {
+    const { t, isRTL } = useLanguage();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -47,13 +49,13 @@ const BalancesPage = () => {
 
     const handleBalanceUpdate = async () => {
         if (!selectedUser || !newBalance) {
-            toast.error("يرجى إدخال رصيد جديد");
+            toast.error(t('dashboard.pleaseEnterNewBalance'));
             return;
         }
 
         const balance = parseFloat(newBalance);
         if (isNaN(balance) || balance < 0) {
-            toast.error("يرجى إدخال رصيد صحيح");
+            toast.error(t('dashboard.pleaseEnterValidBalance'));
             return;
         }
 
@@ -67,17 +69,17 @@ const BalancesPage = () => {
             });
 
             if (response.ok) {
-                toast.success("تم تحديث الرصيد بنجاح");
+                toast.success(t('dashboard.balanceUpdateSuccess'));
                 setNewBalance("");
                 setIsDialogOpen(false);
                 setSelectedUser(null);
                 fetchUsers(); // Refresh the list
             } else {
-                toast.error("حدث خطأ أثناء تحديث الرصيد");
+                toast.error(t('dashboard.balanceUpdateError'));
             }
         } catch (error) {
             console.error("Error updating balance:", error);
-            toast.error("حدث خطأ أثناء تحديث الرصيد");
+            toast.error(t('dashboard.balanceUpdateError'));
         }
     };
 
@@ -91,7 +93,7 @@ const BalancesPage = () => {
     if (loading) {
         return (
             <div className="p-6">
-                <div className="text-center">جاري التحميل...</div>
+                <div className="text-center">{t('dashboard.loadingUsers')}</div>
             </div>
         );
     }
@@ -100,7 +102,7 @@ const BalancesPage = () => {
         <div className="p-6 space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    إدارة الأرصدة
+                    {t('dashboard.balanceManagement')}
                 </h1>
             </div>
 
@@ -108,11 +110,11 @@ const BalancesPage = () => {
             {studentUsers.length > 0 && (
                 <Card>
                     <CardHeader>
-                        <CardTitle>قائمة الطلاب</CardTitle>
+                        <CardTitle>{t('dashboard.studentsList')}</CardTitle>
                         <div className="flex items-center space-x-2">
                             <Search className="h-4 w-4 text-muted-foreground" />
                             <Input
-                                placeholder="البحث بالاسم أو رقم الهاتف..."
+                                placeholder={t('dashboard.searchByNameOrPhone')}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="max-w-sm"
@@ -123,32 +125,32 @@ const BalancesPage = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead className="text-right">الاسم</TableHead>
-                                    <TableHead className="text-right">رقم الهاتف</TableHead>
-                                    <TableHead className="text-right">الدور</TableHead>
-                                    <TableHead className="text-right">الرصيد الحالي</TableHead>
-                                    <TableHead className="text-right">الإجراءات</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.name')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.phoneNumber')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.role')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.currentBalance')}</TableHead>
+                                    <TableHead className={isRTL ? "text-right" : "text-left"}>{t('dashboard.actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {studentUsers.map((user) => (
                                     <TableRow key={user.id}>
-                                        <TableCell className="font-medium">
+                                        <TableCell className={`font-medium ${isRTL ? "text-right" : "text-left"}`}>
                                             {user.fullName}
                                         </TableCell>
-                                        <TableCell>{user.phoneNumber}</TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>{user.phoneNumber}</TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <Badge variant="secondary">
-                                                طالب
+                                                {t('dashboard.students')}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <Badge variant="outline" className="flex items-center gap-1">
                                                 <Wallet className="h-3 w-3" />
-                                                {user.balance} جنيه
+                                                {user.balance} {t('dashboard.egp')}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <Button 
                                                 size="sm" 
                                                 variant="outline"
@@ -159,7 +161,7 @@ const BalancesPage = () => {
                                                 }}
                                             >
                                                 <Edit className="h-4 w-4" />
-                                                تعديل الرصيد
+                                                {t('dashboard.editBalance')}
                                             </Button>
                                         </TableCell>
                                     </TableRow>
@@ -183,18 +185,18 @@ const BalancesPage = () => {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>
-                            تعديل رصيد {selectedUser?.fullName}
+                            {t('dashboard.editBalanceFor')} {selectedUser?.fullName}
                         </DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="newBalance">الرصيد الجديد (جنيه)</Label>
+                            <Label htmlFor="newBalance" className={isRTL ? "text-right" : "text-left"}>{t('dashboard.newBalance')}</Label>
                             <Input
                                 id="newBalance"
                                 type="number"
                                 value={newBalance}
                                 onChange={(e) => setNewBalance(e.target.value)}
-                                placeholder="أدخل الرصيد الجديد"
+                                placeholder={t('dashboard.enterNewBalance')}
                                 min="0"
                                 step="0.01"
                             />
@@ -208,10 +210,10 @@ const BalancesPage = () => {
                                     setSelectedUser(null);
                                 }}
                             >
-                                إلغاء
+                                {t('common.cancel')}
                             </Button>
                             <Button onClick={handleBalanceUpdate}>
-                                تحديث الرصيد
+                                {t('dashboard.updateBalance')}
                             </Button>
                         </div>
                     </div>

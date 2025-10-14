@@ -22,6 +22,34 @@ const playpenSansArabic = localFont({
   preload: true,
 });
 
+const ptSerif = localFont({
+  src: [
+    {
+      path: '../public/fonts/PT_serif/PTSerif-Regular.ttf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../public/fonts/PT_serif/PTSerif-Italic.ttf',
+      weight: '400',
+      style: 'italic',
+    },
+    {
+      path: '../public/fonts/PT_serif/PTSerif-Bold.ttf',
+      weight: '700',
+      style: 'normal',
+    },
+    {
+      path: '../public/fonts/PT_serif/PTSerif-BoldItalic.ttf',
+      weight: '700',
+      style: 'italic',
+    },
+  ],
+  variable: '--font-pt-serif',
+  display: 'swap',
+  preload: true,
+});
+
 export const metadata: Metadata = {
   title: "Flare Academy",
   description: "منصة تعليمية متكاملة",
@@ -33,8 +61,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html suppressHydrationWarning lang="ar" dir="rtl" className={`${geistSans.variable} ${geistMono.variable} ${playpenSansArabic.variable}`}>
-      <body suppressHydrationWarning className="font-playpen-sans-arabic">
+    <html suppressHydrationWarning lang="ar" dir="rtl" className={`${geistSans.variable} ${geistMono.variable} ${playpenSansArabic.variable} ${ptSerif.variable}`}>
+      <body suppressHydrationWarning className="font-playpen-sans-arabic" data-pt-serif={ptSerif.variable}>
         <Providers>
           <div className="min-h-screen flex flex-col">
             <main className="flex-1">

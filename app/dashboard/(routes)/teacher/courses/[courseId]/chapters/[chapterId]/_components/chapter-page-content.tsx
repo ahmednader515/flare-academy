@@ -17,13 +17,15 @@ interface ChapterPageContentProps {
     courseId: string;
     chapterId: string;
     completionText: string;
+    courseIsFree?: boolean;
 }
 
 export const ChapterPageContent = ({
     chapter,
     courseId,
     chapterId,
-    completionText
+    completionText,
+    courseIsFree = false
 }: ChapterPageContentProps) => {
     const { t } = useLanguage();
 
@@ -51,6 +53,7 @@ export const ChapterPageContent = ({
                         initialData={chapter}
                         courseId={courseId}
                         chapterId={chapterId}
+                        courseIsFree={courseIsFree}
                     />
                 </div>
                 <div className="space-y-6">

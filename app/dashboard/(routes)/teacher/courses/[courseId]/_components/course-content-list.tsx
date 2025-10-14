@@ -85,7 +85,7 @@ export const CourseContentList = ({
                                             </div>
                                         </div>
                                         <div className="ml-auto pr-2 flex items-center gap-x-2">
-                                                                                         {item.type === "chapter" && item.isFree && (
+                                                                                        {item.type === "chapter" && item.isFree && (
                                                  <Badge>
                                                      {t('teacher.free')}
                                                  </Badge>

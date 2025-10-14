@@ -12,7 +12,7 @@ const AdminCreateCoursePage = async () => {
   const course = await db.course.create({
     data: {
       userId,
-      title: "كورس غير معرفة",
+      title: "Untitled Course",
     },
   });
 

@@ -8,11 +8,13 @@ import { CourseMobileSidebar } from "./course-mobile-sidebar";
 import { UserButton } from "@/components/user-button";
 import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 export const CourseNavbar = () => {
   const router = useRouter();
   const { data: session } = useSession();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { t } = useLanguage();
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -39,7 +41,7 @@ export const CourseNavbar = () => {
           size="sm"
           className="flex items-center gap-x-2 hover:bg-slate-100 rtl:mr-2 ltr:ml-2"
         >
-          <span className="rtl:text-right ltr:text-left">الرجوع إلى الكورسات</span>
+          <span className="rtl:text-right ltr:text-left">{t('student.backToCourses')}</span>
           <ChevronRight className="h-4 w-4 rtl:rotate-180" />
         </Button>
       </div>
@@ -50,11 +52,11 @@ export const CourseNavbar = () => {
             variant="ghost" 
             onClick={handleLogout}
             loading={isLoggingOut}
-            loadingText="جاري تسجيل الخروج..."
+            loadingText={t('student.loggingOut')}
             className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors duration-200 ease-in-out"
           >
             <LogOut className="h-4 w-4 rtl:ml-2 ltr:mr-2"/>
-            تسجيل الخروج
+            {t('student.logout')}
           </LoadingButton>
         )}
         <UserButton />

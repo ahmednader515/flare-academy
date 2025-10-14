@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, CheckCircle2, Circle, Lock, FileText, Downlo
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { PlyrVideoPlayer } from "@/components/plyr-video-player";
+import { useLanguage } from "@/lib/contexts/language-context";
 
 interface Chapter {
   id: string;
@@ -38,6 +39,7 @@ interface Chapter {
 const ChapterPage = () => {
   const router = useRouter();
   const routeParams = useParams() as { courseId: string; chapterId: string };
+  const { t, isRTL } = useLanguage();
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -114,7 +116,7 @@ const ChapterPage = () => {
         document.body.removeChild(link);
         
         window.URL.revokeObjectURL(downloadUrl);
-        toast.success("تم بدء تحميل الملف");
+        toast.success(t('student.downloadStarted'));
       } else {
         throw new Error('Failed to fetch file');
       }
@@ -133,7 +135,7 @@ const ChapterPage = () => {
       link.click();
       document.body.removeChild(link);
       
-      toast.success("تم فتح الملف في تبويب جديد للتحميل");
+      toast.success(t('student.fileOpenedInNewTab'));
     }
   };
 
@@ -162,13 +164,13 @@ const ChapterPage = () => {
         console.error("🔍 Error fetching data:", axiosError);
         if (axiosError.response) {
           console.error("🔍 Error response:", axiosError.response.data);
-          toast.error(`فشل تحميل الفصل: ${axiosError.response.data}`);
+          toast.error(`${t('student.failedToLoadChapter')}: ${axiosError.response.data}`);
         } else if (axiosError.request) {
           console.error("🔍 Error request:", axiosError.request);
-          toast.error("فشل الاتصال بالخادم");
+          toast.error(t('student.connectionFailed'));
         } else {
           console.error("🔍 Error message:", axiosError.message);
-          toast.error("حدث خطأ غير معروف");
+          toast.error(t('student.unknownError'));
         }
       } finally {
         console.log("🔍 ChapterPage fetchData completed, setting loading to false");
@@ -190,7 +192,7 @@ const ChapterPage = () => {
       router.refresh();
     } catch (error) {
       console.error("Error toggling completion:", error);
-      toast.error("فشل تحديث التقدم");
+      toast.error(t('student.failedToUpdateProgress'));
     }
   };
 
@@ -203,7 +205,7 @@ const ChapterPage = () => {
       }
     } catch (error) {
       console.error("Error marking chapter as completed:", error);
-      toast.error("فشل تحديث التقدم");
+      toast.error(t('student.failedToUpdateProgress'));
     }
   };
 
@@ -230,7 +232,7 @@ const ChapterPage = () => {
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
-        <div className="text-muted-foreground">جاري التحميل...</div>
+        <div className="text-muted-foreground">{t('student.loading')}</div>
       </div>
     );
   }
@@ -238,7 +240,7 @@ const ChapterPage = () => {
   if (!chapter) {
     return (
       <div className="h-full flex items-center justify-center">
-        <div className="text-muted-foreground">لم يتم العثور على الفصل</div>
+        <div className="text-muted-foreground">{t('student.chapterNotFound')}</div>
       </div>
     );
   }
@@ -248,10 +250,10 @@ const ChapterPage = () => {
       <div className="h-full flex items-center justify-center">
         <div className="text-center space-y-4">
           <Lock className="h-8 w-8 mx-auto text-muted-foreground" />
-          <h2 className="text-2xl font-semibold">هذا الفصل مغلق</h2>
-          <p className="text-muted-foreground">شراء الكورس للوصول إلى جميع الفصول</p>
+          <h2 className="text-2xl font-semibold">{t('student.chapterLocked')}</h2>
+          <p className="text-muted-foreground">{t('student.purchaseCourseToAccess')}</p>
           <Button onClick={() => router.push(`/courses/${routeParams.courseId}/purchase`)}>
-            شراء الكورس
+            {t('student.purchaseCourse')}
           </Button>
         </div>
       </div>
@@ -265,7 +267,7 @@ const ChapterPage = () => {
           {/* Course Progress */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">التقدم</span>
+              <span className="text-sm text-muted-foreground">{t('student.progress')}</span>
               <span className="text-sm font-medium">{courseProgress}%</span>
             </div>
             <Progress value={courseProgress} className="h-2" />
@@ -300,7 +302,7 @@ const ChapterPage = () => {
               })()
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-white">
-                لا يوجد فيديو متاح
+{t('student.noVideoAvailable')}
               </div>
             )}
           </div>
@@ -316,12 +318,12 @@ const ChapterPage = () => {
               >
                 {isCompleted ? (
                   <>
-                    <span>لم يتم الإكمال</span>
+                    <span>{t('student.markAsIncomplete')}</span>
                     <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                   </>
                 ) : (
                   <>
-                    <span>تم الإكمال</span>
+                    <span>{t('student.markAsCompleted')}</span>
                     <Circle className="h-4 w-4" />
                   </>
                 )}
@@ -337,7 +339,7 @@ const ChapterPage = () => {
               <div className="mt-6 p-4 border rounded-lg bg-card">
                 <div className="flex items-center gap-2 mb-3">
                   <FileText className="h-5 w-5 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold">مستندات الفصل</h3>
+                  <h3 className="text-lg font-semibold">{t('student.chapterDocuments')}</h3>
                 </div>
                 <div className="space-y-2">
                   {chapter.attachments.map((attachment) => (
@@ -347,7 +349,7 @@ const ChapterPage = () => {
                         <p className="text-sm font-medium truncate">
                           {attachment.name || getFilenameFromUrl(attachment.url)}
                         </p>
-                        <p className="text-xs text-muted-foreground">مستند الفصل</p>
+                        <p className="text-xs text-muted-foreground">{t('student.chapterDocument')}</p>
                       </div>
                       <div className="mr-auto flex items-center gap-2 flex-shrink-0">
                         <Button
@@ -355,7 +357,7 @@ const ChapterPage = () => {
                           size="sm"
                           onClick={() => window.open(attachment.url, '_blank')}
                         >
-                          عرض
+                          {t('student.view')}
                         </Button>
                         <Button
                           variant="outline"
@@ -364,7 +366,7 @@ const ChapterPage = () => {
                           className="flex items-center gap-1"
                         >
                           <Download className="h-3 w-3" />
-                          تحميل
+                          {t('student.download')}
                         </Button>
                       </div>
                     </div>
@@ -378,7 +380,7 @@ const ChapterPage = () => {
               <div className="mt-6 p-4 border rounded-lg bg-card">
                 <div className="flex items-center gap-2 mb-3">
                   <FileText className="h-5 w-5 text-muted-foreground" />
-                  <h3 className="text-lg font-semibold">مستند الفصل</h3>
+                  <h3 className="text-lg font-semibold">{t('student.chapterDocument')}</h3>
                 </div>
                 <div className="flex items-center p-3 w-full bg-secondary/50 border-secondary/50 border text-secondary-foreground rounded-md">
                   <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
@@ -386,7 +388,7 @@ const ChapterPage = () => {
                     <p className="text-sm font-medium truncate">
                       {chapter.documentName || getFilenameFromUrl(chapter.documentUrl || '')}
                     </p>
-                    <p className="text-xs text-muted-foreground">مستند الفصل</p>
+                    <p className="text-xs text-muted-foreground">{t('student.chapterDocument')}</p>
                   </div>
                   <div className="mr-auto flex items-center gap-2 flex-shrink-0">
                     <Button
@@ -394,7 +396,7 @@ const ChapterPage = () => {
                       size="sm"
                       onClick={() => window.open(chapter.documentUrl!, '_blank')}
                     >
-                      عرض المستند
+                      {t('student.viewDocument')}
                     </Button>
                     <Button
                       variant="outline"
@@ -403,7 +405,7 @@ const ChapterPage = () => {
                       className="flex items-center gap-1"
                     >
                       <Download className="h-3 w-3" />
-                      تحميل
+                      {t('student.download')}
                     </Button>
                   </div>
                 </div>
@@ -419,8 +421,12 @@ const ChapterPage = () => {
               disabled={!chapter.previousChapterId}
               className="flex items-center gap-2"
             >
-              <ChevronRight className="h-4 w-4" />
-              الفصل السابق
+              {isRTL ? (
+                <ChevronRight className="h-4 w-4" />
+              ) : (
+                <ChevronLeft className="h-4 w-4" />
+              )}
+              {t('student.previousChapter')}
             </Button>
 
             <Button
@@ -428,8 +434,12 @@ const ChapterPage = () => {
               disabled={!chapter.nextChapterId}
               className="flex items-center gap-2"
             >
-              الفصل التالي
-              <ChevronLeft className="h-4 w-4" />
+              {t('student.nextChapter')}
+              {isRTL ? (
+                <ChevronLeft className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
