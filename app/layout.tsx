@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 const playpenSansArabic = localFont({
-  src: '../public/fonts/PlaypenSansArabic-VariableFont_wght.ttf',
+  src: './fonts/PlaypenSansArabic-VariableFont_wght.ttf',
   variable: '--font-playpen-sans-arabic',
   display: 'swap',
   preload: true,
@@ -25,22 +25,22 @@ const playpenSansArabic = localFont({
 const ptSerif = localFont({
   src: [
     {
-      path: '../public/fonts/PT_serif/PTSerif-Regular.ttf',
+      path: './fonts/PT_Serif/PTSerif-Regular.ttf',
       weight: '400',
       style: 'normal',
     },
     {
-      path: '../public/fonts/PT_serif/PTSerif-Italic.ttf',
+      path: './fonts/PT_Serif/PTSerif-Italic.ttf',
       weight: '400',
       style: 'italic',
     },
     {
-      path: '../public/fonts/PT_serif/PTSerif-Bold.ttf',
+      path: './fonts/PT_Serif/PTSerif-Bold.ttf',
       weight: '700',
       style: 'normal',
     },
     {
-      path: '../public/fonts/PT_serif/PTSerif-BoldItalic.ttf',
+      path: './fonts/PT_Serif/PTSerif-BoldItalic.ttf',
       weight: '700',
       style: 'italic',
     },
