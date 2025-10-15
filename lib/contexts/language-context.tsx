@@ -89,8 +89,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     
     // Update body class for font
     document.body.className = language === 'ar' 
-      ? 'font-playpen-sans-arabic' 
-      : 'font-geist-sans';
+      ? 'font-pt-serif' 
+      : 'font-pt-serif';
     
     // Save to localStorage
     localStorage.setItem('language', language);

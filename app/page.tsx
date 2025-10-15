@@ -241,8 +241,8 @@ export default function HomePage() {
             className="text-center mt-0 md:mt-0 order-2 md:order-1"
           >
             <h1 className="text-4xl md:text-6xl font-bold mb-4 font-pt-serif">
-              <span className="text-blue-600">Fla</span>
-              <span className="text-orange-500">Re</span>
+              <span className="text-[#003d6c]">Fla</span>
+              <span className="text-[#ff8710]">Re</span>
               <span className="text-cyan-500"> Academy</span>
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8">

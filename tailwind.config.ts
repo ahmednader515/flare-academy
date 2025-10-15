@@ -19,6 +19,7 @@ const config = {
     },
     extend: {
       fontFamily: {
+        'sans': ['var(--font-pt-serif)', 'PT Serif Local', 'PT Serif', 'serif'],
         'playpen-sans-arabic': ['var(--font-playpen-sans-arabic)'],
         'pt-serif': ['var(--font-pt-serif)', 'PT Serif Local', 'PT Serif', 'serif'],
       },

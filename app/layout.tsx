@@ -64,7 +64,7 @@ export default function RootLayout({
 }) {
   return (
     <html suppressHydrationWarning lang="ar" dir="rtl" className={`${geistSans.variable} ${geistMono.variable} ${playpenSansArabic.variable} ${ptSerif.variable}`}>
-      <body suppressHydrationWarning className="font-playpen-sans-arabic" data-pt-serif={ptSerif.variable}>
+      <body suppressHydrationWarning className="font-pt-serif" data-pt-serif={ptSerif.variable}>
         <Providers>
           <div className="min-h-screen flex flex-col">
             <main className="flex-1">
