@@ -4,7 +4,7 @@ import { CoursesTable } from "./courses-table";
 import { useColumns } from "./columns";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { PlusCircle, AlertCircle } from "lucide-react";
+import { PlusCircle, AlertCircle, Users } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLanguage } from "@/lib/contexts/language-context";
 
@@ -21,14 +21,16 @@ type Course = {
     updatedAt: Date;
     publishedChaptersCount: number;
     publishedQuizzesCount: number;
+    enrolledStudentsCount: number;
 };
 
 interface TeacherCoursesContentProps {
     courses: Course[];
     hasUnpublishedCourses: boolean;
+    totalEnrolledStudents: number;
 }
 
-export const TeacherCoursesContent = ({ courses, hasUnpublishedCourses }: TeacherCoursesContentProps) => {
+export const TeacherCoursesContent = ({ courses, hasUnpublishedCourses, totalEnrolledStudents }: TeacherCoursesContentProps) => {
     const { t } = useLanguage();
     const columns = useColumns();
 
@@ -42,6 +44,22 @@ export const TeacherCoursesContent = ({ courses, hasUnpublishedCourses }: Teache
                         {t('dashboard.createNewCourse')}
                     </Button>
                 </Link>
+            </div>
+
+            {/* Total Enrolled Students Card */}
+            <div className="mt-4">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 text-white">
+                    <div className="flex items-center">
+                        <div className="p-3 bg-white/20 rounded-full">
+                            <Users className="h-8 w-8" />
+                        </div>
+                        <div className="ml-4">
+                            <h3 className="text-lg font-semibold">{t('teacher.totalEnrolledStudents')}</h3>
+                            <p className="text-3xl font-bold">{totalEnrolledStudents}</p>
+                            <p className="text-blue-100 text-sm">{t('teacher.acrossAllCourses')}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {hasUnpublishedCourses && (

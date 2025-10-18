@@ -16,6 +16,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Pencil, Globe } from "lucide-react";
 
 // Dropdown options for course targeting
+const collegeOptions = [
+    "الجامعة المصرية الصينية",
+    "جامعة الدلتا",
+    "جامعة القاهرة الأهلية",
+    "جامعة المنوفية الأهلية",
+    "جامعة سفنكس",
+    "جامعة السادات الأهلية"
+];
+
 const facultyOptions = [
     "كلية الطب البيطري",
     "كلية العلاج الطبيعي",
@@ -31,6 +40,7 @@ const formSchema = z.object({
         message: "الوصف مطلوب",
     }),
     targetFaculty: z.string().optional(),
+    targetCollege: z.string().optional(),
 });
 
 interface CourseFormProps {
@@ -52,6 +62,7 @@ export const CourseForm = ({
             title: initialData.title || "",
             description: initialData.description || "",
             targetFaculty: initialData.targetFaculty || "",
+            targetCollege: initialData.targetCollege || "",
         },
     });
 
@@ -102,13 +113,20 @@ export const CourseForm = ({
             {!isEditing && (
                 <div className="mt-4 space-y-4">
                     {/* Target Audience Display */}
-                    {initialData.targetFaculty && (
+                    {(initialData.targetFaculty || initialData.targetCollege) && (
                         <div className="space-y-2">
                             <h4 className="text-sm font-medium text-slate-700">الجمهور المستهدف</h4>
                             <div className="flex flex-wrap gap-2">
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                    {initialData.targetFaculty}
-                                </span>
+                                {initialData.targetCollege && (
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                        {initialData.targetCollege}
+                                    </span>
+                                )}
+                                {initialData.targetFaculty && (
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                        {initialData.targetFaculty}
+                                    </span>
+                                )}
                             </div>
                         </div>
                     )}
@@ -160,6 +178,34 @@ export const CourseForm = ({
                                             {...field}
                                         />
                                     </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="targetCollege"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>الجامعة المستهدفة (اختياري)</FormLabel>
+                                    <Select
+                                        onValueChange={field.onChange}
+                                        defaultValue={field.value}
+                                        disabled={isLoading}
+                                    >
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="اختر الجامعة المستهدفة" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {collegeOptions.map((college) => (
+                                                <SelectItem key={college} value={college}>
+                                                    {college}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
                                     <FormMessage />
                                 </FormItem>
                             )}

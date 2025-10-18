@@ -44,6 +44,7 @@ model Course {
   isPublished Boolean @default(false)
   isFree Boolean @default(false)
   targetFaculty String?
+  targetCollege String?
   targetLevel String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -33,6 +33,14 @@ const CoursesPage = async () => {
                     isPublished: true,
                 }
             },
+            purchases: {
+                where: {
+                    status: "ACTIVE"
+                },
+                select: {
+                    id: true
+                }
+            },
         },
         orderBy: {
             createdAt: "desc",
@@ -42,7 +50,15 @@ const CoursesPage = async () => {
         price: course.price || 0,
         publishedChaptersCount: course.chapters.filter(ch => ch.isPublished).length,
         publishedQuizzesCount: course.quizzes.filter(q => q.isPublished).length,
+        enrolledStudentsCount: course.purchases.length,
     })));
+
+    // Get total enrolled students across all courses
+    const totalEnrolledStudents = await db.purchase.count({
+        where: {
+            status: "ACTIVE"
+        }
+    });
 
     const unpublishedCourses = courses.filter(course => !course.isPublished);
     const hasUnpublishedCourses = unpublishedCourses.length > 0;
@@ -51,6 +67,7 @@ const CoursesPage = async () => {
         <TeacherCoursesContent 
             courses={courses}
             hasUnpublishedCourses={hasUnpublishedCourses}
+            totalEnrolledStudents={totalEnrolledStudents}
         />
     );
 };

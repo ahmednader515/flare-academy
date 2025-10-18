@@ -15,6 +15,7 @@ export type Course = {
     price: number;
     isPublished: boolean;
     createdAt: Date;
+    enrolledStudentsCount: number;
 }
 
 export const useColumns = (): ColumnDef<Course>[] => {
@@ -51,6 +52,28 @@ export const useColumns = (): ColumnDef<Course>[] => {
             cell: ({ row }) => {
                 const price = parseFloat(row.getValue("price"));
                 return <div>{formatPrice(price)}</div>;
+            },
+        },
+        {
+            accessorKey: "enrolledStudentsCount",
+            header: ({ column }) => {
+                return (
+                    <Button
+                        variant="ghost"
+                        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+                    >
+                        {t('teacher.enrolledStudents')}
+                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                    </Button>
+                );
+            },
+            cell: ({ row }) => {
+                const count = row.getValue("enrolledStudentsCount") as number;
+                return (
+                    <div className="text-center font-medium">
+                        {count}
+                    </div>
+                );
             },
         },
         {

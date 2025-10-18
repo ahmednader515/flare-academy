@@ -7,6 +7,7 @@ import { DescriptionForm } from "./description-form";
 import { ImageForm } from "./image-form";
 import { PriceForm } from "./price-form";
 import { TargetFacultyForm } from "./target-faculty-form";
+import { TargetCollegeForm } from "./target-college-form";
 import { CourseContentForm } from "./course-content-form";
 import { IsFreeForm } from "./is-free-form";
 import { Banner } from "@/components/banner";
@@ -121,6 +122,10 @@ export const CourseEditContent = ({
                             courseId={course.id}
                         />
                         <PriceForm
+                            initialData={course}
+                            courseId={course.id}
+                        />
+                        <TargetCollegeForm
                             initialData={course}
                             courseId={course.id}
                         />

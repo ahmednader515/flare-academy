@@ -154,8 +154,13 @@ export const SearchPageContent = ({ coursesWithProgress, title }: SearchPageCont
                                     </h3>
                                     
                                     {/* Target Audience Info */}
-                                    {(course.targetFaculty || course.targetLevel) && (
+                                    {(course.targetCollege || course.targetFaculty || course.targetLevel) && (
                                         <div className="mb-3 flex flex-wrap gap-2">
+                                            {course.targetCollege && (
+                                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    {course.targetCollege}
+                                                </span>
+                                            )}
                                             {course.targetFaculty && (
                                                 <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                                     {course.targetFaculty}

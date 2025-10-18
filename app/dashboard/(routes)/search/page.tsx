@@ -49,16 +49,61 @@ export default async function SearchPage({
         }
     };
 
-    // Add faculty and level filtering if user has this information
-    if (user?.faculty || user?.level) {
+    // Add college, faculty and level filtering if user has this information
+    if (user?.college || user?.faculty || user?.level) {
         whereClause.OR = [];
         
-        // Add courses that match user's faculty and level
+        // Add courses that match user's college, faculty and level
+        if (user.college && user.faculty && user.level) {
+            whereClause.OR.push({
+                AND: [
+                    { targetCollege: user.college },
+                    { targetFaculty: user.faculty },
+                    { targetLevel: user.level }
+                ]
+            });
+        }
+        
+        // Add courses that match user's college and faculty only
+        if (user.college && user.faculty) {
+            whereClause.OR.push({
+                AND: [
+                    { targetCollege: user.college },
+                    { targetFaculty: user.faculty },
+                    { targetLevel: null }
+                ]
+            });
+        }
+        
+        // Add courses that match user's college and level only
+        if (user.college && user.level) {
+            whereClause.OR.push({
+                AND: [
+                    { targetCollege: user.college },
+                    { targetFaculty: null },
+                    { targetLevel: user.level }
+                ]
+            });
+        }
+        
+        // Add courses that match user's faculty and level only
         if (user.faculty && user.level) {
             whereClause.OR.push({
                 AND: [
+                    { targetCollege: null },
                     { targetFaculty: user.faculty },
                     { targetLevel: user.level }
+                ]
+            });
+        }
+        
+        // Add courses that match user's college only
+        if (user.college) {
+            whereClause.OR.push({
+                AND: [
+                    { targetCollege: user.college },
+                    { targetFaculty: null },
+                    { targetLevel: null }
                 ]
             });
         }
@@ -67,6 +112,7 @@ export default async function SearchPage({
         if (user.faculty) {
             whereClause.OR.push({
                 AND: [
+                    { targetCollege: null },
                     { targetFaculty: user.faculty },
                     { targetLevel: null }
                 ]
@@ -77,6 +123,7 @@ export default async function SearchPage({
         if (user.level) {
             whereClause.OR.push({
                 AND: [
+                    { targetCollege: null },
                     { targetFaculty: null },
                     { targetLevel: user.level }
                 ]
@@ -86,12 +133,18 @@ export default async function SearchPage({
         // Add courses with no targeting (available to all)
         whereClause.OR.push({
             AND: [
+                { targetCollege: null },
                 { targetFaculty: null },
                 { targetLevel: null }
             ]
         });
         
-        // Add courses with "جميع الكليات" or "جميع المستويات"
+        // Add courses with "جميع الجامعات", "جميع الكليات" or "جميع المستويات"
+        if (user.college) {
+            whereClause.OR.push({
+                targetCollege: "جميع الجامعات"
+            });
+        }
         if (user.faculty) {
             whereClause.OR.push({
                 targetFaculty: "جميع الكليات"
