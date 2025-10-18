@@ -13,8 +13,21 @@ export const Navbar = () => {
   const { data: session } = useSession();
   const { t } = useLanguage();
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: "/" });
+  const handleLogout = async () => {
+    try {
+      // Call our logout API to end the session
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      // Then sign out from NextAuth
+      await signOut({ callbackUrl: "/" });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (

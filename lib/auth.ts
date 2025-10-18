@@ -7,6 +7,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { Adapter } from "next-auth/adapters";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import { SessionManager } from "@/lib/session-manager";
 
 export const auth = async () => {
   const session = await getServerSession(authOptions);
@@ -59,6 +60,11 @@ export const authOptions: AuthOptions = {
           throw new Error("Invalid credentials");
         }
 
+        // Check if user is already logged in
+        if (user.isActive) {
+          throw new Error("UserAlreadyLoggedIn");
+        }
+
         return {
           id: user.id,
           name: user.fullName,
@@ -82,27 +88,48 @@ export const authOptions: AuthOptions = {
   },
   callbacks: {
     async session({ token, session }) {
-      if (token) {
-        session.user.id = token.id;
-        session.user.name = token.name;
-        session.user.phoneNumber = token.phoneNumber;
-        session.user.image = token.picture ?? undefined;
-        session.user.role = token.role;
+      if (token && token.sessionId) {
+        try {
+          // Validate session on each request
+          const { isValid } = await SessionManager.validateSession(token.sessionId as string);
+          
+          if (!isValid) {
+            // Session is invalid, return null to force re-authentication
+            return null;
+          }
+
+          session.user.id = token.id;
+          session.user.name = token.name;
+          session.user.phoneNumber = token.phoneNumber;
+          session.user.image = token.picture ?? undefined;
+          session.user.role = token.role;
+        } catch (error) {
+          console.error("Session validation error:", error);
+          return null;
+        }
       }
 
       return session;
     },
     async jwt({ token, user }) {
       if (user) {
-        // When user first signs in, set the token with user data
-        return {
-          ...token,
-          id: user.id,
-          name: user.name,
-          phoneNumber: user.phoneNumber,
-          picture: (user as any).picture,
-          role: user.role,
-        };
+        try {
+          // When user first signs in, create a new session
+          const sessionId = await SessionManager.createSession(user.id);
+          
+          return {
+            ...token,
+            id: user.id,
+            name: user.name,
+            phoneNumber: user.phoneNumber,
+            picture: (user as any).picture,
+            role: user.role,
+            sessionId: sessionId,
+          };
+        } catch (error) {
+          console.error("Session creation error:", error);
+          throw error;
+        }
       }
 
       // On subsequent requests, return the existing token

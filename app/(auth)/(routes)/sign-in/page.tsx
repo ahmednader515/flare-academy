@@ -46,6 +46,8 @@ export default function SignInPage() {
       if (result?.error) {
         if (result.error === "CredentialsSignin") {
           toast.error(t('auth.invalidCredentials'));
+        } else if (result.error === "UserAlreadyLoggedIn") {
+          toast.error(t('auth.userAlreadyLoggedIn'));
         } else {
           toast.error(t('auth.signInError'));
         }

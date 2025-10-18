@@ -19,6 +19,15 @@ export const CourseNavbar = () => {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
+      // Call our logout API to end the session
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      // Then sign out from NextAuth
       await signOut({ callbackUrl: "/" });
     } catch (error) {
       console.error("Logout error:", error);

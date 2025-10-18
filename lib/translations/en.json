@@ -82,7 +82,10 @@
     "passwordsDoNotMatch": "Passwords do not match",
     "phoneAlreadyExists": "Phone number already exists",
     "emailAlreadyExists": "Email already exists",
-    "invalidEmailFormat": "Invalid email format"
+    "invalidEmailFormat": "Invalid email format",
+    "userAlreadyLoggedIn": "This account is already logged in on another device. Please log out from the other device first or contact support if you believe this is an error.",
+    "sessionExpired": "Your session has expired. Please sign in again.",
+    "invalidSession": "Invalid session. Please sign in again."
   },
   "home": {
     "title": "Flare Academy",
