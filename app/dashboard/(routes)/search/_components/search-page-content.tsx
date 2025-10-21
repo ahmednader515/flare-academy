@@ -2,7 +2,7 @@
 
 import { SearchInput } from "./search-input";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Clock, Users } from "lucide-react";
+import { BookOpen, Clock } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useLanguage } from "@/lib/contexts/language-context";
@@ -183,10 +183,6 @@ export const SearchPageContent = ({ coursesWithProgress, title }: SearchPageCont
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-1">
-                                            <Users className="h-4 w-4" />
-                                            <span className="whitespace-nowrap">{course.purchases.length} {t('dashboard.students')}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
                                             <Clock className="h-4 w-4" />
                                             <span className="whitespace-nowrap">{new Date(course.updatedAt).toLocaleDateString('ar', {
                                                 year: 'numeric',
@@ -198,7 +194,7 @@ export const SearchPageContent = ({ coursesWithProgress, title }: SearchPageCont
                                 
                                 {course.purchases.length > 0 ? (
                                     <Button 
-                                        className="w-full bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-semibold py-3 text-base transition-all duration-200 hover:scale-105" 
+                                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 text-base transition-all duration-200 hover:scale-105" 
                                         variant="default"
                                         asChild
                                     >
@@ -245,7 +241,7 @@ export const SearchPageContent = ({ coursesWithProgress, title }: SearchPageCont
                                 }
                             </p>
                             {title && (
-                                <Button asChild className="bg-[#211FC3] hover:bg-[#211FC3]/90 text-white font-semibold">
+                                <Button asChild className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-semibold">
                                     <Link href="/dashboard/search">
                                         {t('dashboard.viewAllCourses')}
                                     </Link>

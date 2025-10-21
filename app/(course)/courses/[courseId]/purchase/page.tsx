@@ -102,7 +102,7 @@ export default function PurchasePage({
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#211FC3]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B35]"></div>
       </div>
     );
   }
@@ -155,7 +155,7 @@ export default function PurchasePage({
                   />
                 </div>
               )}
-              <div className="text-2xl font-bold text-[#211FC3]">
+              <div className="text-2xl font-bold text-[#FF6B35]">
                 {course.price?.toFixed(2) || "0.00"} جنيه
               </div>
             </CardContent>
@@ -171,7 +171,7 @@ export default function PurchasePage({
             </CardHeader>
             <CardContent>
               {isLoadingBalance ? (
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#211FC3]"></div>
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#FF6B35]"></div>
               ) : (
                 <div className="space-y-2">
                   <div className="text-xl font-bold">

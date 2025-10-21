@@ -88,6 +88,12 @@ export default function CreateAccountPage() {
       return;
     }
 
+    if (!formData.college || !formData.faculty) {
+      toast.error("الجامعة والكلية مطلوبان");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await axios.post("/api/teacher/create-account", formData);
       

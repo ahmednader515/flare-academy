@@ -30,12 +30,13 @@ export default async function SearchPage({
     const resolvedParams = await searchParams;
     const title = typeof resolvedParams.title === 'string' ? resolvedParams.title : '';
 
-    // Get user information to filter courses based on their faculty and level
+    // Get user information to filter courses based on their college, faculty and level
     const user = await db.user.findUnique({
         where: {
             id: session.user.id,
         },
         select: {
+            college: true,
             faculty: true,
             level: true,
         }
@@ -44,14 +45,38 @@ export default async function SearchPage({
     // Build the where clause for course filtering
     const whereClause: any = {
         isPublished: true,
-        title: {
-            contains: title,
-        }
     };
+
+    // Add title search if provided
+    if (title) {
+        whereClause.title = {
+            contains: title,
+        };
+    }
 
     // Add college, faculty and level filtering if user has this information
     if (user?.college || user?.faculty || user?.level) {
         whereClause.OR = [];
+        
+        // Add courses with no targeting (available to all)
+        whereClause.OR.push({
+            AND: [
+                { targetCollege: null },
+                { targetFaculty: null },
+                { targetLevel: null }
+            ]
+        });
+        
+        // Add courses with "جميع الجامعات", "جميع الكليات" or "جميع المستويات"
+        whereClause.OR.push({
+            targetCollege: "جميع الجامعات"
+        });
+        whereClause.OR.push({
+            targetFaculty: "جميع الكليات"
+        });
+        whereClause.OR.push({
+            targetLevel: "جميع المستويات"
+        });
         
         // Add courses that match user's college, faculty and level
         if (user.college && user.faculty && user.level) {
@@ -127,32 +152,6 @@ export default async function SearchPage({
                     { targetFaculty: null },
                     { targetLevel: user.level }
                 ]
-            });
-        }
-        
-        // Add courses with no targeting (available to all)
-        whereClause.OR.push({
-            AND: [
-                { targetCollege: null },
-                { targetFaculty: null },
-                { targetLevel: null }
-            ]
-        });
-        
-        // Add courses with "جميع الجامعات", "جميع الكليات" or "جميع المستويات"
-        if (user.college) {
-            whereClause.OR.push({
-                targetCollege: "جميع الجامعات"
-            });
-        }
-        if (user.faculty) {
-            whereClause.OR.push({
-                targetFaculty: "جميع الكليات"
-            });
-        }
-        if (user.level) {
-            whereClause.OR.push({
-                targetLevel: "جميع المستويات"
             });
         }
     }

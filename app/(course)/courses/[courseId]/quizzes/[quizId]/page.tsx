@@ -190,7 +190,7 @@ export default function QuizPage({
     if (loading && !redirectToResult) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#211FC3]"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B35]"></div>
             </div>
         );
     }
@@ -199,7 +199,7 @@ export default function QuizPage({
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#211FC3] mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B35] mx-auto mb-4"></div>
                     <p className="text-muted-foreground">جاري تحميل النتيجة...</p>
                 </div>
             </div>
@@ -261,7 +261,7 @@ export default function QuizPage({
                         <CardContent>
                             <div className="w-full bg-gray-200 rounded-full h-2">
                                 <div 
-                                    className="bg-[#211FC3] h-2 rounded-full transition-all duration-300"
+                                    className="bg-[#FF6B35] h-2 rounded-full transition-all duration-300"
                                     style={{ width: `${progress}%` }}
                                 ></div>
                             </div>

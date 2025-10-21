@@ -1,5 +1,7 @@
 import { db } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function GET(
     req: Request,
@@ -7,6 +9,7 @@ export async function GET(
 ) {
     try {
         const resolvedParams = await params;
+        const session = await getServerSession(authOptions);
 
         // Get chapters
         const chapters = await db.chapter.findMany({
@@ -16,6 +19,11 @@ export async function GET(
             },
             include: {
                 userProgress: {
+                    where: session?.user ? {
+                        userId: session.user.id
+                    } : {
+                        userId: "non-existent-user-id"
+                    },
                     select: {
                         isCompleted: true
                     }
@@ -34,6 +42,11 @@ export async function GET(
             },
             include: {
                 quizResults: {
+                    where: session?.user ? {
+                        studentId: session.user.id
+                    } : {
+                        studentId: "non-existent-user-id"
+                    },
                     select: {
                         id: true,
                         score: true,
@@ -51,11 +64,13 @@ export async function GET(
         const allContent = [
             ...chapters.map(chapter => ({
                 ...chapter,
-                type: 'chapter' as const
+                type: 'chapter' as const,
+                userProgress: chapter.userProgress || []
             })),
             ...quizzes.map(quiz => ({
                 ...quiz,
-                type: 'quiz' as const
+                type: 'quiz' as const,
+                quizResults: quiz.quizResults || []
             }))
         ].sort((a, b) => a.position - b.position);
 

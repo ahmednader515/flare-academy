@@ -32,12 +32,12 @@ export const SearchInput = () => {
                     name="title"
                     placeholder={t('dashboard.searchPlaceholder')}
                     defaultValue={searchParams.get("title") || ""}
-                    className="h-12 pr-10 pl-4 text-base border-2 focus:border-[#211FC3] transition-colors"
+                    className="h-12 pr-10 pl-4 text-base border-2 focus:border-[#FF6B35] transition-colors"
                 />
             </div>
             <Button 
                 type="submit" 
-                className="h-12 px-6 bg-[#211FC3] hover:bg-[#211FC3]/90 text-white font-semibold transition-all duration-200 hover:scale-105"
+                className="h-12 px-6 bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-semibold transition-all duration-200 hover:scale-105"
             >
                 <Search className="h-4 w-4 ml-2" />
                 {t('dashboard.searchButton')}

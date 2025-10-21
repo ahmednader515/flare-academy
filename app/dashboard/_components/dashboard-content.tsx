@@ -174,7 +174,7 @@ export const DashboardContent = ({
                   </div>
                   
                   <Button 
-                    className="w-full bg-[#211FC3] hover:bg-[#211FC3]/90 text-white" 
+                    className="w-full bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white" 
                     size="lg"
                     asChild
                   >
@@ -278,12 +278,12 @@ export const DashboardContent = ({
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground font-medium">{t('course.progress')}</span>
-                      <span className="font-bold text-[#211FC3]">{Math.round(course.progress)}%</span>
+                      <span className="font-bold text-[#FF6B35]">{Math.round(course.progress)}%</span>
                     </div>
                     <div className="relative">
                       <div className="w-full bg-gray-200 rounded-full h-3">
                         <div 
-                          className="bg-gradient-to-r from-[#211FC3] to-[#211FC3]/80 h-3 rounded-full transition-all duration-300"
+                          className="bg-gradient-to-r from-[#FF6B35] to-[#FF6B35]/80 h-3 rounded-full transition-all duration-300"
                           style={{ width: `${course.progress}%` }}
                         ></div>
                       </div>
@@ -291,7 +291,7 @@ export const DashboardContent = ({
                   </div>
                   
                   <Button 
-                    className="w-full bg-[#211FC3] hover:bg-[#211FC3]/90 text-white font-semibold py-3 text-base transition-all duration-200 hover:scale-105" 
+                    className="w-full bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white font-semibold py-3 text-base transition-all duration-200 hover:scale-105" 
                     variant="default"
                     asChild
                   >

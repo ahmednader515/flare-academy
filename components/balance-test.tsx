@@ -85,7 +85,7 @@ export const BalanceTest = () => {
                 <Button 
                   onClick={handleAddBalance}
                   disabled={isLoading}
-                  className="bg-[#211FC3] hover:bg-[#211FC3]/90"
+                  className="bg-[#FF6B35] hover:bg-[#FF6B35]/90"
                 >
                   {isLoading ? "Adding..." : "Add Balance"}
                 </Button>

@@ -6,7 +6,7 @@ export async function POST(req: Request) {
   try {
     const { fullName, phoneNumber, email, college, faculty, password, confirmPassword } = await req.json();
 
-    if (!fullName || !phoneNumber || !email || !password || !confirmPassword) {
+    if (!fullName || !phoneNumber || !email || !password || !confirmPassword || !college || !faculty) {
       return new NextResponse("Missing required fields", { status: 400 });
     }
 
@@ -48,8 +48,8 @@ export async function POST(req: Request) {
         fullName,
         phoneNumber,
         email,
-        college: college || null,
-        faculty: faculty || null,
+        college,
+        faculty,
         hashedPassword,
         role: "USER",
       },
