@@ -230,14 +230,6 @@ export const SecureDocumentViewer = ({
           )}
         </div>
       </div>
-
-      {/* Footer Warning */}
-      <div className="bg-red-900/20 border-t border-red-500/50 p-3 text-center">
-        <p className="text-sm text-red-300 flex items-center justify-center gap-2">
-          <Lock className="h-4 w-4" />
-          {t('student.documentProtectionWarning')}
-        </p>
-      </div>
     </div>
   );
 };
