@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import { PlyrVideoPlayer } from "@/components/plyr-video-player";
 import { useLanguage } from "@/lib/contexts/language-context";
 import { SecureDocumentViewer } from "@/components/secure-document-viewer";
-import { downloadAndCacheDocument, saveCachedDocument, deleteCachedDocument } from "@/lib/offline-document-cache";
 
 interface Chapter {
   id: string;
@@ -48,7 +47,7 @@ const ChapterPage = () => {
   const [courseProgress, setCourseProgress] = useState(0);
   const [hasAccess, setHasAccess] = useState(false);
   const [savedDocuments, setSavedDocuments] = useState<Set<string>>(new Set());
-  const [selectedDocument, setSelectedDocument] = useState<{ url: string; name: string; id?: string } | null>(null);
+  const [selectedDocument, setSelectedDocument] = useState<{ url: string; name: string } | null>(null);
   const [savingDocuments, setSavingDocuments] = useState<Set<string>>(new Set());
 
   console.log("🔍 ChapterPage render:", {
@@ -126,18 +125,6 @@ const ChapterPage = () => {
     setSavingDocuments(prev => new Set(prev).add(attachmentId));
     
     try {
-      // Download and cache the document for offline use
-      toast.loading(t('student.cachingDocument'), { id: 'caching-' + attachmentId });
-      const cachedContent = await downloadAndCacheDocument(attachmentUrl);
-      
-      if (cachedContent) {
-        saveCachedDocument(attachmentId, cachedContent);
-        toast.success(t('student.documentCachedForOffline'), { id: 'caching-' + attachmentId });
-      } else {
-        toast.dismiss('caching-' + attachmentId);
-      }
-
-      // Save to database
       const response = await fetch('/api/saved-documents', {
         method: 'POST',
         headers: {
@@ -159,13 +146,6 @@ const ChapterPage = () => {
         const error = await response.text();
         if (error.includes('already saved')) {
           toast.error(t('student.documentAlreadySaved'));
-          // Still cache it if not already cached
-          if (!cachedContent) {
-            const retryCache = await downloadAndCacheDocument(attachmentUrl);
-            if (retryCache) {
-              saveCachedDocument(attachmentId, retryCache);
-            }
-          }
         } else {
           toast.error(t('common.error'));
         }
@@ -173,7 +153,6 @@ const ChapterPage = () => {
     } catch (error) {
       console.error("Error saving document:", error);
       toast.error(t('common.error'));
-      toast.dismiss('caching-' + attachmentId);
     } finally {
       setSavingDocuments(prev => {
         const newSet = new Set(prev);
@@ -198,8 +177,6 @@ const ChapterPage = () => {
           newSet.delete(attachmentId);
           return newSet;
         });
-        // Delete the cached document as well
-        deleteCachedDocument(attachmentId);
         toast.success(t('student.documentUnsaved'));
       } else {
         toast.error(t('common.error'));
@@ -487,7 +464,7 @@ const ChapterPage = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setSelectedDocument({ url: attachment.url, name: attachment.name, id: attachment.id })}
+                            onClick={() => setSelectedDocument({ url: attachment.url, name: attachment.name })}
                             className="flex items-center gap-1"
                           >
                             <Eye className="h-3 w-3" />
@@ -599,7 +576,6 @@ const ChapterPage = () => {
         <SecureDocumentViewer
           documentUrl={selectedDocument.url}
           documentName={selectedDocument.name}
-          attachmentId={selectedDocument.id}
           onClose={() => setSelectedDocument(null)}
         />
       )}

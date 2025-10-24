@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { SecureDocumentViewer } from "@/components/secure-document-viewer";
-import { FileText, Trash2, Eye, Bookmark, WifiOff, Wifi, RefreshCw } from "lucide-react";
+import { FileText, Trash2, Eye, Bookmark, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/lib/contexts/language-context";
 import {
@@ -29,118 +29,54 @@ interface SavedDocument {
   createdAt: string;
 }
 
-const STORAGE_KEY = "flare_academy_saved_documents";
-
 export default function SavedDocumentsPage() {
   const { t } = useLanguage();
   const [documents, setDocuments] = useState<SavedDocument[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isOnline, setIsOnline] = useState(true);
   const [selectedDocument, setSelectedDocument] = useState<SavedDocument | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
-  // Check online status
+  // Fetch documents from API
   useEffect(() => {
-    const updateOnlineStatus = () => {
-      setIsOnline(navigator.onLine);
-    };
-
-    updateOnlineStatus();
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
-
-    return () => {
-      window.removeEventListener('online', updateOnlineStatus);
-      window.removeEventListener('offline', updateOnlineStatus);
-    };
-  }, []);
-
-  // Load documents from localStorage first (for offline support)
-  useEffect(() => {
-    const loadFromLocalStorage = () => {
-      try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          setDocuments(parsed);
-        }
-      } catch (error) {
-        console.error("Error loading from localStorage:", error);
-      }
-    };
-
-    loadFromLocalStorage();
-  }, []);
-
-  // Fetch documents from API when online
-  useEffect(() => {
-    const fetchDocuments = async () => {
-      if (!isOnline) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch("/api/saved-documents");
-        if (response.ok) {
-          const data = await response.json();
-          setDocuments(data);
-          // Save to localStorage for offline access
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        } else {
-          console.error("Failed to fetch saved documents");
-        }
-      } catch (error) {
-        console.error("Error fetching documents:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDocuments();
-  }, [isOnline]);
+  }, []);
 
-  const handleRefresh = async () => {
-    if (!isOnline) {
-      toast.error(t('common.offlineMode'));
-      return;
-    }
-
+  const fetchDocuments = async () => {
     setLoading(true);
     try {
       const response = await fetch("/api/saved-documents");
       if (response.ok) {
         const data = await response.json();
         setDocuments(data);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        toast.success(t('common.refreshed'));
+      } else {
+        console.error("Failed to fetch saved documents");
       }
     } catch (error) {
-      toast.error(t('common.error'));
+      console.error("Error fetching documents:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (documentId: string, attachmentId: string) => {
+  const handleRefresh = async () => {
+    await fetchDocuments();
+    toast.success(t('common.refreshed'));
+  };
+
+  const handleDelete = async (documentId: string) => {
     setIsDeleting(documentId);
 
     try {
-      if (isOnline) {
-        const response = await fetch(`/api/saved-documents/${documentId}`, {
-          method: "DELETE",
-        });
+      const response = await fetch(`/api/saved-documents/${documentId}`, {
+        method: "DELETE",
+      });
 
-        if (!response.ok) {
-          throw new Error("Failed to delete");
-        }
+      if (!response.ok) {
+        throw new Error("Failed to delete");
       }
 
-      // Update local state and localStorage
-      const updatedDocuments = documents.filter(doc => doc.id !== documentId);
-      setDocuments(updatedDocuments);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedDocuments));
-
+      // Update local state
+      setDocuments(documents.filter(doc => doc.id !== documentId));
       toast.success(t('student.documentUnsaved'));
     } catch (error) {
       console.error("Error deleting document:", error);
@@ -185,35 +121,15 @@ export default function SavedDocumentsPage() {
             {t('student.savedDocumentsDescription')}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Online/Offline Indicator */}
-          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm ${
-            isOnline 
-              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
-              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-          }`}>
-            {isOnline ? (
-              <>
-                <Wifi className="h-4 w-4" />
-                {t('common.online')}
-              </>
-            ) : (
-              <>
-                <WifiOff className="h-4 w-4" />
-                {t('common.offline')}
-              </>
-            )}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={!isOnline || loading}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            {t('common.refresh')}
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={loading}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          {t('common.refresh')}
+        </Button>
       </div>
 
       {/* Documents Grid */}
@@ -283,7 +199,7 @@ export default function SavedDocumentsPage() {
                       <AlertDialogFooter>
                         <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={() => handleDelete(document.id, document.attachmentId)}
+                          onClick={() => handleDelete(document.id)}
                           className="bg-destructive hover:bg-destructive/90"
                         >
                           {t('common.delete')}
@@ -303,11 +219,9 @@ export default function SavedDocumentsPage() {
         <SecureDocumentViewer
           documentUrl={selectedDocument.attachmentUrl}
           documentName={selectedDocument.attachmentName}
-          attachmentId={selectedDocument.attachmentId}
           onClose={() => setSelectedDocument(null)}
         />
       )}
     </div>
   );
 }
-

@@ -1,13 +1,10 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { LucideIcon, Lock } from "lucide-react";
+import { LucideIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { SheetClose } from "@/components/ui/sheet";
-import { useOnline } from "@/hooks/use-online";
-import { toast } from "sonner";
-import { useLanguage } from "@/lib/contexts/language-context";
 
 interface SidebarItemProps {
     icon: LucideIcon;
@@ -25,19 +22,11 @@ export const SidebarItem = ({
 
     const pathName = usePathname();
     const router = useRouter();
-    const isOnline = useOnline();
-    const { t } = useLanguage();
     
 
     const isActive = pathName === href;
-    const isSavedDocuments = href.includes('/saved-documents');
-    const isLocked = !isOnline && !isSavedDocuments;
 
     const onClick = () => {
-        if (isLocked) {
-            toast.error(t('dashboard.offlineAccessDescription'));
-            return;
-        }
         if (!isActive) router.push(href);
     }
 
@@ -47,8 +36,7 @@ export const SidebarItem = ({
             type="button"
             className={cn(
                 "flex items-center gap-x-2 text-muted-foreground text-sm font-[500] rtl:pr-6 ltr:pl-6 transition-all hover:text-primary hover:bg-primary/10",
-                isActive && "text-primary bg-primary/10 hover:bg-primary/10",
-                isLocked && "opacity-50 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground"
+                isActive && "text-primary bg-primary/10 hover:bg-primary/10"
             )}
         >
             <div className="flex items-center gap-x-2 py-3">
@@ -60,9 +48,6 @@ export const SidebarItem = ({
                     )} 
                 />
                 {label}
-                {isLocked && (
-                    <Lock size={16} className="rtl:mr-1 ltr:ml-1 text-muted-foreground" />
-                )}
             </div>
 
             <div 
