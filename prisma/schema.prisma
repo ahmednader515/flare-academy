@@ -32,6 +32,7 @@ model User {
   userProgress            UserProgress[]
   balanceTransactions     BalanceTransaction[]
   quizResults             QuizResult[]
+  savedDocuments          SavedDocument[]
 }
 
 model Course {
@@ -223,4 +224,21 @@ model QuizAnswer {
 
     @@index([questionId])
     @@index([quizResultId])
+}
+
+model SavedDocument {
+    id String @id @default(uuid())
+    userId String
+    attachmentId String
+    courseId String
+    chapterId String
+    attachmentName String
+    attachmentUrl String @db.Text
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([userId, attachmentId])
+    @@index([userId])
+    @@index([attachmentId])
 }

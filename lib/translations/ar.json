@@ -29,7 +29,12 @@
     "all": "الكل",
     "none": "لا شيء",
     "required": "مطلوب",
-    "optional": "اختياري"
+    "optional": "اختياري",
+    "online": "متصل",
+    "offline": "غير متصل",
+    "offlineMode": "أنت غير متصل. قد لا تكون بعض الميزات متاحة.",
+    "refresh": "تحديث",
+    "refreshed": "تم التحديث بنجاح"
   },
   "navigation": {
     "home": "الرئيسية",
@@ -444,7 +449,23 @@
     "backToCourses": "الرجوع إلى الكورسات",
     "loggingOut": "جاري تسجيل الخروج...",
     "logout": "تسجيل الخروج",
-    "courseMenu": "قائمة الكورس"
+    "courseMenu": "قائمة الكورس",
+    "savedDocuments": "المستندات المحفوظة",
+    "savedDocumentsDescription": "الوصول إلى مستنداتك المحفوظة بدون إنترنت في أي وقت",
+    "noSavedDocuments": "لا توجد مستندات محفوظة بعد",
+    "noSavedDocumentsDescription": "احفظ المستندات من كورساتك للوصول إليها بدون إنترنت وعرضها بشكل آمن بدون تحميل",
+    "documentSaved": "تم حفظ المستند بنجاح",
+    "documentUnsaved": "تم إزالة المستند من القائمة المحفوظة",
+    "documentAlreadySaved": "المستند محفوظ بالفعل",
+    "save": "حفظ",
+    "saved": "محفوظ",
+    "unsaveDocument": "إزالة المستند المحفوظ",
+    "unsaveDocumentConfirmation": "هل أنت متأكد من إزالة هذا المستند من قائمتك المحفوظة؟",
+    "secureViewing": "وضع العرض الآمن",
+    "documentProtectionWarning": "⚠️ هذا المستند محمي. لقطات الشاشة والتحميل والمشاركة محظورة.",
+    "unsupportedFileType": "نوع ملف غير مدعوم",
+    "unableToDisplayPDF": "غير قادر على عرض PDF في هذا المتصفح",
+    "openInNewTab": "فتح في تبويب جديد"
   },
   "teacher": {
     "dashboard": "لوحة تحكم المعلم",

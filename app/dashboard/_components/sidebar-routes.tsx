@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart, Compass, Layout, List, Wallet, Shield, Users, Eye, TrendingUp, BookOpen, FileText, Award, PlusSquare } from "lucide-react";
+import { BarChart, Compass, Layout, List, Wallet, Shield, Users, Eye, TrendingUp, BookOpen, FileText, Award, PlusSquare, Bookmark } from "lucide-react";
 import { SidebarItem } from "./sidebar-item";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/contexts/language-context";
@@ -24,6 +24,11 @@ export const SidebarRoutes = ({ closeOnClick = false }: { closeOnClick?: boolean
             icon: Wallet,
             label: t('dashboard.balance'),
             href: "/dashboard/balance",
+        },
+        {
+            icon: Bookmark,
+            label: t('student.savedDocuments'),
+            href: "/dashboard/saved-documents",
         },
     ];
 

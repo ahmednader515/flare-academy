@@ -29,7 +29,12 @@
     "all": "All",
     "none": "None",
     "required": "Required",
-    "optional": "Optional"
+    "optional": "Optional",
+    "online": "Online",
+    "offline": "Offline",
+    "offlineMode": "You are offline. Some features may not be available.",
+    "refresh": "Refresh",
+    "refreshed": "Refreshed successfully"
   },
   "navigation": {
     "home": "Home",
@@ -444,7 +449,23 @@
     "backToCourses": "Back to Courses",
     "loggingOut": "Logging out...",
     "logout": "Logout",
-    "courseMenu": "Course Menu"
+    "courseMenu": "Course Menu",
+    "savedDocuments": "Saved Documents",
+    "savedDocumentsDescription": "Access your saved documents offline anytime",
+    "noSavedDocuments": "No saved documents yet",
+    "noSavedDocumentsDescription": "Save documents from your courses to access them offline and view them securely without downloading",
+    "documentSaved": "Document saved successfully",
+    "documentUnsaved": "Document removed from saved list",
+    "documentAlreadySaved": "Document is already saved",
+    "save": "Save",
+    "saved": "Saved",
+    "unsaveDocument": "Remove Saved Document",
+    "unsaveDocumentConfirmation": "Are you sure you want to remove this document from your saved list?",
+    "secureViewing": "Secure Viewing Mode",
+    "documentProtectionWarning": "⚠️ This document is protected. Screenshots, downloads, and sharing are prevented.",
+    "unsupportedFileType": "Unsupported file type",
+    "unableToDisplayPDF": "Unable to display PDF in this browser",
+    "openInNewTab": "Open in New Tab"
   },
   "teacher": {
     "dashboard": "Teacher Dashboard",

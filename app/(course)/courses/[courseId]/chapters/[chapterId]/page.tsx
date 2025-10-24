@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios, { AxiosError } from "axios";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, CheckCircle2, Circle, Lock, FileText, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Circle, Lock, FileText, Download, Bookmark, BookmarkCheck, Eye } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { PlyrVideoPlayer } from "@/components/plyr-video-player";
 import { useLanguage } from "@/lib/contexts/language-context";
+import { SecureDocumentViewer } from "@/components/secure-document-viewer";
 
 interface Chapter {
   id: string;
@@ -45,6 +46,9 @@ const ChapterPage = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [courseProgress, setCourseProgress] = useState(0);
   const [hasAccess, setHasAccess] = useState(false);
+  const [savedDocuments, setSavedDocuments] = useState<Set<string>>(new Set());
+  const [selectedDocument, setSelectedDocument] = useState<{ url: string; name: string } | null>(null);
+  const [savingDocuments, setSavingDocuments] = useState<Set<string>>(new Set());
 
   console.log("🔍 ChapterPage render:", {
     chapterId: routeParams.chapterId,
@@ -95,7 +99,101 @@ const ChapterPage = () => {
     }
   };
 
-  // Helper function to download attachment
+  // Check if document is saved
+  const checkSavedDocuments = async () => {
+    if (!chapter?.attachments) return;
+    
+    const saved = new Set<string>();
+    for (const attachment of chapter.attachments) {
+      try {
+        const response = await fetch(`/api/saved-documents/by-attachment/${attachment.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.isSaved) {
+            saved.add(attachment.id);
+          }
+        }
+      } catch (error) {
+        console.error("Error checking saved status:", error);
+      }
+    }
+    setSavedDocuments(saved);
+  };
+
+  // Save document
+  const handleSaveDocument = async (attachmentId: string, attachmentName: string, attachmentUrl: string) => {
+    setSavingDocuments(prev => new Set(prev).add(attachmentId));
+    
+    try {
+      const response = await fetch('/api/saved-documents', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          attachmentId,
+          courseId: routeParams.courseId,
+          chapterId: routeParams.chapterId,
+          attachmentName,
+          attachmentUrl,
+        }),
+      });
+
+      if (response.ok) {
+        setSavedDocuments(prev => new Set(prev).add(attachmentId));
+        toast.success(t('student.documentSaved'));
+      } else {
+        const error = await response.text();
+        if (error.includes('already saved')) {
+          toast.error(t('student.documentAlreadySaved'));
+        } else {
+          toast.error(t('common.error'));
+        }
+      }
+    } catch (error) {
+      console.error("Error saving document:", error);
+      toast.error(t('common.error'));
+    } finally {
+      setSavingDocuments(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(attachmentId);
+        return newSet;
+      });
+    }
+  };
+
+  // Unsave document
+  const handleUnsaveDocument = async (attachmentId: string) => {
+    setSavingDocuments(prev => new Set(prev).add(attachmentId));
+    
+    try {
+      const response = await fetch(`/api/saved-documents/by-attachment/${attachmentId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok || response.status === 204) {
+        setSavedDocuments(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(attachmentId);
+          return newSet;
+        });
+        toast.success(t('student.documentUnsaved'));
+      } else {
+        toast.error(t('common.error'));
+      }
+    } catch (error) {
+      console.error("Error unsaving document:", error);
+      toast.error(t('common.error'));
+    } finally {
+      setSavingDocuments(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(attachmentId);
+        return newSet;
+      });
+    }
+  };
+
+  // Helper function to download attachment (kept for backward compatibility)
   const downloadAttachment = async (url: string, name: string) => {
     try {
       // For uploadthing URLs, we'll use a different approach
@@ -180,6 +278,13 @@ const ChapterPage = () => {
 
     fetchData();
   }, [routeParams.courseId, routeParams.chapterId]);
+
+  // Check saved documents when chapter is loaded
+  useEffect(() => {
+    if (chapter?.attachments) {
+      checkSavedDocuments();
+    }
+  }, [chapter?.attachments]);
 
   const toggleCompletion = async () => {
     try {
@@ -342,35 +447,56 @@ const ChapterPage = () => {
                   <h3 className="text-lg font-semibold">{t('student.chapterDocuments')}</h3>
                 </div>
                 <div className="space-y-2">
-                  {chapter.attachments.map((attachment) => (
-                    <div key={attachment.id} className="flex items-center p-3 w-full bg-secondary/50 border-secondary/50 border text-secondary-foreground rounded-md">
-                      <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
-                      <div className="flex flex-col min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">
-                          {attachment.name || getFilenameFromUrl(attachment.url)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">{t('student.chapterDocument')}</p>
+                  {chapter.attachments.map((attachment) => {
+                    const isSaved = savedDocuments.has(attachment.id);
+                    const isSaving = savingDocuments.has(attachment.id);
+                    
+                    return (
+                      <div key={attachment.id} className="flex items-center p-3 w-full bg-secondary/50 border-secondary/50 border text-secondary-foreground rounded-md">
+                        <FileText className="h-4 w-4 mr-2 flex-shrink-0" />
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <p className="text-sm font-medium truncate">
+                            {attachment.name || getFilenameFromUrl(attachment.url)}
+                          </p>
+                          <p className="text-xs text-muted-foreground">{t('student.chapterDocument')}</p>
+                        </div>
+                        <div className="mr-auto flex items-center gap-2 flex-shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedDocument({ url: attachment.url, name: attachment.name })}
+                            className="flex items-center gap-1"
+                          >
+                            <Eye className="h-3 w-3" />
+                            {t('student.view')}
+                          </Button>
+                          {isSaved ? (
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => handleUnsaveDocument(attachment.id)}
+                              disabled={isSaving}
+                              className="flex items-center gap-1"
+                            >
+                              <BookmarkCheck className="h-3 w-3" />
+                              {t('student.saved')}
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleSaveDocument(attachment.id, attachment.name, attachment.url)}
+                              disabled={isSaving}
+                              className="flex items-center gap-1"
+                            >
+                              <Bookmark className="h-3 w-3" />
+                              {t('student.save')}
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      <div className="mr-auto flex items-center gap-2 flex-shrink-0">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => window.open(attachment.url, '_blank')}
-                        >
-                          {t('student.view')}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => downloadAttachment(attachment.url, attachment.name)}
-                          className="flex items-center gap-1"
-                        >
-                          <Download className="h-3 w-3" />
-                          {t('student.download')}
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -444,6 +570,15 @@ const ChapterPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Secure Document Viewer Modal */}
+      {selectedDocument && (
+        <SecureDocumentViewer
+          documentUrl={selectedDocument.url}
+          documentName={selectedDocument.name}
+          onClose={() => setSelectedDocument(null)}
+        />
+      )}
     </div>
   );
 };
