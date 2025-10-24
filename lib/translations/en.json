@@ -457,7 +457,7 @@
     "logout": "Logout",
     "courseMenu": "Course Menu",
     "savedDocuments": "Saved Documents",
-    "savedDocumentsDescription": "Access your saved documents offline anytime",
+    "savedDocumentsDescription": "Access your saved documents anytime",
     "noSavedDocuments": "No saved documents yet",
     "noSavedDocumentsDescription": "Save documents from your courses to access them offline and view them securely without downloading",
     "documentSaved": "Document saved successfully",
