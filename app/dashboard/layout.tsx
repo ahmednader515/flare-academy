@@ -1,5 +1,8 @@
+"use client";
+
 import { Navbar } from "./_components/navbar";
 import { Sidebar } from "./_components/sidebar";
+import { OfflineRedirect } from "@/components/offline-redirect";
 
 const DashboardLayout = ({
     children,
@@ -8,6 +11,7 @@ const DashboardLayout = ({
 }) => {
     return ( 
         <div className="min-h-screen flex flex-col dashboard-layout">
+            <OfflineRedirect />
             <div className="h-[112px] fixed inset-x-0 top-0 w-full z-50">
                 <Navbar />
             </div>

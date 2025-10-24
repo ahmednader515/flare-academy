@@ -4,6 +4,7 @@ import localFont from 'next/font/local';
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Footer } from "@/components/footer";
+import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,6 +56,18 @@ const playpenSansArabic = localFont({
 export const metadata: Metadata = {
   title: "Flare Academy",
   description: "منصة تعليمية متكاملة",
+  manifest: "/manifest.json",
+  themeColor: "#FF6B35",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Flare Academy",
+  },
 };
 
 export default function RootLayout({
@@ -65,6 +78,7 @@ export default function RootLayout({
   return (
     <html suppressHydrationWarning lang="ar" dir="rtl" className={`${geistSans.variable} ${geistMono.variable} ${playpenSansArabic.variable} ${ptSerif.variable}`}>
       <body suppressHydrationWarning className="font-pt-serif" data-pt-serif={ptSerif.variable}>
+        <ServiceWorkerRegistration />
         <Providers>
           <div className="min-h-screen flex flex-col">
             <main className="flex-1">

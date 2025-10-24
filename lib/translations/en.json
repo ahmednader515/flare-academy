@@ -118,7 +118,9 @@
     "certificatesDesc": "Get certificates of appreciation upon completing courses",
     "startLearningJourney": "Start Your Learning Journey With Us",
     "joinToday": "Join us today and start your journey to success",
-    "signUpNow": "Sign Up Now"
+    "signUpNow": "Sign Up Now",
+    "offlineCoursesTitle": "Internet Connection Required",
+    "offlineCoursesDescription": "To view courses, you need to be connected to the internet. Please check your connection and try again."
   },
   "course": {
     "title": "Course Title",
@@ -186,6 +188,10 @@
     "courses": "Courses",
     "quizzes": "Quizzes",
     "grades": "Grades",
+    "offlineAccessTitle": "Internet Connection Required",
+    "offlineAccessDescription": "This page requires an internet connection. You can access your saved documents while offline.",
+    "offlineRedirectMessage": "You are currently offline. Redirecting to saved documents...",
+    "goToSavedDocuments": "Go to Saved Documents",
     "balance": "Balance",
     "currentBalance": "Current Balance",
     "purchasedCourses": "Purchased Courses",
@@ -465,7 +471,10 @@
     "documentProtectionWarning": "⚠️ This document is protected. Screenshots, downloads, and sharing are prevented.",
     "unsupportedFileType": "Unsupported file type",
     "unableToDisplayPDF": "Unable to display PDF in this browser",
-    "openInNewTab": "Open in New Tab"
+    "openInNewTab": "Open in New Tab",
+    "cachingDocument": "Caching document for offline use...",
+    "documentCachedForOffline": "Document cached for offline viewing",
+    "documentNotCached": "This document is not cached for offline viewing. Please save it while online to view it offline."
   },
   "teacher": {
     "dashboard": "Teacher Dashboard",

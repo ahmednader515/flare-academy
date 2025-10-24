@@ -118,7 +118,9 @@
     "certificatesDesc": "احصل على شهادات تقدير عند إكمال الكورسات",
     "startLearningJourney": "ابدأ رحلة التعلم معنا",
     "joinToday": "انضم إلينا اليوم وابدأ رحلة النجاح",
-    "signUpNow": "سجل الآن"
+    "signUpNow": "سجل الآن",
+    "offlineCoursesTitle": "يتطلب اتصال بالإنترنت",
+    "offlineCoursesDescription": "لعرض الكورسات، تحتاج إلى الاتصال بالإنترنت. يرجى التحقق من الاتصال والمحاولة مرة أخرى."
   },
   "course": {
     "title": "عنوان الكورس",
@@ -186,6 +188,10 @@
     "courses": "الكورسات",
     "quizzes": "الاختبارات",
     "grades": "الدرجات",
+    "offlineAccessTitle": "يتطلب اتصال بالإنترنت",
+    "offlineAccessDescription": "تتطلب هذه الصفحة اتصالاً بالإنترنت. يمكنك الوصول إلى المستندات المحفوظة أثناء عدم الاتصال.",
+    "offlineRedirectMessage": "أنت غير متصل حالياً. جاري التوجيه إلى المستندات المحفوظة...",
+    "goToSavedDocuments": "الذهاب إلى المستندات المحفوظة",
     "balance": "الرصيد",
     "currentBalance": "الرصيد الحالي",
     "purchasedCourses": "الكورسات المشتراة",
@@ -465,7 +471,10 @@
     "documentProtectionWarning": "⚠️ هذا المستند محمي. لقطات الشاشة والتحميل والمشاركة محظورة.",
     "unsupportedFileType": "نوع ملف غير مدعوم",
     "unableToDisplayPDF": "غير قادر على عرض PDF في هذا المتصفح",
-    "openInNewTab": "فتح في تبويب جديد"
+    "openInNewTab": "فتح في تبويب جديد",
+    "cachingDocument": "جاري حفظ المستند للعرض بدون إنترنت...",
+    "documentCachedForOffline": "تم حفظ المستند للعرض بدون إنترنت",
+    "documentNotCached": "هذا المستند غير محفوظ للعرض بدون إنترنت. يرجى حفظه أثناء الاتصال بالإنترنت لعرضه لاحقاً بدون إنترنت."
   },
   "teacher": {
     "dashboard": "لوحة تحكم المعلم",

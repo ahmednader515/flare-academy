@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 // GET - Check if a document is saved
 export async function GET(
   req: Request,
-  { params }: { params: { attachmentId: string } }
+  { params }: { params: Promise<{ attachmentId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,11 +15,13 @@ export async function GET(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const { attachmentId } = await params;
+
     const savedDocument = await db.savedDocument.findUnique({
       where: {
         userId_attachmentId: {
           userId: session.user.id,
-          attachmentId: params.attachmentId,
+          attachmentId: attachmentId,
         },
       },
     });
@@ -37,7 +39,7 @@ export async function GET(
 // DELETE - Remove a saved document by attachment ID
 export async function DELETE(
   req: Request,
-  { params }: { params: { attachmentId: string } }
+  { params }: { params: Promise<{ attachmentId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -46,11 +48,13 @@ export async function DELETE(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const { attachmentId } = await params;
+
     const savedDocument = await db.savedDocument.findUnique({
       where: {
         userId_attachmentId: {
           userId: session.user.id,
-          attachmentId: params.attachmentId,
+          attachmentId: attachmentId,
         },
       },
     });

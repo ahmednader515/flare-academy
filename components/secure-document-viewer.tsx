@@ -1,29 +1,50 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, FileText, Lock, ZoomIn, ZoomOut, RotateCw } from "lucide-react";
+import { X, FileText, Lock, ZoomIn, ZoomOut, RotateCw, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/contexts/language-context";
+import { useOnline } from "@/hooks/use-online";
+import { getCachedDocument } from "@/lib/offline-document-cache";
 
 interface SecureDocumentViewerProps {
   documentUrl: string;
   documentName: string;
   onClose: () => void;
+  attachmentId?: string;
 }
 
 export const SecureDocumentViewer = ({
   documentUrl,
   documentName,
   onClose,
+  attachmentId,
 }: SecureDocumentViewerProps) => {
   const { t } = useLanguage();
+  const isOnline = useOnline();
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<HTMLDivElement>(null);
+  const [displayUrl, setDisplayUrl] = useState(documentUrl);
+  const [isOfflineCache, setIsOfflineCache] = useState(false);
 
   const isPDF = documentUrl.toLowerCase().includes('.pdf') || documentName.toLowerCase().endsWith('.pdf');
   const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(documentUrl) || /\.(jpg|jpeg|png|gif|webp)$/i.test(documentName);
+
+  // Check for cached document when offline
+  useEffect(() => {
+    if (!isOnline && attachmentId) {
+      const cached = getCachedDocument(attachmentId);
+      if (cached) {
+        setDisplayUrl(cached);
+        setIsOfflineCache(true);
+      }
+    } else {
+      setDisplayUrl(documentUrl);
+      setIsOfflineCache(false);
+    }
+  }, [isOnline, attachmentId, documentUrl]);
 
   useEffect(() => {
     // Prevent context menu (right-click)
@@ -111,10 +132,18 @@ export const SecureDocumentViewer = ({
           <FileText className="h-5 w-5 text-muted-foreground" />
           <div>
             <h2 className="text-lg font-semibold">{documentName}</h2>
-            <p className="text-xs text-muted-foreground flex items-center gap-1">
-              <Lock className="h-3 w-3" />
-              {t('student.secureViewing')}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <Lock className="h-3 w-3" />
+                {t('student.secureViewing')}
+              </p>
+              {isOfflineCache && (
+                <span className="text-xs bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <WifiOff className="h-3 w-3" />
+                  {t('common.offline')}
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <Button variant="ghost" size="icon" onClick={onClose}>
@@ -179,17 +208,39 @@ export const SecureDocumentViewer = ({
         >
           {isPDF ? (
             <div className="w-full h-full min-h-[600px] relative">
-              <iframe
-                src={`https://docs.google.com/viewer?url=${encodeURIComponent(documentUrl)}&embedded=true`}
-                className="w-full h-full min-h-[600px] bg-white shadow-2xl"
-                style={{
-                  transform: `scale(${zoom})`,
-                  transformOrigin: 'center top',
-                  border: 'none',
-                }}
-                title={documentName}
-                allow="fullscreen"
-              />
+              {isOfflineCache ? (
+                // Show base64 PDF directly in iframe
+                <iframe
+                  src={displayUrl}
+                  className="w-full h-full min-h-[600px] bg-white shadow-2xl"
+                  style={{
+                    transform: `scale(${zoom})`,
+                    transformOrigin: 'center top',
+                    border: 'none',
+                  }}
+                  title={documentName}
+                />
+              ) : !isOnline ? (
+                // Show error when offline and not cached
+                <div className="text-white text-center py-12">
+                  <WifiOff className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg mb-2">{t('dashboard.offlineAccessTitle')}</p>
+                  <p className="text-sm text-muted-foreground">{t('student.documentNotCached')}</p>
+                </div>
+              ) : (
+                // Show using Google Docs viewer when online
+                <iframe
+                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(displayUrl)}&embedded=true`}
+                  className="w-full h-full min-h-[600px] bg-white shadow-2xl"
+                  style={{
+                    transform: `scale(${zoom})`,
+                    transformOrigin: 'center top',
+                    border: 'none',
+                  }}
+                  title={documentName}
+                  allow="fullscreen"
+                />
+              )}
               {/* Overlay to block Google Docs toolbar buttons */}
               <div 
                 className="absolute top-0 left-0 right-0 h-16 pointer-events-auto z-20"
@@ -209,19 +260,28 @@ export const SecureDocumentViewer = ({
               />
             </div>
           ) : isImage ? (
-            <img
-              src={documentUrl}
-              alt={documentName}
-              className="max-w-full h-auto shadow-2xl"
-              style={{
-                transform: `scale(${zoom}) rotate(${rotation}deg)`,
-                transformOrigin: 'center',
-                userSelect: 'none',
-                pointerEvents: 'none',
-              }}
-              draggable={false}
-              onContextMenu={(e) => e.preventDefault()}
-            />
+            !isOnline && !isOfflineCache ? (
+              // Show error when offline and not cached
+              <div className="text-white text-center py-12">
+                <WifiOff className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                <p className="text-lg mb-2">{t('dashboard.offlineAccessTitle')}</p>
+                <p className="text-sm text-muted-foreground">{t('student.documentNotCached')}</p>
+              </div>
+            ) : (
+              <img
+                src={displayUrl}
+                alt={documentName}
+                className="max-w-full h-auto shadow-2xl"
+                style={{
+                  transform: `scale(${zoom}) rotate(${rotation}deg)`,
+                  transformOrigin: 'center',
+                  userSelect: 'none',
+                  pointerEvents: 'none',
+                }}
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
+              />
+            )
           ) : (
             <div className="text-white text-center">
               <FileText className="h-16 w-16 mx-auto mb-4 opacity-50" />

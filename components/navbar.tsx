@@ -8,13 +8,50 @@ import { ScrollProgress } from "@/components/scroll-progress";
 import { LogOut } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useLanguage } from "@/lib/contexts/language-context";
+import { useOnline } from "@/hooks/use-online";
+import { useEffect, useState } from "react";
+import { saveOfflineSession, loadOfflineSession, clearOfflineSession, type OfflineSession } from "@/lib/offline-session";
 
 export const Navbar = () => {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { t } = useLanguage();
+  const isOnline = useOnline();
+  const [offlineSession, setOfflineSession] = useState<OfflineSession | null>(null);
+
+  // Save session to localStorage when user logs in
+  useEffect(() => {
+    if (session && isOnline) {
+      saveOfflineSession({
+        user: {
+          id: session.user.id,
+          name: session.user.name,
+          email: session.user.email,
+          image: session.user.image,
+          role: session.user.role,
+        },
+        expires: session.expires,
+      });
+    }
+  }, [session, isOnline]);
+
+  // Load offline session when offline
+  useEffect(() => {
+    if (!isOnline && !session) {
+      const storedSession = loadOfflineSession();
+      setOfflineSession(storedSession);
+    } else {
+      setOfflineSession(null);
+    }
+  }, [isOnline, session]);
+
+  // Get the active session (online or offline)
+  const activeSession = session || offlineSession;
 
   const handleLogout = async () => {
     try {
+      // Clear offline session
+      clearOfflineSession();
+
       // Call our logout API to end the session
       await fetch("/api/auth/logout", {
         method: "POST",
@@ -49,7 +86,7 @@ export const Navbar = () => {
           {/* Right side items */}
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
-            {!session ? (
+            {!activeSession ? (
               <>
                 <Button className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white" asChild>
                   <Link href="/sign-up">{t('navigation.signUp')}</Link>
@@ -73,6 +110,7 @@ export const Navbar = () => {
                   variant="ghost" 
                   onClick={handleLogout}
                   className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors duration-200 ease-in-out"
+                  disabled={!isOnline}
                 >
                   <LogOut className="h-4 w-4 rtl:ml-2 ltr:mr-2"/>
                   {t('navigation.logout')}

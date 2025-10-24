@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Star, Users, BookOpen, Award, ChevronDown } from "lucide-react";
+import { ArrowRight, Star, Users, BookOpen, Award, ChevronDown, WifiOff } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { Navbar } from "@/components/navbar";
@@ -10,6 +10,7 @@ import { ScrollProgress } from "@/components/scroll-progress";
 import { useEffect, useState } from "react";
 import { db } from "@/lib/db"; // Import db client
 import { useLanguage } from "@/lib/contexts/language-context";
+import { useOnline } from "@/hooks/use-online";
 
 // Define types based on Prisma schema
 type Course = {
@@ -47,9 +48,16 @@ export default function HomePage() {
   const [courses, setCourses] = useState<CourseWithProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  const isOnline = useOnline();
 
   useEffect(() => {
     const fetchCourses = async () => {
+      // Don't fetch if offline
+      if (!isOnline) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
         // Fetch courses from public API endpoint
@@ -72,7 +80,7 @@ export default function HomePage() {
     };
 
     fetchCourses();
-  }, []);
+  }, [isOnline]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -317,7 +325,20 @@ export default function HomePage() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-wrap justify-center gap-6"
           >
-            {isLoading ? (
+            {!isOnline ? (
+              // Offline message
+              <div className="text-center py-12 w-full">
+                <div className="max-w-md mx-auto">
+                  <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <WifiOff className="h-8 w-8 text-red-600 dark:text-red-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">{t('home.offlineCoursesTitle')}</h3>
+                  <p className="text-muted-foreground mb-4">
+                    {t('home.offlineCoursesDescription')}
+                  </p>
+                </div>
+              </div>
+            ) : isLoading ? (
               // Loading skeleton
               Array.from({ length: 6 }).map((_, index) => (
                 <div

@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 // DELETE - Remove a saved document
 export async function DELETE(
   req: Request,
-  { params }: { params: { savedDocumentId: string } }
+  { params }: { params: Promise<{ savedDocumentId: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -15,9 +15,11 @@ export async function DELETE(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
+    const { savedDocumentId } = await params;
+
     const savedDocument = await db.savedDocument.findUnique({
       where: {
-        id: params.savedDocumentId,
+        id: savedDocumentId,
       },
     });
 
@@ -31,7 +33,7 @@ export async function DELETE(
 
     await db.savedDocument.delete({
       where: {
-        id: params.savedDocumentId,
+        id: savedDocumentId,
       },
     });
 

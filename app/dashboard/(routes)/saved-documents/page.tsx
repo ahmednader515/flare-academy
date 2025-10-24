@@ -303,6 +303,7 @@ export default function SavedDocumentsPage() {
         <SecureDocumentViewer
           documentUrl={selectedDocument.attachmentUrl}
           documentName={selectedDocument.attachmentName}
+          attachmentId={selectedDocument.attachmentId}
           onClose={() => setSelectedDocument(null)}
         />
       )}
