@@ -1,0 +1,3 @@
+-- CreatePostgresqlBaseline
+-- This migration represents the baseline state of the database
+-- The schema was created using prisma db push
