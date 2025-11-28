@@ -170,88 +170,73 @@ const CoursesPage = async () => {
     cacheStrategy: { ttl: 60 }, // Cache for 1 minute
   });
 
-  const coursesWithProgress = await Promise.all(
-    courses.map(async (course) => {
-      const totalChapters = course.chapters.length;
-      const totalQuizzes = course.quizzes.length;
-      const totalContent = totalChapters + totalQuizzes;
+  // Batch fetch all progress data in ONE query instead of N queries
+  const allChapterIds = courses.flatMap(course => course.chapters.map(chapter => chapter.id));
+  const allQuizIds = courses.flatMap(course => course.quizzes.map(quiz => quiz.id));
 
-      const completedChapters = await db.userProgress.count({
-        where: {
-          userId: session.user.id,
-          chapterId: {
-            in: course.chapters.map(chapter => chapter.id)
-          },
-          isCompleted: true
+  // Fetch all userProgress and quizResults in parallel (2 queries total instead of 2N)
+  const [allUserProgress, allQuizResults] = await Promise.all([
+    allChapterIds.length > 0 ? db.userProgress.findMany({
+      where: {
+        userId: session.user.id,
+        chapterId: {
+          in: allChapterIds
         },
-        cacheStrategy: { ttl: 60 }, // Cache for 1 minute
-      });
+        isCompleted: true
+      },
+      select: {
+        chapterId: true
+      },
+      cacheStrategy: { ttl: 60 }, // Cache for 1 minute
+    }) : Promise.resolve([]),
+    allQuizIds.length > 0 ? db.quizResult.findMany({
+      where: {
+        studentId: session.user.id,
+        quizId: {
+          in: allQuizIds
+        }
+      },
+      select: {
+        quizId: true
+      },
+      cacheStrategy: { ttl: 60 }, // Cache for 1 minute
+    }) : Promise.resolve([])
+  ]);
 
-      // Get unique completed quizzes by using findMany and counting the results
-      const completedQuizResults = await db.quizResult.findMany({
-        where: {
-          studentId: session.user.id,
-          quizId: {
-            in: course.quizzes.map(quiz => quiz.id)
-          }
-        },
-        select: {
-          quizId: true
-        },
-        cacheStrategy: { ttl: 60 }, // Cache for 1 minute
-      });
+  // Create lookup maps for O(1) access
+  const completedChapterIds = new Set(allUserProgress.map(up => up.chapterId));
+  const completedQuizIds = new Set(allQuizResults.map(qr => qr.quizId));
 
-      // Count unique quizIds
-      const uniqueQuizIds = new Set(completedQuizResults.map(result => result.quizId));
-      const completedQuizzes = uniqueQuizIds.size;
+  // Process courses in memory (no more queries!)
+  const coursesWithProgress = courses.map((course) => {
+    const totalChapters = course.chapters.length;
+    const totalQuizzes = course.quizzes.length;
+    const totalContent = totalChapters + totalQuizzes;
 
-      const completedContent = completedChapters + completedQuizzes;
+    // Count completed chapters for this course using the lookup set
+    const completedChapters = course.chapters.filter(ch => completedChapterIds.has(ch.id)).length;
 
-      const progress = totalContent > 0 
-        ? (completedContent / totalContent) * 100 
-        : 0;
+    // Count completed quizzes for this course using the lookup set
+    const completedQuizzes = course.quizzes.filter(q => completedQuizIds.has(q.id)).length;
 
-      return {
-        ...course,
-        progress
-      } as CourseWithProgress;
-    })
-  );
+    const completedContent = completedChapters + completedQuizzes;
+
+    const progress = totalContent > 0 
+      ? (completedContent / totalContent) * 100 
+      : 0;
+
+    return {
+      ...course,
+      progress
+    } as CourseWithProgress;
+  });
 
   // Calculate overall student statistics
   const totalCourses = courses.length;
   const totalChapters = courses.reduce((sum, course) => sum + course.chapters.length, 0);
   const totalQuizzes = courses.reduce((sum, course) => sum + course.quizzes.length, 0);
-
-  // Calculate total completed chapters across all courses
-  const allChapterIds = courses.flatMap(course => course.chapters.map(chapter => chapter.id));
-  const completedChapters = await db.userProgress.count({
-    where: {
-      userId: session.user.id,
-      chapterId: {
-        in: allChapterIds
-      },
-      isCompleted: true
-    },
-    cacheStrategy: { ttl: 60 }, // Cache for 1 minute
-  });
-
-  // Calculate total completed quizzes across all courses
-  const allQuizIds = courses.flatMap(course => course.quizzes.map(quiz => quiz.id));
-  const completedQuizResults = await db.quizResult.findMany({
-    where: {
-      studentId: session.user.id,
-      quizId: {
-        in: allQuizIds
-      }
-    },
-    select: {
-      quizId: true
-    },
-    cacheStrategy: { ttl: 60 }, // Cache for 1 minute
-  });
-  const uniqueCompletedQuizIds = new Set(completedQuizResults.map(result => result.quizId));
-  const completedQuizzes = uniqueCompletedQuizIds.size;
+  const completedChapters = completedChapterIds.size;
+  const completedQuizzes = completedQuizIds.size;
 
   const studentStats: StudentStats = {
     totalCourses,

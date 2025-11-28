@@ -28,6 +28,7 @@ export async function GET(
           },
         },
       },
+      cacheStrategy: { ttl: 60 }, // Cache for 1 minute
     });
 
     if (!course) {

@@ -27,7 +27,8 @@ export async function GET(
                         userId
                     }
                 }
-            }
+            },
+            cacheStrategy: { ttl: 60 }, // Cache for 1 minute
         });
 
         if (!course) {
@@ -67,7 +68,8 @@ export async function GET(
                         position: "asc"
                     }
                 }
-            }
+            },
+            cacheStrategy: { ttl: 60 }, // Cache for 1 minute
         });
 
         if (!quiz) {
@@ -86,7 +88,8 @@ export async function GET(
             },
             orderBy: {
                 attemptNumber: 'desc'
-            }
+            },
+            cacheStrategy: { ttl: 30 }, // Cache for 30 seconds (changes when quiz is taken)
         });
 
         const currentAttemptNumber = existingResults.length + 1;

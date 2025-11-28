@@ -37,7 +37,8 @@ export async function GET(
             position: 'asc',
           },
         }
-      }
+      },
+      cacheStrategy: { ttl: 60 }, // Cache for 1 minute
     });
 
     if (!chapter) {
@@ -45,7 +46,7 @@ export async function GET(
     }
 
     // Get all content (chapters and quizzes) for this course
-    const [chapters, quizzes] = await db.$transaction([
+    const [chapters, quizzes] = await Promise.all([
       db.chapter.findMany({
         where: {
           courseId: courseId,
@@ -57,7 +58,8 @@ export async function GET(
         },
         orderBy: {
           position: "asc"
-        }
+        },
+        cacheStrategy: { ttl: 120 }, // Cache for 2 minutes
       }),
       db.quiz.findMany({
         where: {
@@ -70,7 +72,8 @@ export async function GET(
         },
         orderBy: {
           position: "asc"
-        }
+        },
+        cacheStrategy: { ttl: 120 }, // Cache for 2 minutes
       })
     ]);
 

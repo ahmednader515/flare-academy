@@ -20,13 +20,15 @@ export async function GET(
         where: {
           courseId: resolvedParams.courseId,
           isPublished: true,
-        }
+        },
+        cacheStrategy: { ttl: 300 }, // Cache for 5 minutes (rarely changes)
       }),
       db.quiz.count({
         where: {
           courseId: resolvedParams.courseId,
           isPublished: true,
-        }
+        },
+        cacheStrategy: { ttl: 300 }, // Cache for 5 minutes (rarely changes)
       })
     ]);
 
@@ -40,7 +42,8 @@ export async function GET(
           courseId: resolvedParams.courseId,
         },
         isCompleted: true
-      }
+      },
+      cacheStrategy: { ttl: 60 }, // Cache for 1 minute
     });
 
         // Get completed quizzes (quizzes that the student has taken at least once)
@@ -54,7 +57,8 @@ export async function GET(
         },
         select: {
             quizId: true
-        }
+        },
+        cacheStrategy: { ttl: 60 }, // Cache for 1 minute
     });
 
     // Count unique quizIds

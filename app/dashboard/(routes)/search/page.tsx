@@ -180,30 +180,42 @@ export default async function SearchPage({
         cacheStrategy: { ttl: 60 }, // Cache for 1 minute
     });
 
-    const coursesWithProgress = await Promise.all(
-        courses.map(async (course) => {
-            const totalChapters = course.chapters.length;
-            const completedChapters = await db.userProgress.count({
-                where: {
-                    userId: session.user.id,
-                    chapterId: {
-                        in: course.chapters.map(chapter => chapter.id)
-                    },
-                    isCompleted: true
-                },
-                cacheStrategy: { ttl: 60 }, // Cache for 1 minute
-            });
+    // Batch fetch all progress data in ONE query instead of N queries
+    const allChapterIds = courses.flatMap(course => course.chapters.map(chapter => chapter.id));
+    
+    // Fetch all userProgress in ONE query instead of N queries
+    const allUserProgress = allChapterIds.length > 0 ? await db.userProgress.findMany({
+        where: {
+            userId: session.user.id,
+            chapterId: {
+                in: allChapterIds
+            },
+            isCompleted: true
+        },
+        select: {
+            chapterId: true
+        },
+        cacheStrategy: { ttl: 60 }, // Cache for 1 minute
+    }) : [];
 
-            const progress = totalChapters > 0 
-                ? (completedChapters / totalChapters) * 100 
-                : 0;
+    // Create lookup set for O(1) access
+    const completedChapterIds = new Set(allUserProgress.map(up => up.chapterId));
 
-            return {
-                ...course,
-                progress
-            } as CourseWithDetails;
-        })
-    );
+    // Process courses in memory (no more queries!)
+    const coursesWithProgress = courses.map((course) => {
+        const totalChapters = course.chapters.length;
+        // Count completed chapters for this course using the lookup set
+        const completedChapters = course.chapters.filter(ch => completedChapterIds.has(ch.id)).length;
+
+        const progress = totalChapters > 0 
+            ? (completedChapters / totalChapters) * 100 
+            : 0;
+
+        return {
+            ...course,
+            progress
+        } as CourseWithDetails;
+    });
 
     return (
         <SearchPageContent 
