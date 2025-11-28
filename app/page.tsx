@@ -8,7 +8,6 @@ import Image from "next/image";
 import { Navbar } from "@/components/navbar";
 import { ScrollProgress } from "@/components/scroll-progress";
 import { useEffect, useState } from "react";
-import { db } from "@/lib/db"; // Import db client
 import { useLanguage } from "@/lib/contexts/language-context";
 
 // Define types based on Prisma schema

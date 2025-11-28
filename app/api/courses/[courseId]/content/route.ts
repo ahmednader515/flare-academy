@@ -31,7 +31,8 @@ export async function GET(
             },
             orderBy: {
                 position: "asc"
-            }
+            },
+            cacheStrategy: { ttl: session?.user ? 60 : 300 }, // Cache for 1 min if user-specific, 5 min if public
         });
 
         // Get published quizzes
@@ -57,7 +58,8 @@ export async function GET(
             },
             orderBy: {
                 position: "asc"
-            }
+            },
+            cacheStrategy: { ttl: session?.user ? 60 : 300 }, // Cache for 1 min if user-specific, 5 min if public
         });
 
         // Combine and sort by position

@@ -57,7 +57,8 @@ const CoursesPage = async () => {
     },
     orderBy: {
       percentage: 'desc' // Order by percentage descending to get best attempts first
-    }
+    },
+    cacheStrategy: { ttl: 60 }, // Cache for 1 minute
   });
 
   // Get only the best attempt for each quiz
@@ -82,7 +83,8 @@ const CoursesPage = async () => {
       image: true,
       role: true,
       balance: true
-    }
+    },
+    cacheStrategy: { ttl: 60 }, // Cache for 1 minute
   });
 
   if (!user) {
@@ -110,7 +112,8 @@ const CoursesPage = async () => {
     },
     orderBy: {
       updatedAt: 'desc'
-    }
+    },
+    cacheStrategy: { ttl: 30 }, // Cache for 30 seconds (changes frequently)
   });
 
   const lastWatchedChapterData = lastWatchedChapter ? {
@@ -163,7 +166,8 @@ const CoursesPage = async () => {
     },
     orderBy: {
       createdAt: "desc",
-    }
+    },
+    cacheStrategy: { ttl: 60 }, // Cache for 1 minute
   });
 
   const coursesWithProgress = await Promise.all(
@@ -179,7 +183,8 @@ const CoursesPage = async () => {
             in: course.chapters.map(chapter => chapter.id)
           },
           isCompleted: true
-        }
+        },
+        cacheStrategy: { ttl: 60 }, // Cache for 1 minute
       });
 
       // Get unique completed quizzes by using findMany and counting the results
@@ -192,7 +197,8 @@ const CoursesPage = async () => {
         },
         select: {
           quizId: true
-        }
+        },
+        cacheStrategy: { ttl: 60 }, // Cache for 1 minute
       });
 
       // Count unique quizIds
@@ -226,7 +232,8 @@ const CoursesPage = async () => {
         in: allChapterIds
       },
       isCompleted: true
-    }
+    },
+    cacheStrategy: { ttl: 60 }, // Cache for 1 minute
   });
 
   // Calculate total completed quizzes across all courses
@@ -240,7 +247,8 @@ const CoursesPage = async () => {
     },
     select: {
       quizId: true
-    }
+    },
+    cacheStrategy: { ttl: 60 }, // Cache for 1 minute
   });
   const uniqueCompletedQuizIds = new Set(completedQuizResults.map(result => result.quizId));
   const completedQuizzes = uniqueCompletedQuizIds.size;

@@ -39,7 +39,8 @@ export default async function SearchPage({
             college: true,
             faculty: true,
             level: true,
-        }
+        },
+        cacheStrategy: { ttl: 120 }, // Cache for 2 minutes
     });
 
     // Build the where clause for course filtering
@@ -175,7 +176,8 @@ export default async function SearchPage({
         },
         orderBy: {
             createdAt: "desc",
-        }
+        },
+        cacheStrategy: { ttl: 60 }, // Cache for 1 minute
     });
 
     const coursesWithProgress = await Promise.all(
@@ -188,7 +190,8 @@ export default async function SearchPage({
                         in: course.chapters.map(chapter => chapter.id)
                     },
                     isCompleted: true
-                }
+                },
+                cacheStrategy: { ttl: 60 }, // Cache for 1 minute
             });
 
             const progress = totalChapters > 0 

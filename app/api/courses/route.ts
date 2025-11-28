@@ -74,6 +74,7 @@ export async function GET(req: Request) {
       orderBy: {
         createdAt: "desc",
       },
+      cacheStrategy: { ttl: userId ? 60 : 300 }, // Cache for 1 min if user-specific, 5 min if public
     });
 
     if (includeProgress && userId) {
