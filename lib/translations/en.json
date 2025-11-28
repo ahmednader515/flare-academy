@@ -34,7 +34,8 @@
     "offline": "Offline",
     "offlineMode": "You are offline. Some features may not be available.",
     "refresh": "Refresh",
-    "refreshed": "Refreshed successfully"
+    "refreshed": "Refreshed successfully",
+    "pleaseWait": "Please wait..."
   },
   "navigation": {
     "home": "Home",

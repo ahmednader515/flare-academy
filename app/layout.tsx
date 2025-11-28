@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, PT_Serif } from "next/font/google";
 import localFont from 'next/font/local';
+import { Suspense } from "react";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Footer } from "@/components/footer";
+import { NavigationLoading } from "@/components/navigation-loading";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -66,6 +68,9 @@ export default function RootLayout({
     <html suppressHydrationWarning lang="ar" dir="rtl" className={`${geistSans.variable} ${geistMono.variable} ${playpenSansArabic.variable} ${ptSerif.variable}`}>
       <body suppressHydrationWarning className="font-pt-serif" data-pt-serif={ptSerif.variable}>
         <Providers>
+          <Suspense fallback={null}>
+            <NavigationLoading />
+          </Suspense>
           <div className="min-h-screen flex flex-col">
             <main className="flex-1">
               {children}

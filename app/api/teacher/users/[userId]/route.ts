@@ -5,10 +5,11 @@ import { db } from "@/lib/db";
 
 export async function PATCH(
     req: NextRequest,
-    { params }: { params: { userId: string } }
+    { params }: { params: Promise<{ userId: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
+        const { userId } = await params;
 
         console.log("[TEACHER_USER_PATCH] Session:", { userId: session?.user?.id, role: session?.user?.role });
 
@@ -26,7 +27,7 @@ export async function PATCH(
         // Check if user exists (teachers can edit all users)
         const existingUser = await db.user.findUnique({
             where: {
-                id: params.userId,
+                id: userId,
                 role: {
                     in: ["USER", "TEACHER", "ADMIN"] // Teachers can edit all users
                 }
@@ -34,7 +35,7 @@ export async function PATCH(
         });
 
         if (!existingUser) {
-            console.log("[TEACHER_USER_PATCH] User not found:", params.userId);
+            console.log("[TEACHER_USER_PATCH] User not found:", userId);
             return new NextResponse("User not found", { status: 404 });
         }
 
@@ -57,7 +58,7 @@ export async function PATCH(
                 where: {
                     email: email,
                     id: {
-                        not: params.userId
+                        not: userId
                     }
                 }
             });
@@ -75,7 +76,7 @@ export async function PATCH(
         // Update user (teachers can update basic info and change role)
         const updatedUser = await db.user.update({
             where: {
-                id: params.userId,
+                id: userId,
                 role: {
                     in: ["USER", "TEACHER", "ADMIN"] // Ensure we're only updating existing users
                 }
@@ -91,7 +92,7 @@ export async function PATCH(
             }
         });
 
-        console.log("[TEACHER_USER_PATCH] User updated successfully:", params.userId);
+        console.log("[TEACHER_USER_PATCH] User updated successfully:", userId);
         return NextResponse.json(updatedUser);
     } catch (error) {
         console.error("[TEACHER_USER_PATCH]", error);
@@ -101,10 +102,11 @@ export async function PATCH(
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { userId: string } }
+    { params }: { params: Promise<{ userId: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
+        const { userId } = await params;
 
         console.log("[TEACHER_USER_DELETE] Session:", { userId: session?.user?.id, role: session?.user?.role });
 
@@ -120,7 +122,7 @@ export async function DELETE(
         // Check if user exists (teachers can delete all users)
         const existingUser = await db.user.findUnique({
             where: {
-                id: params.userId,
+                id: userId,
                 role: {
                     in: ["USER", "TEACHER", "ADMIN"] // Teachers can delete all users
                 }
@@ -128,21 +130,21 @@ export async function DELETE(
         });
 
         if (!existingUser) {
-            console.log("[TEACHER_USER_DELETE] User not found:", params.userId);
+            console.log("[TEACHER_USER_DELETE] User not found:", userId);
             return new NextResponse("User not found", { status: 404 });
         }
 
         // Delete the user (this will cascade delete related data due to Prisma relations)
         await db.user.delete({
             where: {
-                id: params.userId,
+                id: userId,
                 role: {
                     in: ["USER", "TEACHER", "ADMIN"] // Ensure we're only deleting existing users
                 }
             }
         });
 
-        console.log("[TEACHER_USER_DELETE] User deleted successfully:", params.userId);
+        console.log("[TEACHER_USER_DELETE] User deleted successfully:", userId);
         return new NextResponse("User deleted successfully", { status: 200 });
     } catch (error) {
         console.error("[TEACHER_USER_DELETE]", error);

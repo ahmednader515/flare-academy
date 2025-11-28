@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 
 export async function POST(
     req: NextRequest,
-    { params }: { params: { userId: string } }
+    { params }: { params: Promise<{ userId: string }> }
 ) {
     try {
         const session = await auth();
@@ -24,6 +24,7 @@ export async function POST(
             );
         }
 
+        const { userId } = await params;
         const { courseId } = await req.json();
 
         if (!courseId) {
@@ -36,7 +37,7 @@ export async function POST(
         // Check if user exists and is a student
         const user = await db.user.findUnique({
             where: {
-                id: params.userId,
+                id: userId,
                 role: "USER"
             }
         });
@@ -63,30 +64,45 @@ export async function POST(
             );
         }
 
-        // Check if student already has this course
-        const existingPurchase = await db.purchase.findFirst({
+        // Check if purchase already exists (using unique constraint)
+        const existingPurchase = await db.purchase.findUnique({
             where: {
-                userId: params.userId,
-                courseId: courseId,
-                status: "ACTIVE"
+                userId_courseId: {
+                    userId: userId,
+                    courseId: courseId
+                }
             }
         });
+
+        let purchase;
 
         if (existingPurchase) {
-            return NextResponse.json(
-                { error: "Student already has this course" },
-                { status: 400 }
-            );
-        }
-
-        // Create purchase record
-        const purchase = await db.purchase.create({
-            data: {
-                userId: params.userId,
-                courseId: courseId,
-                status: "ACTIVE"
+            // If purchase exists and is already ACTIVE, return error
+            if (existingPurchase.status === "ACTIVE") {
+                return NextResponse.json(
+                    { error: "Student already has this course" },
+                    { status: 400 }
+                );
             }
-        });
+            // If purchase exists but is CANCELLED or other status, update it to ACTIVE
+            purchase = await db.purchase.update({
+                where: {
+                    id: existingPurchase.id
+                },
+                data: {
+                    status: "ACTIVE"
+                }
+            });
+        } else {
+            // Create new purchase record
+            purchase = await db.purchase.create({
+                data: {
+                    userId: userId,
+                    courseId: courseId,
+                    status: "ACTIVE"
+                }
+            });
+        }
 
         return NextResponse.json({
             message: "Course added successfully",
@@ -104,7 +120,7 @@ export async function POST(
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { userId: string } }
+    { params }: { params: Promise<{ userId: string }> }
 ) {
     try {
         const session = await auth();
@@ -123,6 +139,7 @@ export async function DELETE(
             );
         }
 
+        const { userId } = await params;
         const { courseId } = await req.json();
 
         if (!courseId) {
@@ -135,7 +152,7 @@ export async function DELETE(
         // Ensure student exists
         const user = await db.user.findUnique({
             where: {
-                id: params.userId,
+                id: userId,
                 role: "USER",
             },
         });
@@ -151,7 +168,7 @@ export async function DELETE(
         const existingPurchase = await db.purchase.findUnique({
             where: {
                 userId_courseId: {
-                    userId: params.userId,
+                    userId: userId,
                     courseId,
                 },
             },
