@@ -30,10 +30,21 @@ RECAPTCHA_SECRET_KEY=your_secret_key_here
 
 ## Implementation Details
 
-- **Client-side**: The reCaptcha widget is displayed on the sign-up page using `react-google-recaptcha`
+### Page-Level reCaptcha Gate
+- **Homepage & Sign-Up Page**: A reCaptcha gate appears before users can access these pages
+- **Verification Storage**: Once verified, the verification is stored in localStorage for 24 hours
+- **Server Verification**: The gate token is verified via `/api/auth/verify-recaptcha-gate` endpoint
+- **Bot Protection**: This prevents bots from accessing the site, making requests to your database, or consuming Vercel hosting resources
+
+### Form-Level reCaptcha
+- **Sign-Up Form**: An additional reCaptcha widget is displayed on the sign-up form itself
 - **Server-side**: The reCaptcha token is verified in the `/api/auth/register` route before user registration
 - The form submission is blocked until the reCaptcha is completed
 - If verification fails, the user will see an error message and the reCaptcha will reset
+
+### Security Layers
+1. **First Layer**: Page-level gate (blocks bots before they can access any content)
+2. **Second Layer**: Form-level verification (additional security for registration)
 
 ## Testing
 
