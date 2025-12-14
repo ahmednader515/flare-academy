@@ -2,12 +2,47 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 
+async function verifyRecaptcha(token: string): Promise<boolean> {
+  const secretKey = process.env.RECAPTCHA_SECRET_KEY;
+  
+  if (!secretKey) {
+    console.error("[RECAPTCHA] Secret key not configured");
+    return false;
+  }
+
+  try {
+    const response = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: `secret=${secretKey}&response=${token}`,
+    });
+
+    const data = await response.json();
+    return data.success === true;
+  } catch (error) {
+    console.error("[RECAPTCHA] Verification error:", error);
+    return false;
+  }
+}
+
 export async function POST(req: Request) {
   try {
-    const { fullName, phoneNumber, email, college, faculty, password, confirmPassword } = await req.json();
+    const { fullName, phoneNumber, email, college, faculty, password, confirmPassword, recaptchaToken } = await req.json();
 
     if (!fullName || !phoneNumber || !email || !password || !confirmPassword || !college || !faculty) {
       return new NextResponse("Missing required fields", { status: 400 });
+    }
+
+    // Verify reCaptcha token
+    if (!recaptchaToken) {
+      return new NextResponse("reCaptcha verification required", { status: 400 });
+    }
+
+    const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+    if (!isRecaptchaValid) {
+      return new NextResponse("reCaptcha verification failed", { status: 400 });
     }
 
     if (password !== confirmPassword) {
