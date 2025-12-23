@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { CoursesTable } from "./courses-table";
 import { useColumns } from "./columns";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import Link from "next/link";
 import { PlusCircle, AlertCircle, Users } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLanguage } from "@/lib/contexts/language-context";
+import { EnrolledStudentsDialog } from "./enrolled-students-dialog";
 
 type Course = {
     id: string;
@@ -32,7 +34,15 @@ interface TeacherCoursesContentProps {
 
 export const TeacherCoursesContent = ({ courses, hasUnpublishedCourses, totalEnrolledStudents }: TeacherCoursesContentProps) => {
     const { t } = useLanguage();
-    const columns = useColumns();
+    const [selectedCourse, setSelectedCourse] = useState<{ id: string; title: string } | null>(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+    const handleViewStudents = (courseId: string, courseTitle: string) => {
+        setSelectedCourse({ id: courseId, title: courseTitle });
+        setIsDialogOpen(true);
+    };
+
+    const columns = useColumns({ onViewStudents: handleViewStudents });
 
     return (
         <div className="p-6">
@@ -83,6 +93,15 @@ export const TeacherCoursesContent = ({ courses, hasUnpublishedCourses, totalEnr
             <div className="mt-6">
                 <CoursesTable columns={columns} data={courses} />
             </div>
+
+            {selectedCourse && (
+                <EnrolledStudentsDialog
+                    courseId={selectedCourse.id}
+                    courseTitle={selectedCourse.title}
+                    open={isDialogOpen}
+                    onOpenChange={setIsDialogOpen}
+                />
+            )}
         </div>
     );
 };

@@ -1,12 +1,6 @@
 import { db } from "@/lib/db";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { CoursesTable } from "./_components/courses-table";
-import { columns } from "./_components/columns";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { PlusCircle, Eye, EyeOff, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { TeacherCoursesContent } from "./_components/teacher-courses-content";
 
 const CoursesPage = async () => {
@@ -17,9 +11,6 @@ const CoursesPage = async () => {
     }
 
     const courses = await db.course.findMany({
-        where: {
-            userId,
-        },
         include: {
             chapters: {
                 select: {

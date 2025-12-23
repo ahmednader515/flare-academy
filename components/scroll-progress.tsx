@@ -19,7 +19,7 @@ export const ScrollProgress = () => {
 
   return (
     <div
-      className="fixed top-24 left-0 w-full h-1 z-40"
+      className="fixed top-28 left-0 w-full h-1 z-40"
       style={{
         background: `linear-gradient(to right, #FF6B35 ${scrollProgress * 100}%, transparent 0%)`,
       }}

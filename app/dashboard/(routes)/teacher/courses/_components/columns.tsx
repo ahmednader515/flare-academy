@@ -1,7 +1,7 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/format";
@@ -18,7 +18,11 @@ export type Course = {
     enrolledStudentsCount: number;
 }
 
-export const useColumns = (): ColumnDef<Course>[] => {
+interface UseColumnsProps {
+    onViewStudents?: (courseId: string, courseTitle: string) => void;
+}
+
+export const useColumns = ({ onViewStudents }: UseColumnsProps = {}): ColumnDef<Course>[] => {
     const { t } = useLanguage();
     
     return [
@@ -69,9 +73,21 @@ export const useColumns = (): ColumnDef<Course>[] => {
             },
             cell: ({ row }) => {
                 const count = row.getValue("enrolledStudentsCount") as number;
+                const course = row.original;
                 return (
-                    <div className="text-center font-medium">
-                        {count}
+                    <div className="flex items-center justify-center gap-2">
+                        <span className="font-medium">{count}</span>
+                        {onViewStudents && count > 0 && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={() => onViewStudents(course.id, course.title)}
+                                title="View enrolled students"
+                            >
+                                <Users className="h-4 w-4" />
+                            </Button>
+                        )}
                     </div>
                 );
             },
