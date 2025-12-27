@@ -43,12 +43,14 @@ export const SearchPageContent = ({ coursesWithProgress, title }: SearchPageCont
                 },
             });
 
+            const data = await response.json();
+
             if (response.ok) {
-                toast.success(t('dashboard.enrolledSuccessfully'));
+                toast.success(data.message || t('dashboard.enrolledSuccessfully'));
                 router.refresh();
             } else {
-                const errorData = await response.json();
-                toast.error(errorData.message || t('dashboard.enrollmentFailed'));
+                // Show the error message from the API
+                toast.error(data.message || data.error || t('dashboard.enrollmentFailed'));
             }
         } catch (error) {
             console.error('Error enrolling in course:', error);

@@ -6,13 +6,17 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ courseId: string }> }
 ) {
+  const resolvedParams = await params;
+  const { courseId } = resolvedParams;
+  
   try {
     const { userId } = await auth();
-    const resolvedParams = await params;
-    const { courseId } = resolvedParams;
 
     if (!userId) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized", message: "Please sign in to enroll in courses" },
+        { status: 401 }
+      );
     }
 
     // Check if course exists and is free
@@ -25,7 +29,10 @@ export async function POST(
     });
 
     if (!course) {
-      return new NextResponse("Course not found or not free", { status: 404 });
+      return NextResponse.json(
+        { error: "Course not found", message: "Course not found or is not available for free enrollment" },
+        { status: 404 }
+      );
     }
 
     // Check if user is already enrolled
@@ -39,7 +46,31 @@ export async function POST(
     });
 
     if (existingPurchase) {
-      return new NextResponse("Already enrolled in this course", { status: 400 });
+      // If purchase exists and is already ACTIVE, return appropriate message
+      if (existingPurchase.status === "ACTIVE") {
+        return NextResponse.json(
+          { error: "Already enrolled", message: "You are already enrolled in this course" },
+          { status: 400 }
+        );
+      } else {
+        // If purchase exists but is not ACTIVE, reactivate it
+        const reactivatedPurchase = await db.purchase.update({
+          where: {
+            userId_courseId: {
+              userId,
+              courseId
+            }
+          },
+          data: {
+            status: "ACTIVE"
+          }
+        });
+
+        return NextResponse.json({ 
+          message: "Successfully re-enrolled in free course",
+          enrollment: reactivatedPurchase 
+        });
+      }
     }
 
     // Create enrollment (purchase record for free course)
@@ -56,8 +87,60 @@ export async function POST(
       enrollment 
     });
 
-  } catch (error) {
-    console.log("[COURSE_ENROLLMENT]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+  } catch (error: any) {
+    console.error("[COURSE_ENROLLMENT]", error);
+    
+    // Handle unique constraint violation (in case of race condition)
+    if (error.code === 'P2002') {
+      // Purchase already exists, try to fetch and reactivate
+      try {
+        const authResult = await auth();
+        const userId = authResult.userId;
+        
+        if (userId) {
+          const existingPurchase = await db.purchase.findUnique({
+            where: {
+              userId_courseId: {
+                userId,
+                courseId
+              }
+            }
+          });
+
+          if (existingPurchase) {
+            if (existingPurchase.status === "ACTIVE") {
+              return NextResponse.json(
+                { error: "Already enrolled", message: "You are already enrolled in this course" },
+                { status: 400 }
+              );
+            } else {
+              const reactivatedPurchase = await db.purchase.update({
+                where: {
+                  userId_courseId: {
+                    userId,
+                    courseId
+                  }
+                },
+                data: {
+                  status: "ACTIVE"
+                }
+              });
+
+              return NextResponse.json({ 
+                message: "Successfully re-enrolled in free course",
+                enrollment: reactivatedPurchase 
+              });
+            }
+          }
+        }
+      } catch (retryError) {
+        console.error("[COURSE_ENROLLMENT_RETRY]", retryError);
+      }
+    }
+
+    return NextResponse.json(
+      { error: "Internal server error", message: "An error occurred while enrolling in the course. Please try again." },
+      { status: 500 }
+    );
   }
 }

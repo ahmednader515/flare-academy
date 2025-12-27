@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, useMemo, memo } from "react";
 import "plyr/dist/plyr.css";
 
 interface PlyrVideoPlayerProps {
@@ -12,7 +12,7 @@ interface PlyrVideoPlayerProps {
   onTimeUpdate?: (currentTime: number) => void;
 }
 
-export const PlyrVideoPlayer = ({
+const PlyrVideoPlayerComponent = ({
   videoUrl,
   youtubeVideoId,
   videoType = "UPLOAD",
@@ -22,16 +22,53 @@ export const PlyrVideoPlayer = ({
 }: PlyrVideoPlayerProps) => {
   const html5VideoRef = useRef<HTMLVideoElement>(null);
   const youtubeEmbedRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
+  const isPlayerReadyRef = useRef(false);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Create a stable key for the video to prevent unnecessary re-renders
+  const videoKey = useMemo(() => {
+    if (videoType === "YOUTUBE" && youtubeVideoId) {
+      return `youtube-${youtubeVideoId}`;
+    }
+    if (videoUrl) {
+      return `upload-${videoUrl}`;
+    }
+    return "no-video";
+  }, [videoType, youtubeVideoId, videoUrl]);
 
   // Initialize Plyr on mount/update and destroy on unmount
   useEffect(() => {
     let isCancelled = false;
+    let readyTimeout: NodeJS.Timeout;
 
     async function setupPlayer() {
+      // For YouTube videos, ensure we start in loading state
+      if (videoType === "YOUTUBE") {
+        setIsLoading(true);
+        setIsPlayerReady(false);
+      }
+
+      // Wait for next tick to ensure DOM is ready, especially for YouTube
+      await new Promise(resolve => {
+        if (typeof window !== 'undefined') {
+          // Use requestAnimationFrame to ensure DOM is ready
+          requestAnimationFrame(() => {
+            setTimeout(resolve, videoType === "YOUTUBE" ? 150 : 0);
+          });
+        } else {
+          resolve(undefined);
+        }
+      });
+
       const targetEl =
         videoType === "YOUTUBE" ? youtubeEmbedRef.current : html5VideoRef.current;
-      if (!targetEl) return;
+      if (!targetEl) {
+        setIsLoading(false);
+        return;
+      }
 
       // Dynamically import Plyr to be SSR-safe
       const plyrModule: any = await import("plyr");
@@ -41,7 +78,11 @@ export const PlyrVideoPlayer = ({
 
       // Destroy any previous instance
       if (playerRef.current && typeof playerRef.current.destroy === "function") {
-        playerRef.current.destroy();
+        try {
+          playerRef.current.destroy();
+        } catch (e) {
+          console.warn("Error destroying previous player:", e);
+        }
         playerRef.current = null;
       }
 
@@ -68,6 +109,33 @@ export const PlyrVideoPlayer = ({
 
       playerRef.current = player;
 
+      // Wait for player to be ready, especially for YouTube
+      if (videoType === "YOUTUBE") {
+        isPlayerReadyRef.current = false;
+        const handleReady = () => {
+          if (!isCancelled && !isPlayerReadyRef.current) {
+            isPlayerReadyRef.current = true;
+            setIsPlayerReady(true);
+            setIsLoading(false);
+          }
+        };
+
+        player.on("ready", handleReady);
+        
+        // Fallback: if ready event doesn't fire within 3 seconds, assume ready
+        readyTimeout = setTimeout(() => {
+          if (!isCancelled && !isPlayerReadyRef.current) {
+            isPlayerReadyRef.current = true;
+            setIsPlayerReady(true);
+            setIsLoading(false);
+          }
+        }, 3000);
+      } else {
+        isPlayerReadyRef.current = true;
+        setIsLoading(false);
+        setIsPlayerReady(true);
+      }
+
       if (onEnded) player.on("ended", onEnded);
       if (onTimeUpdate)
         player.on("timeupdate", () => onTimeUpdate(player.currentTime || 0));
@@ -77,12 +145,22 @@ export const PlyrVideoPlayer = ({
 
     return () => {
       isCancelled = true;
+      if (readyTimeout) {
+        clearTimeout(readyTimeout);
+      }
       if (playerRef.current && typeof playerRef.current.destroy === "function") {
-        playerRef.current.destroy();
+        try {
+          playerRef.current.destroy();
+        } catch (e) {
+          console.warn("Error destroying player on cleanup:", e);
+        }
       }
       playerRef.current = null;
+      isPlayerReadyRef.current = false;
+      setIsPlayerReady(false);
+      setIsLoading(true);
     };
-  }, [videoUrl, youtubeVideoId, videoType, onEnded, onTimeUpdate]);
+  }, [videoKey, videoType, onEnded, onTimeUpdate]);
 
   const hasVideo = (videoType === "YOUTUBE" && !!youtubeVideoId) || !!videoUrl;
 
@@ -94,20 +172,54 @@ export const PlyrVideoPlayer = ({
     );
   }
 
-  return (
-    <div className={`aspect-video ${className || ""}`}>
-      {videoType === "YOUTUBE" && youtubeVideoId ? (
+  // Render YouTube embed
+  if (videoType === "YOUTUBE" && youtubeVideoId) {
+    return (
+      <div 
+        ref={containerRef}
+        className={`aspect-video relative ${className || ""}`}
+      >
+        {isLoading && (
+          <div className="absolute inset-0 bg-black flex items-center justify-center z-10">
+            <div className="text-white animate-pulse">Loading video...</div>
+          </div>
+        )}
         <div
           ref={youtubeEmbedRef}
           data-plyr-provider="youtube"
           data-plyr-embed-id={youtubeVideoId}
-          className="w-full h-full"
+          className={`w-full h-full ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}
+          style={{ minHeight: '100%' }}
         />
-      ) : (
-        <video ref={html5VideoRef} className="w-full h-full" playsInline crossOrigin="anonymous">
-          {videoUrl ? <source src={videoUrl} type="video/mp4" /> : null}
-        </video>
-      )}
+      </div>
+    );
+  }
+
+  // Render HTML5 video
+  return (
+    <div 
+      ref={containerRef}
+      className={`aspect-video relative ${className || ""}`}
+    >
+      <video 
+        ref={html5VideoRef} 
+        className="w-full h-full" 
+        playsInline 
+        crossOrigin="anonymous"
+      >
+        {videoUrl ? <source src={videoUrl} type="video/mp4" /> : null}
+      </video>
     </div>
   );
 };
+
+// Memoize the component to prevent unnecessary re-renders that cause DOM conflicts
+export const PlyrVideoPlayer = memo(PlyrVideoPlayerComponent, (prevProps, nextProps) => {
+  // Only re-render if these specific props change
+  return (
+    prevProps.videoUrl === nextProps.videoUrl &&
+    prevProps.youtubeVideoId === nextProps.youtubeVideoId &&
+    prevProps.videoType === nextProps.videoType &&
+    prevProps.className === nextProps.className
+  );
+});
