@@ -10,6 +10,7 @@
     "prisma:seed": "ts-node prisma/seed.ts",
     "prisma:studio": "prisma studio --port 5556",
     "backup:db": "powershell -ExecutionPolicy Bypass -File scripts/backup-db.ps1",
+    "migrate-uploadthing": "npx tsx ./scripts/migrate-uploadthing-files.ts",
     "fix:quiz-options": "node scripts/fix-quiz-options.js",
     "test:quiz-options": "node scripts/test-quiz-options.js",
     "migrate:mysql-to-postgres": "ts-node --project tsconfig.scripts.json scripts/migrate-mysql-to-postgres.ts",
