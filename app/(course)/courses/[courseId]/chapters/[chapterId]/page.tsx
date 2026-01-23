@@ -241,22 +241,17 @@ const ChapterPage = () => {
     const fetchData = async () => {
       console.log("🔍 ChapterPage fetchData started");
       try {
-        const [chapterResponse, progressResponse, accessResponse] = await Promise.all([
-          axios.get(`/api/courses/${routeParams.courseId}/chapters/${routeParams.chapterId}`),
-          axios.get(`/api/courses/${routeParams.courseId}/progress`),
-          axios.get(`/api/courses/${routeParams.courseId}/access`)
-        ]);
+        // Single API call that includes chapter, progress, and access data
+        const chapterResponse = await axios.get(`/api/courses/${routeParams.courseId}/chapters/${routeParams.chapterId}`);
         
         console.log("🔍 ChapterPage data fetched:", {
-          chapterData: chapterResponse.data,
-          progressData: progressResponse.data,
-          accessData: accessResponse.data
+          chapterData: chapterResponse.data
         });
         
         setChapter(chapterResponse.data);
         setIsCompleted(chapterResponse.data.userProgress?.[0]?.isCompleted || false);
-        setCourseProgress(progressResponse.data.progress);
-        setHasAccess(accessResponse.data.hasAccess);
+        setCourseProgress(chapterResponse.data.progress || 0);
+        setHasAccess(chapterResponse.data.hasAccess || false);
       } catch (error) {
         const axiosError = error as AxiosError;
         console.error("🔍 Error fetching data:", axiosError);

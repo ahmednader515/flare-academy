@@ -45,6 +45,7 @@ export const authOptions: AuthOptions = {
           where: {
             phoneNumber: credentials.phoneNumber,
           },
+          cacheStrategy: { ttl: 0 }, // No cache for login - must be fresh
         });
 
         if (!user || !user.hashedPassword) {

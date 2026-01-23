@@ -79,6 +79,7 @@ export class SessionManager {
 
   /**
    * Validate session and return user if valid
+   * Cached for 30 seconds to reduce database operations
    */
   static async validateSession(sessionId: string): Promise<{ user: any; isValid: boolean }> {
     const user = await db.user.findUnique({
@@ -92,7 +93,8 @@ export class SessionManager {
         image: true,
         isActive: true,
         sessionId: true
-      }
+      },
+      cacheStrategy: { ttl: 30 }, // Cache for 30 seconds - session validation happens on every request
     });
 
     if (!user || !user.isActive || user.sessionId !== sessionId) {

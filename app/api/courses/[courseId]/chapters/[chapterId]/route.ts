@@ -16,30 +16,57 @@ export async function GET(
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const chapter = await db.chapter.findUnique({
-      where: {
-        id: chapterId,
-        courseId: courseId,
-      },
-      include: {
-        course: {
-          select: {
-            userId: true,
-          }
+    // Fetch chapter with course and purchase info in parallel
+    const [chapter, course] = await Promise.all([
+      db.chapter.findUnique({
+        where: {
+          id: chapterId,
+          courseId: courseId,
         },
-        userProgress: {
-          where: {
-            userId,
-          }
-        },
-        attachments: {
-          orderBy: {
-            position: 'asc',
+        include: {
+          course: {
+            select: {
+              userId: true,
+              isFree: true,
+            }
           },
-        }
-      },
-      cacheStrategy: { ttl: 60 }, // Cache for 1 minute
-    });
+          userProgress: {
+            where: {
+              userId,
+            }
+          },
+          attachments: {
+            orderBy: {
+              position: 'asc',
+            },
+          }
+        },
+        cacheStrategy: { ttl: 60 }, // Cache for 1 minute
+      }),
+      db.course.findUnique({
+        where: {
+          id: courseId,
+          isPublished: true,
+        },
+        include: {
+          purchases: {
+            where: {
+              userId,
+              status: "ACTIVE"
+            }
+          }
+        },
+        select: {
+          isFree: true,
+          purchases: {
+            select: {
+              status: true
+            }
+          }
+        },
+        cacheStrategy: { ttl: 60 }, // Cache for 1 minute
+      })
+    ]);
 
     if (!chapter) {
       return new NextResponse("Chapter not found", { status: 404 });
@@ -98,12 +125,66 @@ export async function GET(
       ? sortedContent[currentIndex - 1] 
       : null;
 
+    // Calculate course progress (batch query to reduce operations)
+    const [totalChapters, totalQuizzes, completedChapters, completedQuizResults] = await Promise.all([
+      db.chapter.count({
+        where: {
+          courseId: courseId,
+          isPublished: true,
+        },
+        cacheStrategy: { ttl: 300 }, // Cache for 5 minutes
+      }),
+      db.quiz.count({
+        where: {
+          courseId: courseId,
+          isPublished: true,
+        },
+        cacheStrategy: { ttl: 300 }, // Cache for 5 minutes
+      }),
+      db.userProgress.count({
+        where: {
+          userId,
+          chapter: {
+            courseId: courseId,
+          },
+          isCompleted: true
+        },
+        cacheStrategy: { ttl: 60 }, // Cache for 1 minute
+      }),
+      db.quizResult.findMany({
+        where: {
+          studentId: userId,
+          quiz: {
+            courseId: courseId,
+            isPublished: true,
+          }
+        },
+        select: {
+          quizId: true
+        },
+        cacheStrategy: { ttl: 60 }, // Cache for 1 minute
+      })
+    ]);
+
+    const totalContent = totalChapters + totalQuizzes;
+    const uniqueQuizIds = new Set(completedQuizResults.map(result => result.quizId));
+    const completedQuizzes = uniqueQuizIds.size;
+    const completedContent = completedChapters + completedQuizzes;
+    const progress = totalContent > 0 
+      ? Math.round((completedContent / totalContent) * 100)
+      : 0;
+
+    // Check access (free courses or user has active purchase)
+    const hasAccess = course?.isFree || (course?.purchases && course.purchases.length > 0);
+
     const response = {
       ...chapter,
       nextChapterId: nextContent?.id || null,
       previousChapterId: previousContent?.id || null,
       nextContentType: nextContent?.type || null,
       previousContentType: previousContent?.type || null,
+      progress, // Include progress in response
+      hasAccess, // Include access info in response
     };
 
     return NextResponse.json(response);
