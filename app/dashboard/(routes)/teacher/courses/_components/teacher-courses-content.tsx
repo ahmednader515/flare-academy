@@ -9,6 +9,8 @@ import { PlusCircle, AlertCircle, Users } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLanguage } from "@/lib/contexts/language-context";
 import { EnrolledStudentsDialog } from "./enrolled-students-dialog";
+import { AllowedTeachersDialog } from "@/app/dashboard/(routes)/admin/courses/_components/allowed-teachers-dialog";
+import { usePathname } from "next/navigation";
 
 type Course = {
     id: string;
@@ -30,16 +32,28 @@ interface TeacherCoursesContentProps {
     courses: Course[];
     hasUnpublishedCourses: boolean;
     totalEnrolledStudents: number;
+    isAdmin?: boolean;
 }
 
-export const TeacherCoursesContent = ({ courses, hasUnpublishedCourses, totalEnrolledStudents }: TeacherCoursesContentProps) => {
+export const TeacherCoursesContent = ({ courses, hasUnpublishedCourses, totalEnrolledStudents, isAdmin: propIsAdmin }: TeacherCoursesContentProps) => {
     const { t } = useLanguage();
+    const pathname = usePathname();
     const [selectedCourse, setSelectedCourse] = useState<{ id: string; title: string } | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [selectedCourseForTeachers, setSelectedCourseForTeachers] = useState<{ id: string; title: string } | null>(null);
+    const [isTeachersDialogOpen, setIsTeachersDialogOpen] = useState(false);
+
+    const isAdmin = propIsAdmin ?? pathname?.includes('/admin/');
+    const createCourseUrl = isAdmin ? "/dashboard/admin/courses/create" : "/dashboard/teacher/courses/create";
 
     const handleViewStudents = (courseId: string, courseTitle: string) => {
         setSelectedCourse({ id: courseId, title: courseTitle });
         setIsDialogOpen(true);
+    };
+
+    const handleManageTeachers = (courseId: string, courseTitle: string) => {
+        setSelectedCourseForTeachers({ id: courseId, title: courseTitle });
+        setIsTeachersDialogOpen(true);
     };
 
     const columns = useColumns({ onViewStudents: handleViewStudents });
@@ -48,7 +62,7 @@ export const TeacherCoursesContent = ({ courses, hasUnpublishedCourses, totalEnr
         <div className="p-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold">{t('dashboard.myCourses')}</h1>
-                <Link href="/dashboard/teacher/courses/create">
+                <Link href={createCourseUrl}>
                     <Button className="bg-[#FF6B35] hover:bg-[#FF6B35]/90 text-white">
                         <PlusCircle className="h-4 w-4 mr-2" />
                         {t('dashboard.createNewCourse')}
@@ -91,7 +105,12 @@ export const TeacherCoursesContent = ({ courses, hasUnpublishedCourses, totalEnr
             )}
 
             <div className="mt-6">
-                <CoursesTable columns={columns} data={courses} />
+                <CoursesTable 
+                    columns={columns} 
+                    data={courses} 
+                    isAdmin={isAdmin}
+                    onManageTeachers={isAdmin ? handleManageTeachers : undefined}
+                />
             </div>
 
             {selectedCourse && (
@@ -100,6 +119,18 @@ export const TeacherCoursesContent = ({ courses, hasUnpublishedCourses, totalEnr
                     courseTitle={selectedCourse.title}
                     open={isDialogOpen}
                     onOpenChange={setIsDialogOpen}
+                />
+            )}
+
+            {selectedCourseForTeachers && isAdmin && (
+                <AllowedTeachersDialog
+                    courseId={selectedCourseForTeachers.id}
+                    courseTitle={selectedCourseForTeachers.title}
+                    open={isTeachersDialogOpen}
+                    onOpenChange={setIsTeachersDialogOpen}
+                    onSuccess={() => {
+                        // Optionally refresh the page or update state
+                    }}
                 />
             )}
         </div>

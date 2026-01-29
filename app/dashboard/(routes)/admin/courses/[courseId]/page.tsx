@@ -1,10 +1,9 @@
 import { db } from "@/lib/db"
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation";
-import { CourseEditContent } from "./_components/course-edit-content";
-import { AccessDeniedCard } from "@/app/dashboard/_components/access-denied-card";
+import { CourseEditContent } from "@/app/dashboard/(routes)/teacher/courses/[courseId]/_components/course-edit-content";
 
-export default async function CourseIdPage({
+export default async function AdminCourseEditPage({
     params,
 }: {
     params: Promise<{ courseId: string }>
@@ -16,6 +15,11 @@ export default async function CourseIdPage({
 
     if (!userId) {
         return redirect("/");
+    }
+
+    // Only admin can access this page
+    if (user?.role !== "ADMIN") {
+        return redirect("/dashboard");
     }
 
     const course = await db.course.findUnique({
@@ -33,40 +37,11 @@ export default async function CourseIdPage({
                     position: "asc",
                 },
             },
-            allowedTeachers: {
-                select: {
-                    teacherId: true,
-                }
-            }
         }
     });
 
     if (!course) {
-        return redirect("/");
-    }
-
-    // Admin can always access
-    if (user?.role === "ADMIN") {
-        // Continue to render
-    }
-    // Owner can always access
-    else if (course.userId === userId) {
-        // Continue to render
-    }
-    // Teacher can access if they are in the allowed teachers list
-    else if (user?.role === "TEACHER") {
-        const isAllowedTeacher = course.allowedTeachers.some(ct => ct.teacherId === userId);
-        if (!isAllowedTeacher) {
-            return (
-                <AccessDeniedCard
-                    backHref="/dashboard/teacher/courses"
-                />
-            );
-        }
-    }
-    // Others cannot access
-    else {
-        return redirect("/dashboard");
+        return redirect("/dashboard/admin/courses");
     }
 
     const requiredFields = [
@@ -102,3 +77,4 @@ export default async function CourseIdPage({
         />
     );
 }
+

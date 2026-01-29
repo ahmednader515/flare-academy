@@ -29,6 +29,7 @@ const collegeOptions = [
     "جامعة القاهرة الأهلية",
     "جامعة المنوفية الأهلية",
     "جامعة سفنكس",
+    "جامعة بدر BUA",
     "جامعة السادات الأهلية"
 ];
 
@@ -40,6 +41,8 @@ interface TargetCollegeFormProps {
 const formSchema = z.object({
     targetCollege: z.string().optional(),
 });
+
+const NOT_SPECIFIED_VALUE = "__NOT_SPECIFIED__";
 
 export const TargetCollegeForm = ({
     initialData,
@@ -54,7 +57,7 @@ export const TargetCollegeForm = ({
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            targetCollege: initialData.targetCollege || "",
+            targetCollege: initialData.targetCollege || NOT_SPECIFIED_VALUE,
         },
     });
 
@@ -62,7 +65,12 @@ export const TargetCollegeForm = ({
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            await axios.patch(`/api/courses/${courseId}`, values);
+            const payload = {
+                ...values,
+                targetCollege:
+                    values.targetCollege === NOT_SPECIFIED_VALUE ? null : values.targetCollege,
+            };
+            await axios.patch(`/api/courses/${courseId}`, payload);
             toast.success(t('teacher.targetCollegeUpdatedSuccessfully'));
             toggleEdit();
             router.refresh();
@@ -111,6 +119,9 @@ export const TargetCollegeForm = ({
                                                 <SelectValue placeholder={t('teacher.selectTargetCollege')} />
                                             </SelectTrigger>
                                             <SelectContent>
+                                                <SelectItem value={NOT_SPECIFIED_VALUE}>
+                                                    {t('teacher.notSpecified')}
+                                                </SelectItem>
                                                 {collegeOptions.map((college) => (
                                                     <SelectItem key={college} value={college}>
                                                         {college}

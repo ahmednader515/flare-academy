@@ -22,8 +22,11 @@ const collegeOptions = [
     "جامعة القاهرة الأهلية",
     "جامعة المنوفية الأهلية",
     "جامعة سفنكس",
+    "جامعة بدر BUA",
     "جامعة السادات الأهلية"
 ];
+
+const NOT_SPECIFIED_VALUE = "__NOT_SPECIFIED__";
 
 const facultyOptions = [
     "كلية الطب البيطري",
@@ -62,7 +65,7 @@ export const CourseForm = ({
             title: initialData.title || "",
             description: initialData.description || "",
             targetFaculty: initialData.targetFaculty || "",
-            targetCollege: initialData.targetCollege || "",
+            targetCollege: initialData.targetCollege || NOT_SPECIFIED_VALUE,
         },
     });
 
@@ -71,7 +74,12 @@ export const CourseForm = ({
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
             setIsLoading(true);
-            await axios.patch(`/api/courses/${courseId}`, values);
+            const payload = {
+                ...values,
+                targetCollege:
+                    values.targetCollege === NOT_SPECIFIED_VALUE ? null : values.targetCollege,
+            };
+            await axios.patch(`/api/courses/${courseId}`, payload);
             toast.success("تم تحديث الكورس");
             toggleEdit();
             router.refresh();
@@ -199,6 +207,9 @@ export const CourseForm = ({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
+                                            <SelectItem value={NOT_SPECIFIED_VALUE}>
+                                                غير محددة
+                                            </SelectItem>
                                             {collegeOptions.map((college) => (
                                                 <SelectItem key={college} value={college}>
                                                     {college}
@@ -217,8 +228,10 @@ export const CourseForm = ({
                                 <FormItem>
                                     <FormLabel>الكلية المستهدفة (اختياري)</FormLabel>
                                     <Select
-                                        onValueChange={field.onChange}
-                                        defaultValue={field.value}
+                                        onValueChange={(value) => {
+                                            field.onChange(value === "__NOT_SPECIFIED__" ? "" : value);
+                                        }}
+                                        defaultValue={field.value || "__NOT_SPECIFIED__"}
                                         disabled={isLoading}
                                     >
                                         <FormControl>
@@ -227,6 +240,9 @@ export const CourseForm = ({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
+                                            <SelectItem value="__NOT_SPECIFIED__">
+                                                غير محددة
+                                            </SelectItem>
                                             {facultyOptions.map((faculty) => (
                                                 <SelectItem key={faculty} value={faculty}>
                                                     {faculty}

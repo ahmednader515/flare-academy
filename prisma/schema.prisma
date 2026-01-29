@@ -33,6 +33,9 @@ model User {
   balanceTransactions     BalanceTransaction[]
   quizResults             QuizResult[]
   savedDocuments          SavedDocument[]
+  courseMessages          CourseMessage[]
+  notifications           Notification[]
+  allowedCourses          CourseTeacher[] // Courses this teacher can edit
 }
 
 model Course {
@@ -49,11 +52,14 @@ model Course {
   targetLevel String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  allowedTeachers CourseTeacher[] // Teachers who can edit this course
 
   attachments Attachment[]
   chapters Chapter[]
   purchases Purchase[]
   quizzes Quiz[]
+  messages CourseMessage[]
+  notifications Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -241,4 +247,51 @@ model SavedDocument {
     @@unique([userId, attachmentId])
     @@index([userId])
     @@index([attachmentId])
+}
+
+model CourseMessage {
+    id String @id @default(uuid())
+    courseId String
+    userId String
+    message String @db.Text
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([courseId])
+    @@index([userId])
+    @@index([courseId, createdAt])
+}
+
+model Notification {
+    id String @id @default(uuid())
+    userId String
+    courseId String
+    chapterId String?
+    type String // "NEW_CHAPTER", "NEW_QUIZ", etc.
+    title String @db.Text
+    message String @db.Text
+    isRead Boolean @default(false)
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([userId])
+    @@index([userId, isRead])
+    @@index([courseId])
+}
+
+model CourseTeacher {
+  id String @id @default(uuid())
+  courseId String
+  teacherId String
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  teacher User @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([courseId, teacherId])
+  @@index([courseId])
+  @@index([teacherId])
 }

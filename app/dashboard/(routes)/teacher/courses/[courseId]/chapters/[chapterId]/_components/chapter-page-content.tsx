@@ -9,6 +9,7 @@ import { ArrowLeft, Video, Files } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { IconBadge } from "@/components/icon-badge";
 import { useLanguage } from "@/lib/contexts/language-context";
+import { usePathname } from "next/navigation";
 
 interface ChapterPageContentProps {
     chapter: Chapter & {
@@ -28,12 +29,17 @@ export const ChapterPageContent = ({
     courseIsFree = false
 }: ChapterPageContentProps) => {
     const { t } = useLanguage();
+    const pathname = usePathname();
+    const isAdmin = pathname?.includes('/admin/');
+    const backUrl = isAdmin 
+        ? `/dashboard/admin/courses/${courseId}`
+        : `/dashboard/teacher/courses/${courseId}`;
 
     return (
         <div className="p-6">
             <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-y-2">
-                    <Link href={`/dashboard/teacher/courses/${courseId}`}>
+                    <Link href={backUrl}>
                         <Button variant="ghost" className="mb-4">
                             <ArrowLeft className="h-4 w-4 mr-2" />
                             {t('teacher.backToCourseSettings')}

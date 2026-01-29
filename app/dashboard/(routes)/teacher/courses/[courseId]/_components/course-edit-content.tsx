@@ -13,6 +13,7 @@ import { IsFreeForm } from "./is-free-form";
 import { Banner } from "@/components/banner";
 import { Actions } from "./actions";
 import { useLanguage } from "@/lib/contexts/language-context";
+import { CourseChat } from "@/app/(course)/_components/course-chat";
 
 interface Course {
     id: string;
@@ -166,6 +167,7 @@ export const CourseEditContent = ({
                     </div>
                 </div>
             </div>
+            <CourseChat courseId={course.id} />
         </>
     );
 };

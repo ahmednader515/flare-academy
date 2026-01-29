@@ -7,7 +7,7 @@ export async function PATCH(
     { params }: { params: Promise<{ courseId: string }> }
 ) {
     try {
-        const { userId } = await auth();
+        const { userId, user } = await auth();
         const resolvedParams = await params;
 
         if (!userId) {
@@ -17,15 +17,26 @@ export async function PATCH(
         const course = await db.course.findUnique({
             where: {
                 id: resolvedParams.courseId,
-                userId
             },
             include: {
-                chapters: true
+                chapters: true,
+                allowedTeachers: {
+                    select: { teacherId: true }
+                }
             }
         });
 
         if (!course) {
             return new NextResponse("Not found", { status: 404 });
+        }
+
+        const isAdmin = user?.role === "ADMIN";
+        const isOwner = course.userId === userId;
+        const isAllowedTeacher = user?.role === "TEACHER" && 
+            course.allowedTeachers.some(ct => ct.teacherId === userId);
+
+        if (!isAdmin && !isOwner && !isAllowedTeacher) {
+            return new NextResponse("Unauthorized", { status: 401 });
         }
 
         const hasPublishedChapters = course.chapters.some((chapter) => chapter.isPublished);
@@ -37,7 +48,6 @@ export async function PATCH(
         const publishedCourse = await db.course.update({
             where: {
                 id: resolvedParams.courseId,
-                userId
             },
             data: {
                 isPublished: !course.isPublished

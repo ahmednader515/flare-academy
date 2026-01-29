@@ -25,7 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import Link from "next/link";
-import { Pencil, Trash2, Search } from "lucide-react";
+import { Pencil, Trash2, Search, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -40,23 +40,30 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useLanguage } from "@/lib/contexts/language-context";
+import { usePathname } from "next/navigation";
 
 interface DataTableProps<TData extends { id: string }, TValue> {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
     hideActions?: boolean;
+    isAdmin?: boolean;
+    onManageTeachers?: (courseId: string, courseTitle: string) => void;
 }
 
 export function CoursesTable<TData extends { id: string }, TValue>({
     columns,
     data,
     hideActions = false,
+    isAdmin: propIsAdmin = false,
+    onManageTeachers,
 }: DataTableProps<TData, TValue>) {
     const { t, isRTL } = useLanguage();
+    const pathname = usePathname();
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
     const [filterValue, setFilterValue] = useState("");
     const router = useRouter();
+    const isAdmin = propIsAdmin || pathname?.includes('/admin/');
 
     const table = useReactTable({
         data,
@@ -146,11 +153,23 @@ export function CoursesTable<TData extends { id: string }, TValue>({
                                     {!hideActions && (
                                         <TableCell className={isRTL ? "text-right" : "text-left"}>
                                             <div className="flex items-center gap-2">
-                                                <Link href={`/dashboard/teacher/courses/${row.original.id}`}>
+                                                <Link href={isAdmin 
+                                                    ? `/dashboard/admin/courses/${row.original.id}` 
+                                                    : `/dashboard/teacher/courses/${row.original.id}`}>
                                                     <Button variant="ghost" size="icon">
                                                         <Pencil className="h-4 w-4" />
                                                     </Button>
                                                 </Link>
+                                                {isAdmin && onManageTeachers && (
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() => onManageTeachers(row.original.id, (row.original as any).title)}
+                                                        title={t('admin.manageAllowedTeachers') || 'Manage Allowed Teachers'}
+                                                    >
+                                                        <Users className="h-4 w-4" />
+                                                    </Button>
+                                                )}
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
                                                         <Button variant="ghost" size="icon">

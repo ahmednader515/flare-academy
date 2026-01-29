@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Chapter, Course, Quiz } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
@@ -11,6 +11,16 @@ import { CourseContentList } from "./course-content-list";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/lib/contexts/language-context";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface CourseContentFormProps {
     initialData: Course & { chapters: Chapter[]; quizzes: Quiz[] };
@@ -22,12 +32,16 @@ export const CourseContentForm = ({
     courseId
 }: CourseContentFormProps) => {
     const { t } = useLanguage();
+    const pathname = usePathname();
     const [isCreating, setIsCreating] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [title, setTitle] = useState("");
     const [isFree, setIsFree] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [chapterToDelete, setChapterToDelete] = useState<{ id: string; title: string } | null>(null);
 
     const router = useRouter();
+    const isAdmin = pathname?.includes('/admin/');
 
     const onCreate = async () => {
         try {
@@ -42,6 +56,15 @@ export const CourseContentForm = ({
             toast.error(t('teacher.errorOccurred'));
         } finally {
             setIsUpdating(false);
+        }
+    }
+
+    const handleDeleteClick = (id: string, type: "chapter" | "quiz", title: string) => {
+        if (type === "chapter") {
+            setChapterToDelete({ id, title });
+            setDeleteDialogOpen(true);
+        } else {
+            onDelete(id, type);
         }
     }
 
@@ -60,6 +83,14 @@ export const CourseContentForm = ({
             toast.error(t('teacher.errorOccurred'));
         } finally {
             setIsUpdating(false);
+            setDeleteDialogOpen(false);
+            setChapterToDelete(null);
+        }
+    }
+
+    const handleConfirmDelete = () => {
+        if (chapterToDelete) {
+            onDelete(chapterToDelete.id, "chapter");
         }
     }
 
@@ -80,7 +111,10 @@ export const CourseContentForm = ({
 
     const onEdit = (id: string, type: "chapter" | "quiz") => {
         if (type === "chapter") {
-            router.push(`/dashboard/teacher/courses/${courseId}/chapters/${id}`);
+            const chapterPath = isAdmin 
+                ? `/dashboard/admin/courses/${courseId}/chapters/${id}`
+                : `/dashboard/teacher/courses/${courseId}/chapters/${id}`;
+            router.push(chapterPath);
         } else {
             router.push(`/dashboard/teacher/quizzes/${id}/edit`);
         }
@@ -170,7 +204,7 @@ export const CourseContentForm = ({
                     {!courseItems.length && t('teacher.noContent')}
                     <CourseContentList
                         onEdit={onEdit}
-                        onDelete={onDelete}
+                        onDelete={handleDeleteClick}
                         onReorder={onReorder}
                         items={courseItems}
                     />
@@ -181,6 +215,30 @@ export const CourseContentForm = ({
                     {t('teacher.dragAndDropToReorder')}
                 </p>
             )}
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>{t('teacher.deleteChapterConfirm')}</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {t('teacher.deleteChapterWarning')}
+                            {chapterToDelete && (
+                                <span className="block mt-2 font-semibold">
+                                    "{chapterToDelete.title}"
+                                </span>
+                            )}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={handleConfirmDelete}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            {t('common.delete')}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }; 

@@ -48,17 +48,13 @@ export async function GET(
           id: courseId,
           isPublished: true,
         },
-        include: {
+        select: {
+          isFree: true,
           purchases: {
             where: {
               userId,
               status: "ACTIVE"
-            }
-          }
-        },
-        select: {
-          isFree: true,
-          purchases: {
+            },
             select: {
               status: true
             }
@@ -202,7 +198,7 @@ export async function PATCH(
     { params }: { params: Promise<{ courseId: string; chapterId: string }> }
 ) {
     try {
-        const { userId } = await auth();
+        const { userId, user } = await auth();
         const resolvedParams = await params;
         const values = await req.json();
 
@@ -210,14 +206,27 @@ export async function PATCH(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const courseOwner = await db.course.findUnique({
+        const course = await db.course.findUnique({
             where: {
                 id: resolvedParams.courseId,
-                userId: userId,
+            },
+            include: {
+                allowedTeachers: {
+                    select: { teacherId: true }
+                }
             }
         });
 
-        if (!courseOwner) {
+        if (!course) {
+            return new NextResponse("Course not found", { status: 404 });
+        }
+
+        const isAdmin = user?.role === "ADMIN";
+        const isOwner = course.userId === userId;
+        const isAllowedTeacher = user?.role === "TEACHER" && 
+            course.allowedTeachers.some(ct => ct.teacherId === userId);
+
+        if (!isAdmin && !isOwner && !isAllowedTeacher) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
@@ -243,22 +252,35 @@ export async function DELETE(
     { params }: { params: Promise<{ courseId: string; chapterId: string }> }
 ) {
     try {
-        const { userId } = await auth();
+        const { userId, user } = await auth();
         const resolvedParams = await params;
 
         if (!userId) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        // Check if user owns the course
-        const courseOwner = await db.course.findUnique({
+        // Check if user is admin, teacher, or course owner
+        const course = await db.course.findUnique({
             where: {
                 id: resolvedParams.courseId,
-                userId: userId,
+            },
+            include: {
+                allowedTeachers: {
+                    select: { teacherId: true }
+                }
             }
         });
 
-        if (!courseOwner) {
+        if (!course) {
+            return new NextResponse("Course not found", { status: 404 });
+        }
+
+        const isAdmin = user?.role === "ADMIN";
+        const isOwner = course.userId === userId;
+        const isAllowedTeacher = user?.role === "TEACHER" && 
+            course.allowedTeachers.some(ct => ct.teacherId === userId);
+
+        if (!isAdmin && !isOwner && !isAllowedTeacher) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 

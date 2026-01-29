@@ -6,6 +6,7 @@ import { BookOpen, Play, Clock, Trophy, Wallet, TrendingUp, BookOpen as BookOpen
 import Link from "next/link";
 import Image from "next/image";
 import { useLanguage } from "@/lib/contexts/language-context";
+import { NotificationsPanel } from "./notifications-panel";
 
 type Course = {
   id: string;
@@ -79,9 +80,12 @@ export const DashboardContent = ({
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">{t('dashboard.welcomeToDashboard')}</h1>
-        <p className="text-muted-foreground">{t('dashboard.continueLearning')}</p>
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">{t('dashboard.welcomeToDashboard')}</h1>
+          <p className="text-muted-foreground">{t('dashboard.continueLearning')}</p>
+        </div>
+        <NotificationsPanel />
       </div>
 
       {/* Stats and Balance Row */}

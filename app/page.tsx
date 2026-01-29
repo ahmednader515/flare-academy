@@ -244,6 +244,10 @@ export default function HomePage() {
               <span className="text-[#ff8710]">Re</span>
               <span className="text-cyan-500"> Academy</span>
             </h1>
+            <div className="text-lg md:text-xl text-muted-foreground mb-4 flex flex-wrap justify-center items-center gap-4">
+              <p>Dr/ Fatma Aman</p>
+              <p>Dr/ Rewan Alashrey</p>
+            </div>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8">
               {t('home.subtitle')}
             </p>

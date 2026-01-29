@@ -70,18 +70,49 @@ export async function PATCH(
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const whereClause = user?.role === "ADMIN"
-            ? { id: resolvedParams.courseId }
-            : { id: resolvedParams.courseId, userId };
+        // Check access: admin, owner, or allowed teacher
+        const existingCourse = await db.course.findUnique({
+            where: { id: resolvedParams.courseId },
+            select: { id: true, userId: true },
+        });
 
-        const course = await db.course.update({
+        if (!existingCourse) {
+            return new NextResponse("Course not found", { status: 404 });
+        }
+
+        const isAdmin = user?.role === "ADMIN";
+        const isOwner = existingCourse.userId === userId;
+        const isAllowedTeacher =
+            user?.role === "TEACHER" &&
+            (await (db as any).courseTeacher.count({
+                where: { courseId: resolvedParams.courseId, teacherId: userId },
+            })) > 0;
+
+        if (!isAdmin && !isOwner && !isAllowedTeacher) {
+            return new NextResponse("Forbidden", { status: 403 });
+        }
+
+        // Normalize targeting fields: treat empty string as "not specified"
+        const normalizedValues = {
+            ...values,
+            targetCollege:
+                values?.targetCollege === "" ? null : values?.targetCollege,
+            targetFaculty:
+                values?.targetFaculty === "" ? null : values?.targetFaculty,
+            targetLevel:
+                values?.targetLevel === "" ? null : values?.targetLevel,
+        };
+
+        const whereClause = { id: resolvedParams.courseId };
+
+        const updatedCourse = await db.course.update({
             where: whereClause,
             data: {
-                ...values,
+                ...normalizedValues,
             }
         });
 
-        return NextResponse.json(course);
+        return NextResponse.json(updatedCourse);
     } catch (error) {
         console.log("[COURSE_ID]", error);
         return new NextResponse("Internal Error", { status: 500 });

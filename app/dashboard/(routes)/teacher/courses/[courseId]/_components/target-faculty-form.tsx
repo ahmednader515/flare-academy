@@ -39,6 +39,8 @@ const formSchema = z.object({
     targetFaculty: z.string().optional(),
 });
 
+const NOT_SPECIFIED_VALUE = "__NOT_SPECIFIED__";
+
 export const TargetFacultyForm = ({
     initialData,
     courseId
@@ -52,7 +54,7 @@ export const TargetFacultyForm = ({
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            targetFaculty: initialData.targetFaculty || "",
+            targetFaculty: initialData.targetFaculty || NOT_SPECIFIED_VALUE,
         },
     });
 
@@ -60,7 +62,14 @@ export const TargetFacultyForm = ({
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            await axios.patch(`/api/courses/${courseId}`, values);
+            const payload = {
+                ...values,
+                targetFaculty:
+                    values.targetFaculty === NOT_SPECIFIED_VALUE
+                        ? ""
+                        : values.targetFaculty,
+            };
+            await axios.patch(`/api/courses/${courseId}`, payload);
             toast.success(t('teacher.targetFacultyUpdatedSuccessfully'));
             toggleEdit();
             router.refresh();
@@ -109,6 +118,9 @@ export const TargetFacultyForm = ({
                                                 <SelectValue placeholder={t('teacher.selectTargetFaculty')} />
                                             </SelectTrigger>
                                             <SelectContent>
+                                                <SelectItem value={NOT_SPECIFIED_VALUE}>
+                                                    {t('teacher.notSpecified')}
+                                                </SelectItem>
                                                 {facultyOptions.map((faculty) => (
                                                     <SelectItem key={faculty} value={faculty}>
                                                         {faculty}

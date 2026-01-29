@@ -7,21 +7,34 @@ export async function POST(
     { params }: { params: Promise<{ courseId: string; chapterId: string }> }
 ) {
     try {
-        const { userId } = await auth();
+        const { userId, user } = await auth();
         const resolvedParams = await params;
 
         if (!userId) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        const courseOwner = await db.course.findUnique({
+        const course = await db.course.findUnique({
             where: {
                 id: resolvedParams.courseId,
-                userId,
+            },
+            include: {
+                allowedTeachers: {
+                    select: { teacherId: true }
+                }
             }
         });
 
-        if (!courseOwner) {
+        if (!course) {
+            return new NextResponse("Course not found", { status: 404 });
+        }
+
+        const isAdmin = user?.role === "ADMIN";
+        const isOwner = course.userId === userId;
+        const isAllowedTeacher = user?.role === "TEACHER" && 
+            course.allowedTeachers.some(ct => ct.teacherId === userId);
+
+        if (!isAdmin && !isOwner && !isAllowedTeacher) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 

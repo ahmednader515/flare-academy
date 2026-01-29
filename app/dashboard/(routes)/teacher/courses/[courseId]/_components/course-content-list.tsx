@@ -21,7 +21,7 @@ interface CourseContentListProps {
     items: CourseItem[];
     onReorder: (updateData: { id: string; position: number; type: "chapter" | "quiz" }[]) => void;
     onEdit: (id: string, type: "chapter" | "quiz") => void;
-    onDelete: (id: string, type: "chapter" | "quiz") => void;
+    onDelete: (id: string, type: "chapter" | "quiz", title: string) => void;
 }
 
 export const CourseContentList = ({
@@ -105,7 +105,7 @@ export const CourseContentList = ({
                                                 <Pencil className="h-4 w-4" />
                                             </button>
                                             <Trash2
-                                                onClick={() => onDelete(item.id, item.type)}
+                                                onClick={() => onDelete(item.id, item.type, item.title)}
                                                 className="w-4 h-4 cursor-pointer hover:opacity-75 transition"
                                             />
                                         </div>
