@@ -42,15 +42,13 @@ export async function POST(
     { params }: { params: Promise<{ courseId: string }> }
 ) {
     try {
-        const { userId } = await auth();
+        const { userId, user } = await auth();
         const resolvedParams = await params;
         const { title, isFree } = await req.json();
 
         if (!userId) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
-
-        const { userId, user } = await auth();
         
         // Check if user is admin, course owner, or allowed teacher
         const course = await db.course.findUnique({
