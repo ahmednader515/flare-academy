@@ -138,13 +138,30 @@ model Purchase {
     userId String
     courseId String
     status String @default("ACTIVE")
+    totalPaid Float @default(0) // Total amount paid for this purchase
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
     course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    payments Payment[] // Individual payment records
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
     @@unique([userId, courseId])
     @@index([courseId])
+}
+
+model Payment {
+    id String @id @default(uuid())
+    purchaseId String
+    amount Float // Payment amount
+    paymentNumber Int // 1 for first payment, 2 for second, etc.
+    notes String? // Optional notes about the payment
+    recordedBy String // User ID who recorded this payment (admin/teacher)
+    purchase Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([purchaseId])
+    @@index([createdAt])
 }
 
 model BalanceTransaction {

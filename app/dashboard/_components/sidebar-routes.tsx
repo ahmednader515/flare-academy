@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart, Compass, Layout, List, Wallet, Shield, Users, Eye, TrendingUp, BookOpen, FileText, Award, PlusSquare, Bookmark, UserCheck } from "lucide-react";
+import { BarChart, Compass, Layout, List, Wallet, Shield, Users, Eye, TrendingUp, BookOpen, FileText, Award, PlusSquare, Bookmark, UserCheck, DollarSign, Receipt } from "lucide-react";
 import { SidebarItem } from "./sidebar-item";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/lib/contexts/language-context";
@@ -125,6 +125,16 @@ export const SidebarRoutes = ({ closeOnClick = false }: { closeOnClick?: boolean
             icon: BookOpen,
             label: t('admin.addRemoveCourses'),
             href: "/dashboard/admin/add-courses",
+        },
+        {
+            icon: DollarSign,
+            label: t('admin.paymentRegistration'),
+            href: "/dashboard/admin/payments",
+        },
+        {
+            icon: Receipt,
+            label: t('admin.financialReports'),
+            href: "/dashboard/admin/financial-reports",
         },
     ];
 
