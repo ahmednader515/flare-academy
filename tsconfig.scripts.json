@@ -9,7 +9,11 @@
     "resolveJsonModule": true,
     "strict": false,
     "noEmit": true,
-    "types": ["node"]
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
   "include": [
     "scripts/**/*"

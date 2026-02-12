@@ -37,6 +37,11 @@
     "refreshed": "تم التحديث بنجاح",
     "pleaseWait": "يرجى الانتظار...",
     "uploading": "جاري الرفع",
+    "uploadSuccess": "تم رفع الملف بنجاح!",
+    "uploadError": "فشل رفع الملف",
+    "dragDropFile": "اسحب وأفلت الملف هنا",
+    "orClickToSelect": "أو انقر للاختيار",
+    "selectFile": "اختر ملف",
     "timeRemainingMinutes": "{minutes}د {seconds}ث متبقي",
     "timeRemainingSeconds": "{seconds}ث متبقي"
   },

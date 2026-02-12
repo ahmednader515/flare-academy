@@ -37,6 +37,11 @@
     "refreshed": "Refreshed successfully",
     "pleaseWait": "Please wait...",
     "uploading": "Uploading",
+    "uploadSuccess": "File uploaded successfully!",
+    "uploadError": "Failed to upload file",
+    "dragDropFile": "Drag & drop file here",
+    "orClickToSelect": "or click to select",
+    "selectFile": "Select File",
     "timeRemainingMinutes": "{minutes}m {seconds}s remaining",
     "timeRemainingSeconds": "{seconds}s remaining"
   },
