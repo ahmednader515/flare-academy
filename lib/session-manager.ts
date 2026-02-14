@@ -104,40 +104,20 @@ export class SessionManager {
 
   /**
    * Schedule delayed logout cleanup (1 minute after manual logout)
-   * Sets logoutScheduledAt timestamp to ensure complete session reset
+   * @deprecated This method is no longer used - delayed cleanup has been removed
    */
   static async scheduleDelayedLogoutCleanup(userId: string): Promise<void> {
-    await db.user.update({
-      where: { id: userId },
-      data: {
-        logoutScheduledAt: new Date()
-      }
-    });
+    // No-op: Delayed cleanup has been removed
+    return;
   }
 
   /**
    * Clean up scheduled logouts that are older than 1 minute
-   * This ensures complete session reset after manual logout
+   * @deprecated This method is no longer used - delayed cleanup has been removed
    */
   static async cleanupScheduledLogouts(): Promise<number> {
-    const oneMinuteInMs = 1 * 60 * 1000; // 1 minute in milliseconds
-    const oneMinuteAgo = new Date(Date.now() - oneMinuteInMs);
-
-    const result = await db.user.updateMany({
-      where: {
-        logoutScheduledAt: {
-          not: null,
-          lte: oneMinuteAgo, // Scheduled logout was 1+ minute ago
-        },
-      },
-      data: {
-        isActive: false,
-        sessionId: null,
-        logoutScheduledAt: null, // Clear the scheduled timestamp
-      },
-    });
-
-    return result.count;
+    // No-op: Delayed cleanup has been removed
+    return 0;
   }
 
   /**
@@ -156,7 +136,6 @@ export class SessionManager {
   /**
    * Validate session and return user if valid
    * Checks if session is active (no time-based expiration)
-   * Also cleans up scheduled logouts if they're older than 1 minute
    * For TEACHER/ADMIN: Validates by checking if user is active (allows multiple sessions)
    * For regular users: Validates by exact sessionId match (single session only)
    * Cached for 30 seconds to reduce database operations
@@ -178,8 +157,7 @@ export class SessionManager {
           image: true,
           isActive: true,
           sessionId: true,
-          lastLoginAt: true,
-          logoutScheduledAt: true
+          lastLoginAt: true
         },
         cacheStrategy: { ttl: 30 },
       });
@@ -190,28 +168,6 @@ export class SessionManager {
         if (!user.isActive) {
           return { user: null, isValid: false };
         }
-
-        // Check scheduled logout
-        if (user.logoutScheduledAt) {
-          const oneMinuteInMs = 1 * 60 * 1000;
-          const logoutTime = new Date(user.logoutScheduledAt).getTime();
-          const currentTime = Date.now();
-          const timeSinceLogout = currentTime - logoutTime;
-
-          if (timeSinceLogout > oneMinuteInMs) {
-            // Clear logoutScheduledAt but keep isActive for other devices
-            await db.user.update({
-              where: { id: user.id },
-              data: { logoutScheduledAt: null }
-            });
-            // Only invalidate if this sessionId matches stored one
-            if (user.sessionId === sessionId) {
-              await this.endSessionById(sessionId);
-            }
-            return { user: null, isValid: false };
-          }
-        }
-
         return { user, isValid: true };
       }
     }
@@ -229,8 +185,7 @@ export class SessionManager {
           image: true,
           isActive: true,
           sessionId: true,
-          lastLoginAt: true,
-          logoutScheduledAt: true
+          lastLoginAt: true
         },
         cacheStrategy: { ttl: 30 },
       });
@@ -243,23 +198,6 @@ export class SessionManager {
     // For regular users, require exact sessionId match
     if (user.role !== "TEACHER" && user.role !== "ADMIN") {
       if (user.sessionId !== sessionId) {
-        return { user: null, isValid: false };
-      }
-    }
-
-    // Check scheduled logout for regular users
-    if (user.logoutScheduledAt) {
-      const oneMinuteInMs = 1 * 60 * 1000;
-      const logoutTime = new Date(user.logoutScheduledAt).getTime();
-      const currentTime = Date.now();
-      const timeSinceLogout = currentTime - logoutTime;
-
-      if (timeSinceLogout > oneMinuteInMs) {
-        await this.endSessionById(sessionId);
-        await db.user.update({
-          where: { id: user.id },
-          data: { logoutScheduledAt: null }
-        });
         return { user: null, isValid: false };
       }
     }

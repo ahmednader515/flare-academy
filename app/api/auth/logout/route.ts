@@ -14,9 +14,6 @@ export async function POST(request: NextRequest) {
     // End the user's session immediately
     await SessionManager.endSession(session.user.id);
 
-    // Schedule delayed cleanup (1 minute) to ensure complete session reset
-    await SessionManager.scheduleDelayedLogoutCleanup(session.user.id);
-
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Logout error:", error);
