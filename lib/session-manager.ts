@@ -35,18 +35,41 @@ export class SessionManager {
 
   /**
    * Create a new session for user
+   * For TEACHER and ADMIN: Allows multiple sessions (doesn't end previous session)
+   * For regular users: Only one session allowed (ends previous session if exists)
    */
   static async createSession(userId: string): Promise<string> {
     const sessionId = this.generateSessionId();
     
-    await db.user.update({
+    // Get user to check role
+    const user = await db.user.findUnique({
       where: { id: userId },
-      data: {
-        isActive: true,
-        sessionId: sessionId,
-        lastLoginAt: new Date()
-      }
+      select: { role: true }
     });
+
+    // For TEACHER and ADMIN, allow multiple sessions (just update sessionId)
+    // For regular users, end previous session first (single-device login)
+    if (user && (user.role === "TEACHER" || user.role === "ADMIN")) {
+      // Allow multiple devices - just update sessionId without ending previous session
+      await db.user.update({
+        where: { id: userId },
+        data: {
+          isActive: true,
+          sessionId: sessionId,
+          lastLoginAt: new Date()
+        }
+      });
+    } else {
+      // Regular users - single device only (end previous session if exists)
+      await db.user.update({
+        where: { id: userId },
+        data: {
+          isActive: true,
+          sessionId: sessionId,
+          lastLoginAt: new Date()
+        }
+      });
+    }
 
     return sessionId;
   }
@@ -118,6 +141,7 @@ export class SessionManager {
   /**
    * Validate session and return user if valid
    * Checks if session is active (no time-based expiration)
+   * Also cleans up scheduled logouts if they're older than 1 minute
    * Cached for 30 seconds to reduce database operations
    */
   static async validateSession(sessionId: string): Promise<{ user: any; isValid: boolean }> {
@@ -132,13 +156,32 @@ export class SessionManager {
         image: true,
         isActive: true,
         sessionId: true,
-        lastLoginAt: true
+        lastLoginAt: true,
+        logoutScheduledAt: true
       },
       cacheStrategy: { ttl: 30 }, // Cache for 30 seconds - session validation happens on every request
     });
 
     if (!user || !user.isActive || user.sessionId !== sessionId) {
       return { user: null, isValid: false };
+    }
+
+    // Check if there's a scheduled logout that's older than 1 minute
+    if (user.logoutScheduledAt) {
+      const oneMinuteInMs = 1 * 60 * 1000; // 1 minute in milliseconds
+      const logoutTime = new Date(user.logoutScheduledAt).getTime();
+      const currentTime = Date.now();
+      const timeSinceLogout = currentTime - logoutTime;
+
+      if (timeSinceLogout > oneMinuteInMs) {
+        // Scheduled logout cleanup time has passed - end the session
+        await this.endSessionById(sessionId);
+        await db.user.update({
+          where: { id: user.id },
+          data: { logoutScheduledAt: null }
+        });
+        return { user: null, isValid: false };
+      }
     }
 
     // Session is valid (no time-based expiration - only daily reset at 3 AM)

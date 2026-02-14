@@ -4,10 +4,11 @@ This document explains how the automatic session management system works.
 
 ## Overview
 
-The system uses two cron jobs to manage user sessions:
+The system uses one cron job to manage user sessions:
 
-1. **Hourly Cleanup**: Cleans up scheduled logouts (1 minute after manual logout)
-2. **Daily Reset**: Logs out ALL users at 3 AM Egypt time every day
+1. **Daily Reset**: Logs out ALL users at 3 AM Egypt time every day (also cleans up scheduled logouts)
+
+**Note**: Scheduled logouts (1 minute after manual logout) are also cleaned up automatically during session validation, so no hourly cron is needed.
 
 Sessions no longer expire after 6 hours (removed to prevent bugs). Users remain logged in until:
 - They manually log out
@@ -16,13 +17,7 @@ Sessions no longer expire after 6 hours (removed to prevent bugs). Users remain 
 
 ## Schedule
 
-### 1. Hourly Cleanup (Scheduled Logouts)
-- **Schedule**: `0 * * * *` (cron expression)
-- **Frequency**: Every hour (24 times per day)
-- **Purpose**: Clean up users who manually logged out 5+ minutes ago
-- **Endpoint**: `/api/cron/reset-sessions`
-
-### 2. Daily Reset (All Users)
+### Daily Reset (All Users)
 - **Schedule**: `0 1 * * *` (cron expression)
 - **Frequency**: Once per day at 01:00 UTC (3:00 AM Egypt time, UTC+2)
 - **Purpose**: Log out ALL users regardless of login time
@@ -38,16 +33,17 @@ The cron job is configured in `vercel.json`:
 {
   "crons": [
     {
-      "path": "/api/cron/reset-sessions",
-      "schedule": "0 * * * *"
-    },
-    {
       "path": "/api/cron/daily-reset",
       "schedule": "0 1 * * *"
     }
   ]
 }
 ```
+
+**Note**: The hourly cleanup cron was removed because:
+1. Vercel Hobby plan only allows daily cron jobs (not hourly)
+2. Scheduled logouts are automatically cleaned up during session validation
+3. The daily reset also cleans up any remaining scheduled logouts
 
 ### 2. Environment Variables (Optional)
 
@@ -102,8 +98,10 @@ You can monitor cron job execution in:
 1. **User Login**: When a user logs in, `lastLoginAt` is set to the current timestamp
 2. **Session Validation**: On each API request, the system checks if the session is active (no time-based expiration)
 3. **Manual Logout**: When a user manually logs out, `logoutScheduledAt` is set for delayed cleanup
-4. **Hourly Cleanup**: Runs every hour to clean up scheduled logouts (5+ minutes after manual logout)
-5. **Daily Reset**: Runs at 3 AM Egypt time to log out ALL users, ensuring a clean slate every day
+4. **Automatic Cleanup**: Scheduled logouts are cleaned up:
+   - Immediately during session validation (when user makes API requests)
+   - During the daily reset (as a backup)
+5. **Daily Reset**: Runs at 3 AM Egypt time to log out ALL users and clean up scheduled logouts, ensuring a clean slate every day
 
 ## Changing the Daily Reset Time
 
@@ -122,24 +120,7 @@ Example: To change to 6 AM Egypt time:
 }
 ```
 
-## Changing the Cron Schedules
-
-### Hourly Cleanup Schedule
-
-To change how often scheduled logouts are cleaned up, update the `schedule` field in `vercel.json`:
-
-```json
-{
-  "path": "/api/cron/reset-sessions",
-  "schedule": "*/30 * * * *"  // Every 30 minutes
-}
-```
-
-Common cron schedules:
-- `0 * * * *` - Every hour (current)
-- `*/30 * * * *` - Every 30 minutes
-- `*/15 * * * *` - Every 15 minutes
-- `0 */2 * * *` - Every 2 hours
+## Changing the Cron Schedule
 
 ### Daily Reset Schedule
 
@@ -169,13 +150,7 @@ The daily reset runs once per day. To change the time, update the schedule in `v
 
 ## API Endpoints
 
-### 1. Hourly Cleanup (`/api/cron/reset-sessions`)
-- **Method**: `GET`
-- **Purpose**: Clean up scheduled logouts (5+ minutes after manual logout)
-- **Authentication**: Vercel Cron header or CRON_SECRET
-- **Returns**: Count of cleaned up scheduled logouts
-
-### 2. Daily Reset (`/api/cron/daily-reset`)
+### Daily Reset (`/api/cron/daily-reset`)
 - **Method**: `GET`
 - **Purpose**: Log out ALL users at 3 AM Egypt time
 - **Authentication**: Vercel Cron header or CRON_SECRET
@@ -183,11 +158,18 @@ The daily reset runs once per day. To change the time, update the schedule in `v
 
 ## Implementation Details
 
-### Hourly Cleanup
-Uses `SessionManager.cleanupScheduledLogouts()` which:
-1. Finds all users with `logoutScheduledAt` older than 1 minute
-2. Updates them to `isActive: false`, `sessionId: null`, and clears `logoutScheduledAt`
-3. Returns the count of cleaned up sessions
+### Scheduled Logout Cleanup
+Scheduled logouts are cleaned up in two ways:
+
+1. **During Session Validation** (`SessionManager.validateSession()`):
+   - Checks if user has `logoutScheduledAt` older than 1 minute
+   - If so, immediately ends the session and clears `logoutScheduledAt`
+   - This happens automatically when users make API requests
+
+2. **During Daily Reset** (`SessionManager.cleanupScheduledLogouts()`):
+   - Finds all users with `logoutScheduledAt` older than 1 minute
+   - Updates them to `isActive: false`, `sessionId: null`, and clears `logoutScheduledAt`
+   - This is a backup cleanup that runs during the daily reset
 
 ### Daily Reset
 Uses `SessionManager.resetAllSessions()` which:

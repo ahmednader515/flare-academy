@@ -41,6 +41,10 @@ export async function GET(request: NextRequest) {
 
     console.log("🔄 Starting daily reset of all user sessions (3 AM Egypt time)...");
 
+    // Clean up any remaining scheduled logouts first
+    const scheduledLogoutCount = await SessionManager.cleanupScheduledLogouts();
+    console.log(`✅ Cleaned up ${scheduledLogoutCount} scheduled logouts`);
+
     // Reset all active sessions (logs out all users)
     const resetCount = await SessionManager.resetAllSessions();
 
@@ -48,8 +52,9 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Successfully reset ${resetCount} user sessions (daily reset at 3 AM Egypt time)`,
+      message: `Successfully reset ${resetCount} user sessions and cleaned up ${scheduledLogoutCount} scheduled logouts (daily reset at 3 AM Egypt time)`,
       resetCount,
+      scheduledLogoutCount,
       timestamp: new Date().toISOString(),
       egyptTime: new Date().toLocaleString("en-US", { timeZone: "Africa/Cairo" }),
     });

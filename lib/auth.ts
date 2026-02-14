@@ -61,8 +61,9 @@ export const authOptions: AuthOptions = {
           throw new Error("Invalid credentials");
         }
 
-        // Check if user is already logged in
-        if (user.isActive) {
+        // Check if user is already logged in (only for regular users)
+        // TEACHER and ADMIN can login on multiple devices
+        if (user.isActive && user.role !== "TEACHER" && user.role !== "ADMIN") {
           throw new Error("UserAlreadyLoggedIn");
         }
 
