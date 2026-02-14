@@ -73,11 +73,6 @@ export const SidebarRoutes = ({ closeOnClick = false }: { closeOnClick?: boolean
             label: t('admin.addRemoveCourses'),
             href: "/dashboard/teacher/add-courses",
         },
-        {
-            icon: Eye,
-            label: t('admin.passwords'),
-            href: "/dashboard/teacher/passwords",
-        },
     ];
 
     const adminRoutes = [

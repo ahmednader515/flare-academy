@@ -22,7 +22,7 @@ export async function PATCH(
             return new NextResponse("Forbidden", { status: 403 });
         }
 
-        const { fullName, phoneNumber, email, college, faculty, level, role } = await req.json();
+        const { fullName, phoneNumber, email, college, faculty, level } = await req.json();
 
         // Check if user exists (teachers can edit all users)
         const existingUser = await db.user.findUnique({
@@ -68,12 +68,7 @@ export async function PATCH(
             }
         }
 
-        // Validate role (teachers can change to any role)
-        if (role && !["USER", "TEACHER", "ADMIN"].includes(role)) {
-            return new NextResponse("Invalid role", { status: 400 });
-        }
-
-        // Update user (teachers can update basic info and change role)
+        // Update user (teachers can update basic info, but NOT role)
         const updatedUser = await db.user.update({
             where: {
                 id: userId,
@@ -87,8 +82,7 @@ export async function PATCH(
                 ...(email && { email }),
                 ...(college && { college }),
                 ...(faculty && { faculty }),
-                ...(level && { level }),
-                ...(role && { role })
+                ...(level && { level })
             }
         });
 

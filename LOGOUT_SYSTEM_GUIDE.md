@@ -20,17 +20,15 @@ This document provides a detailed explanation of the logout system implementatio
 The logout system implements a multi-layered approach to ensure complete session cleanup:
 
 1. **Immediate Logout**: When a user clicks logout, their session is ended immediately
-2. **Delayed Cleanup**: A 1-minute delayed cleanup ensures complete session reset (handled during session validation)
-3. **Daily Reset**: All users are logged out at 3 AM Egypt time (01:00 UTC) every day
-4. **Multi-Device Login**: TEACHER and ADMIN roles can login on multiple devices simultaneously
-5. **Single-Device Login**: Regular users (USER role) can only be logged in on one device at a time
+2. **Daily Reset**: All users are logged out at 3 AM Egypt time (01:00 UTC) every day
+3. **Multi-Device Login**: TEACHER and ADMIN roles can login on multiple devices simultaneously
+4. **Single-Device Login**: Regular users (USER role) can only be logged in on one device at a time
 
-**Note**: Scheduled logouts are automatically cleaned up during session validation (when users make API requests), eliminating the need for an hourly cron job. This approach is compatible with Vercel Hobby plan limitations.
+**Note**: The system uses only a daily cron job, making it compatible with Vercel Hobby plan limitations. No delayed cleanup or scheduled logout features are used.
 
 ### Key Features
 
 - ✅ Immediate session termination on logout
-- ✅ 1-minute delayed cleanup for complete session reset
 - ✅ Daily reset at 3 AM Egypt time (configurable)
 - ✅ Multi-device login for TEACHER and ADMIN roles
 - ✅ Single-device login enforcement for regular users
@@ -51,25 +49,15 @@ model User {
   isActive                Boolean   @default(false)
   sessionId               String?   @unique
   lastLoginAt             DateTime?
-  logoutScheduledAt       DateTime? // Timestamp when logout was scheduled (for 1-minute delayed cleanup)
   // ... other fields ...
+  
+  // Note: logoutScheduledAt field is no longer used and can be removed if it exists
 }
 ```
 
 ### Migration
 
-Run the migration to add the `logoutScheduledAt` field:
-
-```bash
-npx prisma migrate dev --name add_logout_scheduled_at
-npx prisma generate
-```
-
-Or manually add the column:
-
-```sql
-ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "logoutScheduledAt" TIMESTAMP(3);
-```
+**Note**: The `logoutScheduledAt` field is no longer used. If it exists in your schema, you can remove it. The system now uses immediate logout only, with no delayed cleanup features.
 
 ---
 
@@ -123,54 +111,7 @@ static async endSession(userId: string): Promise<void> {
 - Sets `isActive = false`
 - Clears `sessionId`
 
-#### 3. Schedule Delayed Logout Cleanup
-
-```typescript
-static async scheduleDelayedLogoutCleanup(userId: string): Promise<void> {
-  await db.user.update({
-    where: { id: userId },
-    data: {
-      logoutScheduledAt: new Date()
-    }
-  });
-}
-```
-
-**Purpose**: Schedules a delayed cleanup 1 minute after manual logout
-- Sets `logoutScheduledAt` to current timestamp
-- Used to ensure complete session reset
-
-#### 4. Cleanup Scheduled Logouts
-
-```typescript
-static async cleanupScheduledLogouts(): Promise<number> {
-  const oneMinuteInMs = 1 * 60 * 1000; // 1 minute in milliseconds
-  const oneMinuteAgo = new Date(Date.now() - oneMinuteInMs);
-
-  const result = await db.user.updateMany({
-    where: {
-      logoutScheduledAt: {
-        not: null,
-        lte: oneMinuteAgo, // Scheduled logout was 1+ minute ago
-      },
-    },
-    data: {
-      isActive: false,
-      sessionId: null,
-      logoutScheduledAt: null, // Clear the scheduled timestamp
-    },
-  });
-
-  return result.count;
-}
-```
-
-**Purpose**: Cleans up users who manually logged out 1+ minute ago
-- Finds users with `logoutScheduledAt` older than 1 minute
-- Resets their session completely
-- Clears the `logoutScheduledAt` timestamp
-
-#### 5. Reset All Sessions
+#### 3. Reset All Sessions
 
 ```typescript
 static async resetAllSessions(): Promise<number> {
@@ -192,61 +133,85 @@ static async resetAllSessions(): Promise<number> {
 - Finds all active users
 - Sets `isActive = false` and `sessionId = null`
 
-#### 6. Validate Session
+#### 4. Validate Session
 
 ```typescript
-static async validateSession(sessionId: string): Promise<{ user: any; isValid: boolean }> {
-  const user = await db.user.findUnique({
-    where: { sessionId },
-    select: {
-      id: true,
-      fullName: true,
-      phoneNumber: true,
-      email: true,
-      role: true,
-      image: true,
-      isActive: true,
-      sessionId: true,
-      lastLoginAt: true,
-      logoutScheduledAt: true
-    },
-    cacheStrategy: { ttl: 30 }, // Cache for 30 seconds
-  });
+static async validateSession(sessionId: string, userId?: string): Promise<{ user: any; isValid: boolean }> {
+  let user = null;
 
-  if (!user || !user.isActive || user.sessionId !== sessionId) {
+  // For TEACHER/ADMIN multi-device support: if userId is provided, find by userId first
+  // This allows validation even if sessionId was overwritten by another device
+  if (userId) {
+    user = await db.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        fullName: true,
+        phoneNumber: true,
+        email: true,
+        role: true,
+        image: true,
+        isActive: true,
+        sessionId: true,
+        lastLoginAt: true
+      },
+      cacheStrategy: { ttl: 30 },
+    });
+
+    // If found by userId and it's TEACHER/ADMIN, validate by isActive (multi-device)
+    if (user && (user.role === "TEACHER" || user.role === "ADMIN")) {
+      // For TEACHER/ADMIN, validate by isActive, not exact sessionId match
+      if (!user.isActive) {
+        return { user: null, isValid: false };
+      }
+      return { user, isValid: true };
+    }
+  }
+
+  // For regular users or if userId not provided, find by sessionId
+  if (!user) {
+    user = await db.user.findUnique({
+      where: { sessionId },
+      select: {
+        id: true,
+        fullName: true,
+        phoneNumber: true,
+        email: true,
+        role: true,
+        image: true,
+        isActive: true,
+        sessionId: true,
+        lastLoginAt: true
+      },
+      cacheStrategy: { ttl: 30 },
+    });
+  }
+
+  if (!user || !user.isActive) {
     return { user: null, isValid: false };
   }
 
-  // Check if there's a scheduled logout that's older than 1 minute
-  if (user.logoutScheduledAt) {
-    const oneMinuteInMs = 1 * 60 * 1000; // 1 minute in milliseconds
-    const logoutTime = new Date(user.logoutScheduledAt).getTime();
-    const currentTime = Date.now();
-    const timeSinceLogout = currentTime - logoutTime;
-
-    if (timeSinceLogout > oneMinuteInMs) {
-      // Scheduled logout cleanup time has passed - end the session
-      await this.endSessionById(sessionId);
-      await db.user.update({
-        where: { id: user.id },
-        data: { logoutScheduledAt: null }
-      });
+  // For regular users, require exact sessionId match
+  if (user.role !== "TEACHER" && user.role !== "ADMIN") {
+    if (user.sessionId !== sessionId) {
       return { user: null, isValid: false };
     }
   }
 
-  // Session is valid (no time-based expiration - only daily reset at 3 AM)
   return { user, isValid: true };
 }
 ```
 
 **Purpose**: Validates if a session is still active
 - Checks if user exists and is active
-- Verifies session ID matches
-- **Automatically cleans up scheduled logouts** if they're older than 1 minute
+- **For TEACHER/ADMIN**: Validates by `userId` + `isActive` (allows multiple sessions)
+- **For regular users**: Validates by exact `sessionId` match (single session only)
 - Returns user data if valid
 
-**Key Feature**: This method automatically handles scheduled logout cleanup during session validation, eliminating the need for an hourly cron job.
+**Key Features**:
+- Supports multi-device login for TEACHER/ADMIN by accepting optional `userId` parameter
+- For TEACHER/ADMIN, validates by checking if user is active, not exact sessionId match
+- For regular users, requires exact sessionId match for single-device enforcement
 
 ---
 
@@ -276,9 +241,6 @@ export async function POST(request: NextRequest) {
     // End the user's session immediately
     await SessionManager.endSession(session.user.id);
 
-    // Schedule delayed cleanup (1 minute) to ensure complete session reset
-    await SessionManager.scheduleDelayedLogoutCleanup(session.user.id);
-
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Logout error:", error);
@@ -290,8 +252,7 @@ export async function POST(request: NextRequest) {
 **What it does**:
 1. Verifies user is authenticated
 2. Immediately ends the session
-3. Schedules 1-minute delayed cleanup
-4. Returns success response
+3. Returns success response
 
 **Note**: The logout endpoint works the same for all roles. When a TEACHER or ADMIN logs out from one device, only that device's session is ended. Other devices remain logged in.
 
@@ -368,7 +329,11 @@ if (user && (user.role === "TEACHER" || user.role === "ADMIN")) {
 }
 ```
 
-**Note**: Since `sessionId` is unique in the database, each new login for TEACHER/ADMIN will overwrite the previous `sessionId`. However, the previous session remains valid until it's explicitly ended or expires. The system validates sessions by checking if the `sessionId` in the JWT token matches the current `sessionId` in the database.
+**Key Points**:
+- For TEACHER/ADMIN: Database `sessionId` is preserved when logging in on additional devices
+- Each device gets a unique `sessionId` in its JWT token
+- Validation for TEACHER/ADMIN uses `userId` + `isActive`, not exact `sessionId` match
+- This allows multiple devices to remain logged in simultaneously
 
 ---
 
@@ -407,10 +372,6 @@ export async function GET(request: NextRequest) {
 
     console.log("🔄 Starting daily reset of all user sessions (3 AM Egypt time)...");
 
-    // Clean up any remaining scheduled logouts first
-    const scheduledLogoutCount = await SessionManager.cleanupScheduledLogouts();
-    console.log(`✅ Cleaned up ${scheduledLogoutCount} scheduled logouts`);
-
     // Reset all active sessions (logs out all users)
     const resetCount = await SessionManager.resetAllSessions();
 
@@ -418,9 +379,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Successfully reset ${resetCount} user sessions and cleaned up ${scheduledLogoutCount} scheduled logouts (daily reset at 3 AM Egypt time)`,
+      message: `Successfully reset ${resetCount} user sessions (daily reset at 3 AM Egypt time)`,
       resetCount,
-      scheduledLogoutCount,
       timestamp: new Date().toISOString(),
       egyptTime: new Date().toLocaleString("en-US", { timeZone: "Africa/Cairo" }),
     });
@@ -747,9 +707,9 @@ export default function DashboardLayout({ children }) {
 
 ### Step 1: Database Setup
 
-1. Add `logoutScheduledAt` field to User model in Prisma schema
-2. Run migration: `npx prisma migrate dev --name add_logout_scheduled_at`
-3. Generate Prisma client: `npx prisma generate`
+1. Ensure your User model has `isActive`, `sessionId`, and `lastLoginAt` fields
+2. Generate Prisma client: `npx prisma generate`
+3. **Note**: The `logoutScheduledAt` field is no longer used and can be removed if it exists
 
 ### Step 2: Create Session Manager
 
@@ -788,14 +748,18 @@ if (user.isActive && user.role !== "TEACHER" && user.role !== "ADMIN") {
 
 ### Step 7: Update NextAuth Session Callback
 
-Ensure your NextAuth session callback validates sessions:
+Ensure your NextAuth session callback validates sessions and passes `userId` for multi-device support:
 
 ```typescript
 // lib/auth.ts
 async session({ token, session }) {
   if (token && token.sessionId) {
     try {
-      const { isValid } = await SessionManager.validateSession(token.sessionId as string);
+      // Pass userId for TEACHER/ADMIN multi-device support
+      const { isValid } = await SessionManager.validateSession(
+        token.sessionId as string,
+        token.id as string
+      );
       if (!isValid) {
         return {
           ...session,
@@ -892,12 +856,11 @@ This logout system provides:
 
 ### Key Advantages
 
-- ✅ **No Hourly Cron Needed**: Scheduled logouts are cleaned up during session validation
-- ✅ **Immediate Cleanup**: Users making API requests trigger immediate cleanup of expired scheduled logouts
-- ✅ **Backup Cleanup**: Daily reset ensures any missed scheduled logouts are cleaned up
-- ✅ **Cost-Effective**: Works with Vercel Hobby plan (free tier)
-- ✅ **Efficient**: Reduces unnecessary cron job executions
-- ✅ **Role-Based Access**: TEACHER and ADMIN can use multiple devices, regular users are restricted to one device
+- ✅ **Simple and Clean**: No delayed cleanup or scheduled logout features - just immediate logout and daily reset
+- ✅ **Cost-Effective**: Works with Vercel Hobby plan (free tier) - only one daily cron job
+- ✅ **Efficient**: Minimal database operations and no unnecessary cleanup processes
+- ✅ **Role-Based Access**: TEACHER and ADMIN can use multiple devices simultaneously, regular users are restricted to one device
+- ✅ **Multi-Device Support**: TEACHER/ADMIN sessions validated by userId + isActive, allowing multiple concurrent sessions
 
 The system is production-ready and handles edge cases gracefully.
 

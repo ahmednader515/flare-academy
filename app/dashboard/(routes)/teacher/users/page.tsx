@@ -67,7 +67,6 @@ interface EditUserData {
     college: string;
     faculty: string;
     level: string;
-    role: string;
 }
 
 const UsersPage = () => {
@@ -82,8 +81,7 @@ const UsersPage = () => {
         email: "",
         college: "",
         faculty: "",
-        level: "",
-        role: ""
+        level: ""
     });
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -126,8 +124,7 @@ const UsersPage = () => {
             email: user.email,
             college: user.college || "",
             faculty: user.faculty || "",
-            level: user.level || "",
-            role: user.role
+            level: user.level || ""
         });
         setIsEditDialogOpen(true);
     };
@@ -453,24 +450,6 @@ const UsersPage = () => {
                                                                     className="col-span-3"
                                                                 />
                                                             </div>
-                                                            <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="role" className="text-right">
-                                                                    {t('teacher.role')}
-                                                                </Label>
-                                                                <Select
-                                                                    value={editData.role}
-                                                                    onValueChange={(value) => setEditData({...editData, role: value})}
-                                                                >
-                                                                    <SelectTrigger className="col-span-3">
-                                                                        <SelectValue placeholder={t('teacher.selectRole')} />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent>
-                                                                        <SelectItem value="USER">{t('teacher.student')}</SelectItem>
-                                                                        <SelectItem value="TEACHER">{t('teacher.teacher')}</SelectItem>
-                                                                        <SelectItem value="ADMIN">{t('teacher.admin')}</SelectItem>
-                                                                    </SelectContent>
-                                                                </Select>
-                                                            </div>
                                                         </div>
                                                         <DialogFooter>
                                                             <Button variant="outline" onClick={() => {
@@ -714,24 +693,6 @@ const UsersPage = () => {
                                                                     onChange={(e) => setEditData({...editData, email: e.target.value})}
                                                                     className="col-span-3"
                                                                 />
-                                                            </div>
-                                                            <div className="grid grid-cols-4 items-center gap-4">
-                                                                <Label htmlFor="role" className="text-right">
-                                                                    {t('teacher.role')}
-                                                                </Label>
-                                                                <Select
-                                                                    value={editData.role}
-                                                                    onValueChange={(value) => setEditData({...editData, role: value})}
-                                                                >
-                                                                    <SelectTrigger className="col-span-3">
-                                                                        <SelectValue placeholder={t('teacher.selectRole')} />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent>
-                                                                        <SelectItem value="USER">{t('teacher.student')}</SelectItem>
-                                                                        <SelectItem value="TEACHER">{t('teacher.teacher')}</SelectItem>
-                                                                        <SelectItem value="ADMIN">{t('teacher.admin')}</SelectItem>
-                                                                    </SelectContent>
-                                                                </Select>
                                                             </div>
                                                         </div>
                                                         <DialogFooter>
