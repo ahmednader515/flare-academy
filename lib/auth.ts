@@ -95,19 +95,47 @@ export const authOptions: AuthOptions = {
           const { isValid } = await SessionManager.validateSession(token.sessionId as string);
           
           if (!isValid) {
-            // Session is invalid, return null to force re-authentication
-            return null;
+            // Session is invalid - return empty session to trigger re-authentication
+            // Don't return null as it causes NextAuth client errors
+            return {
+              ...session,
+              user: {
+                id: "",
+                name: "",
+                email: "",
+                role: "",
+              },
+              expires: "1970-01-01T00:00:00.000Z", // Expired date to force re-auth
+            };
           }
 
-          session.user.id = token.id;
-          session.user.name = token.name;
-          session.user.phoneNumber = token.phoneNumber;
+          session.user.id = token.id as string;
+          session.user.name = token.name as string;
+          session.user.phoneNumber = token.phoneNumber as string;
           session.user.image = token.picture ?? undefined;
-          session.user.role = token.role;
+          session.user.role = token.role as string;
         } catch (error) {
           console.error("Session validation error:", error);
-          return null;
+          // Return expired session instead of null
+          return {
+            ...session,
+            user: {
+              id: "",
+              name: "",
+              email: "",
+            },
+            expires: "1970-01-01T00:00:00.000Z",
+          };
         }
+      }
+
+      // If no token or sessionId, ensure we have valid user data
+      if (token) {
+        session.user.id = (token.id as string) || "";
+        session.user.name = (token.name as string) || "";
+        session.user.phoneNumber = (token.phoneNumber as string) || "";
+        session.user.image = token.picture ?? undefined;
+        session.user.role = (token.role as string) || "";
       }
 
       return session;

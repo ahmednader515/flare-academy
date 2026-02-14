@@ -229,6 +229,7 @@
     "deleteCourseSuccess": "تم حذف الكورس بنجاح",
     "deleteCourseError": "فشل حذف الكورس",
     "errorOccurred": "حدث خطأ",
+    "noData": "لا توجد بيانات",
     "allQuizzes": "كل الاختبارات",
     "quizzes": "الاختبارات",
     "searchInQuizzes": "البحث في الاختبارات...",

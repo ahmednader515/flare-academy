@@ -1,3 +1,5 @@
+import { SessionMonitor } from "@/components/session-monitor";
+
 const AdminLayout = ({
     children,
 }: {
@@ -5,6 +7,7 @@ const AdminLayout = ({
 }) => {
     return (
         <div className="h-full p-0">
+            <SessionMonitor />
             {children}
         </div>
     );

@@ -229,6 +229,7 @@
     "deleteCourseSuccess": "Course deleted successfully",
     "deleteCourseError": "Failed to delete course",
     "errorOccurred": "An error occurred",
+    "noData": "No data found",
     "allQuizzes": "All Quizzes",
     "quizzes": "Quizzes",
     "searchInQuizzes": "Search in quizzes...",

@@ -25,6 +25,7 @@ model User {
   isActive                Boolean   @default(false)
   sessionId               String?   @unique
   lastLoginAt             DateTime?
+  logoutScheduledAt       DateTime? // Timestamp when logout was scheduled (for 5-minute delayed cleanup)
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
   courses                 Course[]
