@@ -93,7 +93,11 @@ export const authOptions: AuthOptions = {
       if (token && token.sessionId) {
         try {
           // Validate session on each request
-          const { isValid } = await SessionManager.validateSession(token.sessionId as string);
+          // Pass userId for TEACHER/ADMIN multi-device support
+          const { isValid } = await SessionManager.validateSession(
+            token.sessionId as string,
+            token.id as string
+          );
           
           if (!isValid) {
             // Session is invalid - return empty session to trigger re-authentication

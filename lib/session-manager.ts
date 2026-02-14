@@ -35,32 +35,48 @@ export class SessionManager {
 
   /**
    * Create a new session for user
-   * For TEACHER and ADMIN: Allows multiple sessions (doesn't end previous session)
-   * For regular users: Only one session allowed (ends previous session if exists)
+   * For TEACHER and ADMIN: Allows multiple sessions (doesn't overwrite existing sessionId)
+   * For regular users: Only one session allowed (overwrites previous sessionId)
    */
   static async createSession(userId: string): Promise<string> {
     const sessionId = this.generateSessionId();
     
-    // Get user to check role
+    // Get user to check role and current state
     const user = await db.user.findUnique({
       where: { id: userId },
-      select: { role: true }
+      select: { role: true, isActive: true, sessionId: true }
     });
 
-    // For TEACHER and ADMIN, allow multiple sessions (just update sessionId)
-    // For regular users, end previous session first (single-device login)
+    // For TEACHER and ADMIN, allow multiple sessions
+    // Don't overwrite sessionId if user is already active (allows multiple devices)
     if (user && (user.role === "TEACHER" || user.role === "ADMIN")) {
-      // Allow multiple devices - just update sessionId without ending previous session
-      await db.user.update({
-        where: { id: userId },
-        data: {
-          isActive: true,
-          sessionId: sessionId,
-          lastLoginAt: new Date()
-        }
-      });
+      if (user.isActive && user.sessionId) {
+        // User already has active session(s) - don't overwrite sessionId
+        // Just update lastLoginAt to track activity
+        // Each device will have its own sessionId in JWT, validated by userId
+        await db.user.update({
+          where: { id: userId },
+          data: {
+            lastLoginAt: new Date()
+          }
+        });
+        // Return new sessionId for this device's JWT token
+        // Validation will use userId to check if user is active
+        return sessionId;
+      } else {
+        // First login - set sessionId normally
+        await db.user.update({
+          where: { id: userId },
+          data: {
+            isActive: true,
+            sessionId: sessionId,
+            lastLoginAt: new Date()
+          }
+        });
+        return sessionId;
+      }
     } else {
-      // Regular users - single device only (end previous session if exists)
+      // Regular users - single device only (overwrite previous sessionId)
       await db.user.update({
         where: { id: userId },
         data: {
@@ -69,9 +85,8 @@ export class SessionManager {
           lastLoginAt: new Date()
         }
       });
+      return sessionId;
     }
-
-    return sessionId;
   }
 
   /**
@@ -142,39 +157,104 @@ export class SessionManager {
    * Validate session and return user if valid
    * Checks if session is active (no time-based expiration)
    * Also cleans up scheduled logouts if they're older than 1 minute
+   * For TEACHER/ADMIN: Validates by checking if user is active (allows multiple sessions)
+   * For regular users: Validates by exact sessionId match (single session only)
    * Cached for 30 seconds to reduce database operations
    */
-  static async validateSession(sessionId: string): Promise<{ user: any; isValid: boolean }> {
-    const user = await db.user.findUnique({
-      where: { sessionId },
-      select: {
-        id: true,
-        fullName: true,
-        phoneNumber: true,
-        email: true,
-        role: true,
-        image: true,
-        isActive: true,
-        sessionId: true,
-        lastLoginAt: true,
-        logoutScheduledAt: true
-      },
-      cacheStrategy: { ttl: 30 }, // Cache for 30 seconds - session validation happens on every request
-    });
+  static async validateSession(sessionId: string, userId?: string): Promise<{ user: any; isValid: boolean }> {
+    let user = null;
 
-    if (!user || !user.isActive || user.sessionId !== sessionId) {
+    // For TEACHER/ADMIN multi-device support: if userId is provided, find by userId first
+    // This allows validation even if sessionId was overwritten by another device
+    if (userId) {
+      user = await db.user.findUnique({
+        where: { id: userId },
+        select: {
+          id: true,
+          fullName: true,
+          phoneNumber: true,
+          email: true,
+          role: true,
+          image: true,
+          isActive: true,
+          sessionId: true,
+          lastLoginAt: true,
+          logoutScheduledAt: true
+        },
+        cacheStrategy: { ttl: 30 },
+      });
+
+      // If found by userId and it's TEACHER/ADMIN, validate by isActive (multi-device)
+      if (user && (user.role === "TEACHER" || user.role === "ADMIN")) {
+        // For TEACHER/ADMIN, validate by isActive, not exact sessionId match
+        if (!user.isActive) {
+          return { user: null, isValid: false };
+        }
+
+        // Check scheduled logout
+        if (user.logoutScheduledAt) {
+          const oneMinuteInMs = 1 * 60 * 1000;
+          const logoutTime = new Date(user.logoutScheduledAt).getTime();
+          const currentTime = Date.now();
+          const timeSinceLogout = currentTime - logoutTime;
+
+          if (timeSinceLogout > oneMinuteInMs) {
+            // Clear logoutScheduledAt but keep isActive for other devices
+            await db.user.update({
+              where: { id: user.id },
+              data: { logoutScheduledAt: null }
+            });
+            // Only invalidate if this sessionId matches stored one
+            if (user.sessionId === sessionId) {
+              await this.endSessionById(sessionId);
+            }
+            return { user: null, isValid: false };
+          }
+        }
+
+        return { user, isValid: true };
+      }
+    }
+
+    // For regular users or if userId not provided, find by sessionId
+    if (!user) {
+      user = await db.user.findUnique({
+        where: { sessionId },
+        select: {
+          id: true,
+          fullName: true,
+          phoneNumber: true,
+          email: true,
+          role: true,
+          image: true,
+          isActive: true,
+          sessionId: true,
+          lastLoginAt: true,
+          logoutScheduledAt: true
+        },
+        cacheStrategy: { ttl: 30 },
+      });
+    }
+
+    if (!user || !user.isActive) {
       return { user: null, isValid: false };
     }
 
-    // Check if there's a scheduled logout that's older than 1 minute
+    // For regular users, require exact sessionId match
+    if (user.role !== "TEACHER" && user.role !== "ADMIN") {
+      if (user.sessionId !== sessionId) {
+        return { user: null, isValid: false };
+      }
+    }
+
+    // Check scheduled logout for regular users
     if (user.logoutScheduledAt) {
-      const oneMinuteInMs = 1 * 60 * 1000; // 1 minute in milliseconds
+      const oneMinuteInMs = 1 * 60 * 1000;
       const logoutTime = new Date(user.logoutScheduledAt).getTime();
       const currentTime = Date.now();
       const timeSinceLogout = currentTime - logoutTime;
 
       if (timeSinceLogout > oneMinuteInMs) {
-        // Scheduled logout cleanup time has passed - end the session
         await this.endSessionById(sessionId);
         await db.user.update({
           where: { id: user.id },
@@ -184,7 +264,6 @@ export class SessionManager {
       }
     }
 
-    // Session is valid (no time-based expiration - only daily reset at 3 AM)
     return { user, isValid: true };
   }
 
@@ -241,3 +320,4 @@ export class SessionManager {
     return 0;
   }
 }
+
