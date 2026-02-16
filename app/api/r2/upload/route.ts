@@ -4,6 +4,10 @@ import { Upload } from "@aws-sdk/lib-storage";
 import { r2Client, R2_BUCKET_NAME, R2_PUBLIC_URL } from "@/lib/r2/config";
 import { generateR2Key, getFolderByType } from "@/lib/r2/upload";
 
+// Route segment config for large file uploads
+export const maxDuration = 300; // 5 minutes
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   const encoder = new TextEncoder();
 
