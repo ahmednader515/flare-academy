@@ -4,12 +4,6 @@
       "path": "/api/cron/daily-reset",
       "schedule": "0 1 * * *"
     }
-  ],
-  "functions": {
-    "app/api/r2/upload/route.ts": {
-      "maxDuration": 300,
-      "memory": 2048
-    }
-  }
+  ]
 }
 
