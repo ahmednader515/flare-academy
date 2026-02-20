@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/loading-button";
@@ -13,7 +13,7 @@ import { useLanguage } from "@/lib/contexts/language-context";
 import { Smartphone, LogOut, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
-export default function DeviceConflictPage() {
+function DeviceConflictContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t, isRTL } = useLanguage();
@@ -190,6 +190,20 @@ export default function DeviceConflictPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function DeviceConflictPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen bg-background items-center justify-center p-4">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    }>
+      <DeviceConflictContent />
+    </Suspense>
   );
 }
 
