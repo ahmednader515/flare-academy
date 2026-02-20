@@ -63,8 +63,12 @@ export const authOptions: AuthOptions = {
 
         // Check if user is already logged in (only for regular users)
         // TEACHER and ADMIN can login on multiple devices
+        // Note: This check is now done client-side before sign-in to prevent 401 errors
+        // But we keep it here as a safety check
         if (user.isActive && user.role !== "TEACHER" && user.role !== "ADMIN") {
-          throw new Error("UserAlreadyLoggedIn");
+          // Return null to prevent authentication
+          // The client-side check should have caught this already
+          return null;
         }
 
         return {

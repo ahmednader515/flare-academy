@@ -37,6 +37,37 @@ export default function SignInPage() {
     setIsLoading(true);
 
     try {
+      // First, check if user is already logged in (before attempting sign-in)
+      // This prevents the 401 error from NextAuth callback
+      try {
+        const checkResponse = await fetch("/api/auth/check-user-status", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            phoneNumber: formData.phoneNumber,
+          }),
+        });
+        
+        if (checkResponse.ok) {
+          const checkData = await checkResponse.json();
+          if (checkData.isActive && checkData.role !== "TEACHER" && checkData.role !== "ADMIN") {
+            // User is already logged in - redirect to device conflict page
+            const params = new URLSearchParams({
+              phone: formData.phoneNumber,
+            });
+            router.push(`/device-conflict?${params.toString()}`);
+            setIsLoading(false);
+            return;
+          }
+        }
+      } catch (checkError) {
+        // If check fails, continue with normal sign-in flow
+        console.error("Error checking user status:", checkError);
+      }
+
+      // Proceed with normal sign-in
       const result = await signIn("credentials", {
         phoneNumber: formData.phoneNumber,
         password: formData.password,
