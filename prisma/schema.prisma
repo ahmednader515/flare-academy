@@ -140,6 +140,7 @@ model Purchase {
     courseId String
     status String @default("ACTIVE")
     totalPaid Float @default(0) // Total amount paid for this purchase
+    coursePrice Float? // Course price at the time of purchase (can be different from course.price)
     user User @relation(fields: [userId], references: [id], onDelete: Cascade)
     course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
     payments Payment[] // Individual payment records

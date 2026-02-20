@@ -129,7 +129,8 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const coursePrice = purchase.course.price || 0;
+        // Use purchase coursePrice if available, otherwise fall back to course price
+        const coursePrice = purchase.coursePrice ?? purchase.course.price ?? 0;
         const currentTotalPaid = purchase.totalPaid || 0;
         const newTotalPaid = currentTotalPaid + amount;
 

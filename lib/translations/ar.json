@@ -99,7 +99,14 @@
     "invalidEmailFormat": "تنسيق البريد الإلكتروني غير صحيح",
     "userAlreadyLoggedIn": "هذا الحساب مسجل الدخول بالفعل على جهاز آخر. يرجى تسجيل الخروج من الجهاز الآخر أولاً أو الاتصال بالدعم إذا كنت تعتقد أن هذا خطأ.",
     "sessionExpired": "انتهت صلاحية جلستك. يرجى تسجيل الدخول مرة أخرى.",
-    "invalidSession": "جلسة غير صحيحة. يرجى تسجيل الدخول مرة أخرى."
+    "invalidSession": "جلسة غير صحيحة. يرجى تسجيل الدخول مرة أخرى.",
+    "accountLoggedInAnotherDevice": "الحساب مسجل الدخول على جهاز آخر",
+    "accountLoggedInAnotherDeviceDescription": "هذا الحساب مسجل الدخول حالياً على جهاز آخر. لتسجيل الدخول على هذا الجهاز، تحتاج إلى تسجيل الخروج من جميع الأجهزة الأخرى أولاً.",
+    "forceLoginWarning": "سيؤدي هذا إلى تسجيل الخروج من جميع الأجهزة الأخرى. ثم سيتم تسجيل الدخول على هذا الجهاز.",
+    "signingOutAllDevices": "جاري تسجيل الخروج من جميع الأجهزة...",
+    "signOutAllDevicesAndSignIn": "تسجيل الخروج من جميع الأجهزة وتسجيل الدخول",
+    "forceLoginError": "فشل تسجيل الخروج من الأجهزة الأخرى",
+    "phonePasswordRequired": "رقم الهاتف وكلمة المرور مطلوبان"
   },
   "home": {
     "title": "Flare Academy",
@@ -972,7 +979,13 @@
     "noStudentsFound": "لم يتم العثور على طلاب",
     "failedToLoadCourses": "فشل تحميل الكورسات",
     "failedToLoadFinancialReport": "فشل تحميل التقرير المالي",
-    "payments": "الدفعات"
+    "payments": "الدفعات",
+    "pleaseEnterValidPrice": "الرجاء إدخال سعر صحيح",
+    "priceCannotBeLessThanPaid": "لا يمكن أن يكون السعر أقل من المبلغ المدفوع",
+    "coursePriceUpdated": "تم تحديث سعر الكورس بنجاح",
+    "failedToUpdatePrice": "فشل تحديث السعر",
+    "editPrice": "تعديل السعر",
+    "edit": "تعديل"
   },
   "quiz": {
     "title": "عنوان الاختبار",

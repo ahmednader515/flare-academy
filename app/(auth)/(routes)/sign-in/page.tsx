@@ -47,7 +47,13 @@ export default function SignInPage() {
         if (result.error === "CredentialsSignin") {
           toast.error(t('auth.invalidCredentials'));
         } else if (result.error === "UserAlreadyLoggedIn") {
-          toast.error(t('auth.userAlreadyLoggedIn'));
+          // Redirect to device conflict page instead of showing toast
+          // Only pass phone number for security (password should be re-entered)
+          const params = new URLSearchParams({
+            phone: formData.phoneNumber,
+          });
+          router.push(`/device-conflict?${params.toString()}`);
+          return;
         } else {
           toast.error(t('auth.signInError'));
         }

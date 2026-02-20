@@ -26,7 +26,12 @@ export async function GET(req: NextRequest) {
             where: {
                 status: "ACTIVE"
             },
-            include: {
+            select: {
+                id: true,
+                userId: true,
+                courseId: true,
+                totalPaid: true,
+                coursePrice: true,
                 user: {
                     select: {
                         id: true,
@@ -46,6 +51,13 @@ export async function GET(req: NextRequest) {
                 payments: {
                     orderBy: {
                         paymentNumber: "asc"
+                    },
+                    select: {
+                        id: true,
+                        amount: true,
+                        paymentNumber: true,
+                        notes: true,
+                        createdAt: true
                     }
                 }
             },

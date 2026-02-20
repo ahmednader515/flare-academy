@@ -91,6 +91,8 @@ export class SessionManager {
 
   /**
    * End user session
+   * Clears both isActive (sets to false) and sessionId (sets to null)
+   * This ensures the user is fully logged out from all devices
    */
   static async endSession(userId: string): Promise<void> {
     await db.user.update({

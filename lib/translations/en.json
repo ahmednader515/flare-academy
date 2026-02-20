@@ -99,7 +99,14 @@
     "invalidEmailFormat": "Invalid email format",
     "userAlreadyLoggedIn": "This account is already logged in on another device. Please log out from the other device first or contact support if you believe this is an error.",
     "sessionExpired": "Your session has expired. Please sign in again.",
-    "invalidSession": "Invalid session. Please sign in again."
+    "invalidSession": "Invalid session. Please sign in again.",
+    "accountLoggedInAnotherDevice": "Account Logged In on Another Device",
+    "accountLoggedInAnotherDeviceDescription": "This account is currently logged in on another device. To sign in on this device, you need to sign out from all other devices first.",
+    "forceLoginWarning": "This will sign you out from all other devices. You will then be signed in on this device.",
+    "signingOutAllDevices": "Signing out all devices...",
+    "signOutAllDevicesAndSignIn": "Sign Out All Devices & Sign In",
+    "forceLoginError": "Failed to sign out other devices",
+    "phonePasswordRequired": "Phone number and password are required"
   },
   "home": {
     "title": "Flare Academy",
@@ -976,7 +983,13 @@
     "noStudentsFound": "No students found",
     "failedToLoadCourses": "Failed to load courses",
     "failedToLoadFinancialReport": "Failed to load financial report",
-    "payments": "Payments"
+    "payments": "Payments",
+    "pleaseEnterValidPrice": "Please enter a valid price",
+    "priceCannotBeLessThanPaid": "Price cannot be less than total amount paid",
+    "coursePriceUpdated": "Course price updated successfully",
+    "failedToUpdatePrice": "Failed to update price",
+    "editPrice": "Edit Price",
+    "edit": "Edit"
   },
   "quiz": {
     "title": "Quiz Title",

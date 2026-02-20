@@ -77,12 +77,13 @@ export async function POST(
         });
       }
 
-      // Create the purchase
+      // Create the purchase with coursePrice
       const purchase = await tx.purchase.create({
         data: {
           userId,
           courseId: resolvedParams.courseId,
           status: "ACTIVE",
+          coursePrice: coursePrice, // Store the price at the time of purchase
         },
       });
 

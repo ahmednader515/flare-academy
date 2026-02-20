@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Download, Plus, DollarSign } from "lucide-react";
+import { Search, Download, Plus, DollarSign, Edit2, Save, X } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import {
@@ -29,6 +29,7 @@ interface Purchase {
     userId: string;
     courseId: string;
     totalPaid: number;
+    coursePrice: number | null;
     user: {
         id: string;
         fullName: string;
@@ -58,6 +59,9 @@ const PaymentsPage = () => {
     const [paymentAmount, setPaymentAmount] = useState("");
     const [paymentNotes, setPaymentNotes] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [editingPricePurchaseId, setEditingPricePurchaseId] = useState<string | null>(null);
+    const [editingPrice, setEditingPrice] = useState("");
+    const [isUpdatingPrice, setIsUpdatingPrice] = useState(false);
 
     useEffect(() => {
         fetchPurchases();
@@ -85,7 +89,7 @@ const PaymentsPage = () => {
             return;
         }
 
-        const coursePrice = selectedPurchase.course.price || 0;
+        const coursePrice = selectedPurchase.coursePrice ?? selectedPurchase.course.price ?? 0;
         const currentTotalPaid = selectedPurchase.totalPaid || 0;
         const newTotalPaid = currentTotalPaid + amount;
 
@@ -125,6 +129,49 @@ const PaymentsPage = () => {
         setIsPaymentDialogOpen(true);
     };
 
+    const handleStartEditPrice = (purchase: Purchase) => {
+        const currentPrice = purchase.coursePrice ?? purchase.course.price ?? 0;
+        setEditingPricePurchaseId(purchase.id);
+        setEditingPrice(currentPrice.toString());
+    };
+
+    const handleCancelEditPrice = () => {
+        setEditingPricePurchaseId(null);
+        setEditingPrice("");
+    };
+
+    const handleSavePrice = async (purchase: Purchase) => {
+        const newPrice = parseFloat(editingPrice);
+        if (isNaN(newPrice) || newPrice < 0) {
+            toast.error(t("admin.pleaseEnterValidPrice") || "Please enter a valid price");
+            return;
+        }
+
+        if (newPrice < purchase.totalPaid) {
+            toast.error(t("admin.priceCannotBeLessThanPaid") || "Price cannot be less than total paid");
+            return;
+        }
+
+        try {
+            setIsUpdatingPrice(true);
+            const response = await axios.patch(`/api/purchases/${purchase.id}/course-price`, {
+                coursePrice: newPrice
+            });
+
+            if (response.data.success) {
+                toast.success(t("admin.coursePriceUpdated") || "Course price updated successfully");
+                setEditingPricePurchaseId(null);
+                setEditingPrice("");
+                fetchPurchases();
+            }
+        } catch (error: any) {
+            console.error("[UPDATE_PRICE]", error);
+            toast.error(error.response?.data?.error || t("admin.failedToUpdatePrice") || "Failed to update price");
+        } finally {
+            setIsUpdatingPrice(false);
+        }
+    };
+
     const exportPaymentsToExcel = () => {
         const filteredPurchases = purchases.filter(p => {
             const searchLower = searchTerm.toLowerCase();
@@ -136,7 +183,7 @@ const PaymentsPage = () => {
         });
 
         const exportData = filteredPurchases.map((purchase, index) => {
-            const coursePrice = purchase.course.price || 0;
+            const coursePrice = purchase.coursePrice ?? purchase.course.price ?? 0;
             const totalPaid = purchase.totalPaid || 0;
             const remaining = Math.max(0, coursePrice - totalPaid);
             const isFullyPaid = remaining === 0;
@@ -246,10 +293,11 @@ const PaymentsPage = () => {
                                     </TableRow>
                                 ) : (
                                     filteredPurchases.map((purchase, index) => {
-                                        const coursePrice = purchase.course.price || 0;
+                                        const coursePrice = purchase.coursePrice ?? purchase.course.price ?? 0;
                                         const totalPaid = purchase.totalPaid || 0;
                                         const remaining = Math.max(0, coursePrice - totalPaid);
                                         const isFullyPaid = remaining === 0;
+                                        const isEditing = editingPricePurchaseId === purchase.id;
 
                                         return (
                                             <TableRow key={purchase.id}>
@@ -257,7 +305,52 @@ const PaymentsPage = () => {
                                                 <TableCell className={`font-medium ${isRTL ? "text-right" : "text-left"}`}>{purchase.user.fullName}</TableCell>
                                                 <TableCell className={isRTL ? "text-right" : "text-left"}>{purchase.user.phoneNumber}</TableCell>
                                                 <TableCell className={isRTL ? "text-right" : "text-left"}>{purchase.course.title}</TableCell>
-                                                <TableCell className={isRTL ? "text-right" : "text-left"}>{coursePrice.toFixed(2)} {t("dashboard.egp")}</TableCell>
+                                                <TableCell className={isRTL ? "text-right" : "text-left"}>
+                                                    {isEditing ? (
+                                                        <div className="flex items-center gap-2">
+                                                            <Input
+                                                                type="number"
+                                                                step="0.01"
+                                                                min="0"
+                                                                value={editingPrice}
+                                                                onChange={(e) => setEditingPrice(e.target.value)}
+                                                                className="w-24 h-8"
+                                                                disabled={isUpdatingPrice}
+                                                            />
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                onClick={() => handleSavePrice(purchase)}
+                                                                disabled={isUpdatingPrice}
+                                                                className="h-8 w-8 p-0"
+                                                            >
+                                                                <Save className="h-3 w-3" />
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                onClick={handleCancelEditPrice}
+                                                                disabled={isUpdatingPrice}
+                                                                className="h-8 w-8 p-0"
+                                                            >
+                                                                <X className="h-3 w-3" />
+                                                            </Button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2">
+                                                            <span>{coursePrice.toFixed(2)} {t("dashboard.egp")}</span>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                onClick={() => handleStartEditPrice(purchase)}
+                                                                className="h-6 w-6 p-0"
+                                                                title={t("admin.editPrice") || "Edit price"}
+                                                            >
+                                                                <Edit2 className="h-3 w-3" />
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </TableCell>
                                                 <TableCell className={isRTL ? "text-right" : "text-left"}>{totalPaid.toFixed(2)} {t("dashboard.egp")}</TableCell>
                                                 <TableCell className={isRTL ? "text-right" : "text-left"}>
                                                     <span className={remaining > 0 ? "text-red-600 font-semibold" : "text-green-600"}>
@@ -290,7 +383,14 @@ const PaymentsPage = () => {
                 </CardContent>
             </Card>
 
-            <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
+            <Dialog open={isPaymentDialogOpen} onOpenChange={(open) => {
+                setIsPaymentDialogOpen(open);
+                if (!open) {
+                    // Cancel any ongoing price edit when dialog closes
+                    setEditingPricePurchaseId(null);
+                    setEditingPrice("");
+                }
+            }}>
                 <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                         <DialogTitle>{t("admin.recordPayment")}</DialogTitle>
@@ -300,11 +400,56 @@ const PaymentsPage = () => {
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-2">
-                            <Label>{t("admin.coursePrice")}</Label>
-                            <Input
-                                value={`${selectedPurchase?.course.price || 0} ${t("dashboard.egp")}`}
-                                disabled
-                            />
+                            <div className="flex items-center justify-between">
+                                <Label>{t("admin.coursePrice")}</Label>
+                                {selectedPurchase && editingPricePurchaseId !== selectedPurchase.id && (
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleStartEditPrice(selectedPurchase)}
+                                        className="h-7"
+                                    >
+                                        <Edit2 className={`h-3 w-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
+                                        {t("admin.edit") || "Edit"}
+                                    </Button>
+                                )}
+                            </div>
+                            {selectedPurchase && editingPricePurchaseId === selectedPurchase.id ? (
+                                <div className="flex items-center gap-2">
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={editingPrice}
+                                        onChange={(e) => setEditingPrice(e.target.value)}
+                                        disabled={isUpdatingPrice}
+                                    />
+                                    <span className="text-sm text-muted-foreground">{t("dashboard.egp")}</span>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => handleSavePrice(selectedPurchase)}
+                                        disabled={isUpdatingPrice}
+                                        className="h-8 w-8 p-0"
+                                    >
+                                        <Save className="h-3 w-3" />
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={handleCancelEditPrice}
+                                        disabled={isUpdatingPrice}
+                                        className="h-8 w-8 p-0"
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </Button>
+                                </div>
+                            ) : (
+                                <Input
+                                    value={`${(selectedPurchase?.coursePrice ?? selectedPurchase?.course.price ?? 0).toFixed(2)} ${t("dashboard.egp")}`}
+                                    disabled
+                                />
+                            )}
                         </div>
                         <div className="space-y-2">
                             <Label>{t("admin.totalPaid")}</Label>
@@ -316,7 +461,7 @@ const PaymentsPage = () => {
                         <div className="space-y-2">
                             <Label>{t("admin.remaining")}</Label>
                             <Input
-                                value={`${Math.max(0, (selectedPurchase?.course.price || 0) - (selectedPurchase?.totalPaid || 0))} ${t("dashboard.egp")}`}
+                                value={`${Math.max(0, ((selectedPurchase?.coursePrice ?? selectedPurchase?.course.price ?? 0) - (selectedPurchase?.totalPaid || 0))).toFixed(2)} ${t("dashboard.egp")}`}
                                 disabled
                             />
                         </div>
