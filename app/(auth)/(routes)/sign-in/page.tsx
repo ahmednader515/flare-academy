@@ -34,60 +34,106 @@ export default function SignInPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    e.stopPropagation();
+    
+    // Don't proceed if already loading
+    if (isLoading) {
+      console.log("[SIGN_IN] Already loading, ignoring submit");
+      return;
+    }
+    
+    console.log("[SIGN_IN] Form submitted");
     setIsLoading(true);
 
-    try {
-      // First, check if user is already logged in (before attempting sign-in)
-      // This prevents the 401 error from NextAuth callback
-      try {
-        const checkResponse = await fetch("/api/auth/check-user-status", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            phoneNumber: formData.phoneNumber,
-          }),
-        });
-        
-        if (checkResponse.ok) {
-          const checkData = await checkResponse.json();
-          if (checkData.isActive && checkData.role !== "TEACHER" && checkData.role !== "ADMIN") {
-            // User is already logged in - redirect to device conflict page
-            const params = new URLSearchParams({
-              phone: formData.phoneNumber,
-            });
-            router.push(`/device-conflict?${params.toString()}`);
-            setIsLoading(false);
-            return;
-          }
-        }
-      } catch (checkError) {
-        // If check fails, continue with normal sign-in flow
-        console.error("Error checking user status:", checkError);
-      }
+    // Store form data in case of redirect
+    const currentPhoneNumber = formData.phoneNumber;
+    const currentPassword = formData.password;
 
-      // Proceed with normal sign-in
+    // First, validate credentials and check if user is already logged in
+    // This prevents the 401 error and allows us to redirect before attempting sign-in
+    let shouldRedirect = false;
+    let redirectUrl = "";
+
+    try {
+      console.log("[SIGN_IN] Starting validation check...");
+      const validateResponse = await fetch("/api/auth/validate-and-check-status", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phoneNumber: currentPhoneNumber,
+          password: currentPassword,
+        }),
+      });
+
+      console.log("[SIGN_IN] Validation response status:", validateResponse.status);
+      const validateData = await validateResponse.json();
+      console.log("[SIGN_IN] Validation result:", validateData);
+
+      if (validateResponse.ok) {
+        // If credentials are valid and user is already logged in, prepare redirect
+        if (validateData.isValid && validateData.isAlreadyLoggedIn) {
+          console.log("[SIGN_IN] User already logged in, preparing redirect to device-conflict");
+          const params = new URLSearchParams({
+            phone: currentPhoneNumber,
+          });
+          redirectUrl = `/device-conflict?${params.toString()}`;
+          shouldRedirect = true;
+        }
+
+        // If credentials are invalid, show error and stop
+        if (!validateData.isValid && !shouldRedirect) {
+          console.log("[SIGN_IN] Credentials invalid");
+          toast.error(t('auth.invalidCredentials'));
+          setIsLoading(false);
+          return;
+        }
+        
+        if (!shouldRedirect) {
+          console.log("[SIGN_IN] Credentials valid, user not logged in, proceeding with sign-in");
+        }
+      } else {
+        // If validation fails with 401, credentials are invalid
+        if (validateResponse.status === 401) {
+          console.log("[SIGN_IN] Validation returned 401 - invalid credentials");
+          toast.error(t('auth.invalidCredentials'));
+          setIsLoading(false);
+          return;
+        }
+        // For other errors, continue with normal sign-in
+        console.log("[SIGN_IN] Validation returned error, continuing with sign-in");
+      }
+    } catch (validateError) {
+      console.error("[SIGN_IN] Error validating credentials:", validateError);
+      // Continue with normal sign-in if validation fails
+    }
+
+    // If we need to redirect, do it now before any other code runs
+    if (shouldRedirect && redirectUrl) {
+      console.log("[SIGN_IN] Executing redirect to:", redirectUrl);
+      // Use window.location for a hard redirect that can't be interrupted
+      window.location.href = redirectUrl;
+      return;
+    }
+
+    // If user is not already logged in, proceed with normal sign-in
+    try {
       const result = await signIn("credentials", {
-        phoneNumber: formData.phoneNumber,
-        password: formData.password,
+        phoneNumber: currentPhoneNumber,
+        password: currentPassword,
         redirect: false,
       });
+
+      console.log("[SIGN_IN] Sign-in result:", result);
 
       if (result?.error) {
         if (result.error === "CredentialsSignin") {
           toast.error(t('auth.invalidCredentials'));
-        } else if (result.error === "UserAlreadyLoggedIn") {
-          // Redirect to device conflict page instead of showing toast
-          // Only pass phone number for security (password should be re-entered)
-          const params = new URLSearchParams({
-            phone: formData.phoneNumber,
-          });
-          router.push(`/device-conflict?${params.toString()}`);
-          return;
         } else {
           toast.error(t('auth.signInError'));
         }
+        setIsLoading(false);
         return;
       }
 
@@ -106,9 +152,9 @@ export default function SignInPage() {
       } else {
         router.replace(target);
       }
-    } catch {
+    } catch (signInError) {
+      console.error("[SIGN_IN] Sign-in error:", signInError);
       toast.error(t('auth.signInError'));
-    } finally {
       setIsLoading(false);
     }
   };
