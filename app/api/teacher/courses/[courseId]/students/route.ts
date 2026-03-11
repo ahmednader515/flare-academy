@@ -7,14 +7,10 @@ export async function GET(
   { params }: { params: Promise<{ courseId: string }> }
 ) {
   try {
-    const session = await auth();
+    const { userId, user } = await auth();
 
-    if (!session?.user) {
+    if (!userId || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (session.user.role !== "TEACHER") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const { courseId } = await params;
@@ -22,10 +18,27 @@ export async function GET(
     // Verify course exists
     const course = await db.course.findUnique({
       where: { id: courseId },
+      include: {
+        allowedTeachers: {
+          select: { teacherId: true },
+        },
+      },
     });
 
     if (!course) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
+    }
+
+    const isAdmin = user.role === "ADMIN";
+    const isOwner = course.userId === userId;
+    const isAllowedTeacher =
+      user.role === "TEACHER" &&
+      course.allowedTeachers.some((ct) => ct.teacherId === userId);
+
+    // Admin: can view students for any course
+    // Teacher: only for owned or explicitly allowed courses
+    if (!isAdmin && !isOwner && !isAllowedTeacher) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Get all active purchases for this course with user details
