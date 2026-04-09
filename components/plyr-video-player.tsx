@@ -39,6 +39,13 @@ const PlyrVideoPlayerComponent = ({
     return "no-video";
   }, [videoType, youtubeVideoId, videoUrl]);
 
+  // Stable id for Plyr fullscreen so the shell (embed + click-block overlay) enters fullscreen together
+  const youtubeFullscreenShellId = useMemo(() => {
+    if (!youtubeVideoId) return "plyr-yt-shell";
+    const safe = youtubeVideoId.replace(/[^a-zA-Z0-9_-]/g, "");
+    return `plyr-yt-shell-${safe || "video"}`;
+  }, [youtubeVideoId]);
+
   // Initialize Plyr on mount/update and destroy on unmount
   useEffect(() => {
     let isCancelled = false;
@@ -104,7 +111,19 @@ const PlyrVideoPlayerComponent = ({
         settings: ["speed", "quality", "loop"],
         speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
         youtube: { rel: 0, modestbranding: 1 },
-        ratio: "16:9"
+        ratio: "16:9",
+        // Fullscreen the outer shell (see YouTube branch) so the top click-capture overlay stays on top in fullscreen
+        fullscreen:
+          videoType === "YOUTUBE" && youtubeFullscreenShellId
+            ? {
+                enabled: true,
+                fallback: true,
+                container: `#${youtubeFullscreenShellId}`,
+              }
+            : {
+                enabled: true,
+                fallback: true,
+              },
       });
 
       playerRef.current = player;
@@ -160,7 +179,7 @@ const PlyrVideoPlayerComponent = ({
       setIsPlayerReady(false);
       setIsLoading(true);
     };
-  }, [videoKey, videoType, onEnded, onTimeUpdate]);
+  }, [videoKey, videoType, youtubeFullscreenShellId, onEnded, onTimeUpdate]);
 
   const hasVideo = (videoType === "YOUTUBE" && !!youtubeVideoId) || !!videoUrl;
 
@@ -177,10 +196,11 @@ const PlyrVideoPlayerComponent = ({
     return (
       <div 
         ref={containerRef}
+        id={youtubeFullscreenShellId}
         className={`aspect-video relative ${className || ""}`}
       >
         {isLoading && (
-          <div className="absolute inset-0 bg-black flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-black flex items-center justify-center z-30">
             <div className="text-white animate-pulse">Loading video...</div>
           </div>
         )}
@@ -190,6 +210,11 @@ const PlyrVideoPlayerComponent = ({
           data-plyr-embed-id={youtubeVideoId}
           className={`w-full h-full ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-500`}
           style={{ minHeight: '100%' }}
+        />
+        {/* Blocks clicks on YouTube embed chrome (title, channel, etc.) in the top area */}
+        <div
+          className="absolute top-0 left-0 right-0 z-20 min-h-[56px] h-[18%] max-h-[96px] cursor-default bg-transparent pointer-events-auto"
+          aria-hidden="true"
         />
       </div>
     );
