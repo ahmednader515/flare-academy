@@ -40,6 +40,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface User {
     id: string;
@@ -89,6 +90,7 @@ const UsersPage = () => {
     const [selectedStudentCourses, setSelectedStudentCourses] = useState<{ userId: string; userName: string; courses: any[] } | null>(null);
     const [isCoursesDialogOpen, setIsCoursesDialogOpen] = useState(false);
     const [loadingCourses, setLoadingCourses] = useState(false);
+    const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
 
     useEffect(() => {
         fetchUsers();
@@ -175,6 +177,7 @@ const UsersPage = () => {
 
             if (response.ok) {
                 toast.success(t('teacher.deleteUserSuccess'));
+                setSelectedStudentIds((prev) => prev.filter((id) => id !== userId));
                 fetchUsers(); // Refresh the list
             } else {
                 const error = await response.text();
@@ -189,6 +192,57 @@ const UsersPage = () => {
             }
         } catch (error) {
             console.error("Error deleting user:", error);
+            toast.error(t('teacher.deleteStudentError'));
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const handleToggleStudent = (userId: string, checked: boolean) => {
+        setSelectedStudentIds((prev) =>
+            checked ? [...prev, userId] : prev.filter((id) => id !== userId)
+        );
+    };
+
+    const handleToggleSelectAllStudents = (checked: boolean, studentIds: string[]) => {
+        if (checked) {
+            setSelectedStudentIds((prev) => Array.from(new Set([...prev, ...studentIds])));
+        } else {
+            setSelectedStudentIds((prev) => prev.filter((id) => !studentIds.includes(id)));
+        }
+    };
+
+    const handleDeleteSelectedStudents = async () => {
+        if (selectedStudentIds.length === 0) return;
+
+        setIsDeleting(true);
+        try {
+            const results = await Promise.all(
+                selectedStudentIds.map(async (userId) => {
+                    const response = await fetch(`/api/teacher/users/${userId}`, {
+                        method: "DELETE",
+                    });
+                    return { userId, ok: response.ok, status: response.status };
+                })
+            );
+
+            const failed = results.filter((r) => !r.ok);
+            const succeeded = results.filter((r) => r.ok);
+
+            if (failed.some((r) => r.status === 403)) {
+                toast.error(t('teacher.noPermissionToDelete'));
+            } else if (failed.length > 0 && succeeded.length === 0) {
+                toast.error(t('teacher.deleteStudentError'));
+            } else if (failed.length > 0) {
+                toast.error(t('teacher.deleteSelectedPartialError'));
+            } else {
+                toast.success(t('teacher.deleteSelectedSuccess'));
+            }
+
+            setSelectedStudentIds([]);
+            fetchUsers();
+        } catch (error) {
+            console.error("Error deleting selected students:", error);
             toast.error(t('teacher.deleteStudentError'));
         } finally {
             setIsDeleting(false);
@@ -316,6 +370,13 @@ const UsersPage = () => {
 
         toast.success(t('teacher.exportSuccess') || 'تم تصدير البيانات بنجاح');
     };
+
+    const visibleStudentIds = studentUsers.map((user) => user.id);
+    const allVisibleSelected =
+        visibleStudentIds.length > 0 &&
+        visibleStudentIds.every((id) => selectedStudentIds.includes(id));
+    const someVisibleSelected =
+        visibleStudentIds.some((id) => selectedStudentIds.includes(id)) && !allVisibleSelected;
 
     // Debug logging
     console.log("All users:", users);
@@ -507,16 +568,49 @@ const UsersPage = () => {
             {studentUsers.length > 0 && (
                 <Card>
                     <CardHeader>
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
                             <CardTitle>{t('teacher.studentsList')}</CardTitle>
-                            <Button
-                                onClick={handleExportStudents}
-                                variant="outline"
-                                className="flex items-center gap-2"
-                            >
-                                <Download className="h-4 w-4" />
-                                {t('teacher.exportToExcel') || 'تصدير Excel'}
-                            </Button>
+                            <div className="flex items-center gap-2">
+                                {selectedStudentIds.length > 0 && (
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button
+                                                variant="destructive"
+                                                disabled={isDeleting}
+                                                className="flex items-center gap-2"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                                {t('teacher.deleteSelected')} ({selectedStudentIds.length})
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>{t('teacher.areYouSure')}</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    {t('teacher.deleteSelectedStudentsWarning')}
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                                                <AlertDialogAction
+                                                    onClick={handleDeleteSelectedStudents}
+                                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                >
+                                                    {t('teacher.delete')}
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                )}
+                                <Button
+                                    onClick={handleExportStudents}
+                                    variant="outline"
+                                    className="flex items-center gap-2"
+                                >
+                                    <Download className="h-4 w-4" />
+                                    {t('teacher.exportToExcel') || 'تصدير Excel'}
+                                </Button>
+                            </div>
                         </div>
                         <div className="flex items-center space-x-2 mt-4">
                             <Search className="h-4 w-4 text-muted-foreground" />
@@ -532,6 +626,21 @@ const UsersPage = () => {
                         <Table>
                             <TableHeader>
                                 <TableRow>
+                                    <TableHead className="w-12">
+                                        <Checkbox
+                                            checked={
+                                                allVisibleSelected
+                                                    ? true
+                                                    : someVisibleSelected
+                                                      ? "indeterminate"
+                                                      : false
+                                            }
+                                            onCheckedChange={(checked) =>
+                                                handleToggleSelectAllStudents(checked === true, visibleStudentIds)
+                                            }
+                                            aria-label="Select all students"
+                                        />
+                                    </TableHead>
                                     <TableHead className={isRTL ? "text-right" : "text-left"}>
                                         <Button
                                             variant="ghost"
@@ -608,6 +717,15 @@ const UsersPage = () => {
                             <TableBody>
                                 {studentUsers.map((user) => (
                                     <TableRow key={user.id}>
+                                        <TableCell>
+                                            <Checkbox
+                                                checked={selectedStudentIds.includes(user.id)}
+                                                onCheckedChange={(checked) =>
+                                                    handleToggleStudent(user.id, checked === true)
+                                                }
+                                                aria-label={`Select ${user.fullName}`}
+                                            />
+                                        </TableCell>
                                         <TableCell className={`font-medium ${isRTL ? "text-right" : "text-left"}`}>
                                             {user.fullName}
                                         </TableCell>
